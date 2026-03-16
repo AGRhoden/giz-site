@@ -113,6 +113,8 @@ function initializeAdmin() {
 }
 
 async function boot() {
+  await consumeAuthHash();
+
   const { data, error } = await supabase.auth.getSession();
 
   if (error) {
@@ -135,6 +137,47 @@ async function boot() {
   if (adminState.session) {
     await loadProjects();
   }
+}
+
+async function consumeAuthHash() {
+  const hash = window.location.hash.startsWith("#")
+    ? new URLSearchParams(window.location.hash.slice(1))
+    : null;
+
+  if (!hash) return;
+
+  const accessToken = hash.get("access_token");
+  const refreshToken = hash.get("refresh_token");
+  const authError = hash.get("error_description") || hash.get("error_code");
+
+  if (authError) {
+    setAuthFeedback(`Falha no link de acesso: ${decodeURIComponent(authError)}`, true);
+    clearAuthHash();
+    return;
+  }
+
+  if (!accessToken || !refreshToken) return;
+
+  setAuthFeedback("Concluindo login...", false);
+
+  const { error } = await supabase.auth.setSession({
+    access_token: accessToken,
+    refresh_token: refreshToken
+  });
+
+  if (error) {
+    console.error(error);
+    setAuthFeedback(`Nao foi possivel concluir o login: ${error.message}`, true);
+    clearAuthHash();
+    return;
+  }
+
+  clearAuthHash();
+}
+
+function clearAuthHash() {
+  const cleanUrl = window.location.pathname + window.location.search;
+  window.history.replaceState({}, document.title, cleanUrl);
 }
 
 async function handleAuthSubmit(event) {
