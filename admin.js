@@ -60,10 +60,9 @@
   var mediaFiles = document.getElementById("media-files");
   var mediaKind = document.getElementById("media-kind");
   var mediaList = document.getElementById("media-list");
-  var newProjectButton = document.getElementById("new-project-button");
   var newProjectForm = document.getElementById("new-project-form");
   var intakeFiles = document.getElementById("intake-files");
-  var cancelNewProjectButton = document.getElementById("cancel-new-project-button");
+  var intakeOverwrite = document.getElementById("intake-overwrite");
   var bulkImportFeedback = document.getElementById("bulk-import-feedback");
   var intakeReport = document.getElementById("intake-report");
 
@@ -124,8 +123,6 @@
   projectList.addEventListener("click", handleProjectSelection);
   editorForm.addEventListener("click", handleEditorTabClick);
   editorForm.addEventListener("submit", handleProjectSave);
-  newProjectButton.addEventListener("click", toggleNewProjectForm);
-  cancelNewProjectButton.addEventListener("click", toggleNewProjectForm);
   newProjectForm.addEventListener("submit", handleIntakeUpload);
   mediaUploadForm.addEventListener("submit", handleMediaUpload);
   mediaList.addEventListener("click", handleMediaListClick);
@@ -702,18 +699,11 @@
     persistCurrentProject(nextStatus);
   }
 
-  function toggleNewProjectForm() {
-    newProjectForm.hidden = !newProjectForm.hidden;
-    if (!newProjectForm.hidden) {
-      setBulkImportFeedback("", false);
-      renderIntakeReport(null);
-    }
-  }
-
   function handleIntakeUpload(event) {
     if (event && event.preventDefault) event.preventDefault();
 
     var files = intakeFiles.files;
+    var shouldOverwrite = Boolean(intakeOverwrite.checked);
 
     if (!files || !files.length) {
       setBulkImportFeedback("Selecione ao menos um arquivo para criar os projetos.", true);
@@ -740,12 +730,15 @@
 
     var existingSlugs = {};
     var existingTitles = {};
+    var existingProjectsBySlug = {};
     for (var i = 0; i < state.projects.length; i += 1) {
       existingSlugs[state.projects[i].slug] = true;
       existingTitles[normalizeTitleKey(state.projects[i].title)] = state.projects[i].title;
+      existingProjectsBySlug[state.projects[i].slug] = state.projects[i];
     }
 
     var createdCandidates = [];
+    var overwriteCandidates = [];
     var duplicateIdentifiers = [];
     var duplicateTitles = [];
     var seenTitleKeys = {};
@@ -754,6 +747,10 @@
       var titleKey = normalizeTitleKey(buildProvisionalTitle(item.slug));
 
       if (existingSlugs[item.slug]) {
+        if (shouldOverwrite) {
+          overwriteCandidates.push(item);
+          return;
+        }
         duplicateIdentifiers.push(item.slug);
         return;
       }
@@ -767,7 +764,7 @@
       createdCandidates.push(item);
     });
 
-    if (!createdCandidates.length) {
+    if (!createdCandidates.length && !overwriteCandidates.length) {
       setBulkImportFeedback("Nenhum projeto novo foi criado.", true);
       renderIntakeReport({
         duplicateIdentifiers: duplicateIdentifiers,
@@ -777,7 +774,7 @@
       return;
     }
 
-    setBulkImportFeedback("Criando " + createdCandidates.length + " projetos a partir dos arquivos...", false);
+    setBulkImportFeedback("Processando arquivos...", false);
     renderIntakeReport(null);
     setSaveState("Processando upload inicial...");
 
@@ -804,6 +801,23 @@
         });
       })
       .then(function (createdProjects) {
+        var overwriteJobs = overwriteCandidates.map(function (group) {
+          var project = existingProjectsBySlug[group.slug];
+          if (!project) return Promise.resolve(null);
+          return overwriteProjectMedia(project, group);
+        });
+
+        return Promise.all(overwriteJobs).then(function (overwrittenProjects) {
+          return {
+            createdProjects: createdProjects,
+            overwrittenProjects: overwrittenProjects.filter(Boolean)
+          };
+        });
+      })
+      .then(function (result) {
+        var createdProjects = result.createdProjects;
+        var overwrittenProjects = result.overwrittenProjects;
+
         createdProjects.forEach(function (project) {
           if (!state.editorialFlagsByProject[project.id]) {
             state.editorialFlagsByProject[project.id] = [];
@@ -820,10 +834,12 @@
 
         if (createdProjects.length) {
           state.selectedProjectId = createdProjects[0].id;
+        } else if (overwrittenProjects.length) {
+          state.selectedProjectId = overwrittenProjects[0].id;
         }
 
-        newProjectForm.hidden = true;
         intakeFiles.value = "";
+        intakeOverwrite.checked = false;
         applyFilters();
 
         if (state.selectedProjectId) {
@@ -833,6 +849,7 @@
         setBulkImportFeedback("Upload concluido.", false);
         renderIntakeReport({
           createdProjects: createdProjects.map(function (project) { return project.title; }),
+          overwrittenProjects: overwrittenProjects.map(function (project) { return project.title; }),
           duplicateIdentifiers: duplicateIdentifiers,
           duplicateTitles: duplicateTitles,
           invalidFiles: grouped.invalidGroups
@@ -1579,6 +1596,141 @@
       });
   }
 
+  function overwriteProjectMedia(project, group) {
+    return loadProjectImagesSnapshot(project.id)
+      .then(function (images) {
+        var jobs = group.files.map(function (entry) {
+          return overwritePreparedImage(project, images, entry.file, entry.kind, entry.sortOrder);
+        });
+        return Promise.all(jobs).then(function () {
+          return project;
+        });
+      });
+  }
+
+  function loadProjectImagesSnapshot(projectId) {
+    if (state.imagesByProject[projectId]) {
+      return Promise.resolve(state.imagesByProject[projectId]);
+    }
+
+    return fetch(backend.url + "/rest/v1/project_images?select=id,project_id,storage_path,kind,alt_text,sort_order,is_published,created_at&project_id=eq." + encodeURIComponent(projectId) + "&order=sort_order.asc,created_at.asc", {
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao carregar imagens existentes");
+          });
+        }
+        return response.json();
+      })
+      .then(function (images) {
+        state.imagesByProject[projectId] = images || [];
+        return state.imagesByProject[projectId];
+      });
+  }
+
+  function overwritePreparedImage(project, currentImages, file, kind, sortOrder) {
+    var nextPath = project.slug + "/" + sanitizeFilename(file.name);
+    var existingImage = (currentImages || []).find(function (image) {
+      return image.kind === kind && Number(image.sort_order) === Number(sortOrder);
+    });
+
+    return fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(nextPath), {
+      method: "POST",
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token,
+        "x-upsert": "true",
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao sobrescrever arquivo");
+          });
+        }
+
+        if (!existingImage) {
+          return fetch(backend.url + "/rest/v1/project_images", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Prefer: "return=representation",
+              apikey: backend.anonKey,
+              Authorization: "Bearer " + state.token
+            },
+            body: JSON.stringify({
+              project_id: project.id,
+              storage_path: nextPath,
+              kind: kind,
+              alt_text: null,
+              sort_order: sortOrder,
+              is_published: true
+            })
+          });
+        }
+
+        return fetch(backend.url + "/rest/v1/project_images?id=eq." + encodeURIComponent(existingImage.id), {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            apikey: backend.anonKey,
+            Authorization: "Bearer " + state.token
+          },
+          body: JSON.stringify({
+            storage_path: nextPath,
+            kind: kind,
+            sort_order: sortOrder
+          })
+        }).then(function (response) {
+          if (existingImage.storage_path && existingImage.storage_path !== nextPath) {
+            fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(existingImage.storage_path), {
+              method: "DELETE",
+              headers: {
+                apikey: backend.anonKey,
+                Authorization: "Bearer " + state.token
+              }
+            }).catch(function () {});
+          }
+          return response;
+        });
+      })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao atualizar registro da imagem");
+          });
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        if (!items || !items.length) return;
+        var storedImage = items[0];
+        if (!state.imagesByProject[project.id]) {
+          state.imagesByProject[project.id] = [];
+        }
+        var replaced = false;
+        state.imagesByProject[project.id] = state.imagesByProject[project.id].map(function (image) {
+          if (image.id === storedImage.id) {
+            replaced = true;
+            return storedImage;
+          }
+          return image;
+        });
+        if (!replaced) {
+          state.imagesByProject[project.id].push(storedImage);
+        }
+        state.imagesByProject[project.id] = sortProjectImages(state.imagesByProject[project.id]);
+      });
+  }
+
   function handleMediaListClick(event) {
     var saveButton = event.target.closest("[data-save-media]");
     if (saveButton) {
@@ -1749,6 +1901,10 @@
 
     if (report.createdProjects && report.createdProjects.length) {
       blocks.push(renderIntakeReportGroup("Projetos criados", report.createdProjects, "is-created"));
+    }
+
+    if (report.overwrittenProjects && report.overwrittenProjects.length) {
+      blocks.push(renderIntakeReportGroup("Projetos atualizados", report.overwrittenProjects, "is-created"));
     }
 
     if (report.duplicateIdentifiers && report.duplicateIdentifiers.length) {

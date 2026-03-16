@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316y">
+  <link rel="stylesheet" href="admin.css?v=20260316z">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -66,18 +66,20 @@
             <h2>Projetos</h2>
             <div class="admin-panel-meta">
               <span id="project-count">0</span>
-              <button class="admin-secondary-button" id="new-project-button" type="button">Upload</button>
             </div>
           </div>
-          <form class="admin-card admin-inline-form admin-intake-form" id="new-project-form" hidden>
+          <form class="admin-card admin-inline-form admin-intake-form" id="new-project-form">
             <p class="admin-copy">Selecione as thumbs e imagens dos projetos que devem entrar no portfolio.</p>
             <label class="admin-field">
               <span class="admin-label">Arquivos</span>
               <input class="admin-input" id="intake-files" type="file" accept="image/*" multiple>
             </label>
+            <label class="admin-toggle">
+              <input id="intake-overwrite" type="checkbox">
+              <span>Atualizar imagens de projetos já existentes quando o identificador interno coincidir</span>
+            </label>
             <div class="admin-inline-actions">
               <button class="admin-button" type="submit">Enviar arquivos</button>
-              <button class="admin-secondary-button" id="cancel-new-project-button" type="button">Cancelar</button>
             </div>
             <p class="admin-feedback" id="bulk-import-feedback" aria-live="polite"></p>
             <div class="admin-intake-report" id="intake-report" hidden></div>
@@ -318,7 +320,7 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260316y"></script>
-  <script src="admin.js?v=20260316y"></script>
+  <script src="backend.config.js?v=20260316z"></script>
+  <script src="admin.js?v=20260316z"></script>
 </body>
 </html>
