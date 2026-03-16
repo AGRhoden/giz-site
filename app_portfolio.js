@@ -1,4 +1,5 @@
 const CONFIG = window.GIZ_PORTFOLIO_CONFIG || {};
+const BACKEND_CONFIG = window.GIZ_BACKEND_CONFIG || {};
 const PAGES = Array.isArray(CONFIG.pages) ? CONFIG.pages : [];
 const FILTERS = Array.isArray(CONFIG.filters) ? CONFIG.filters : [];
 const PAGE_BY_ID = new Map(PAGES.map((page) => [page.id, page]));
@@ -114,6 +115,16 @@ function handlePanelClick(event) {
     state.portfolioMode = "intro";
     state.currentProject = null;
     renderPanel();
+    return;
+  }
+
+  if (action === "show-project-pairs") {
+    togglePairList(actionElement);
+    return;
+  }
+
+  if (action === "open-project-by-slug") {
+    openProjectBySlug(actionElement.dataset.projectSlug);
   }
 }
 
@@ -140,14 +151,9 @@ function handleViewerClick(event) {
 
 async function loadProjects() {
   try {
-    const response = await fetch("projetos.json");
-    if (!response.ok) {
-      throw new Error(`Falha ao carregar projetos.json (${response.status})`);
-    }
-
-    const payload = await response.json();
+    const payload = await fetchProjectsPayload();
     if (!Array.isArray(payload)) {
-      throw new Error("O arquivo projetos.json não contém uma lista de projetos.");
+      throw new Error("A fonte de dados do portfólio não retornou uma lista de projetos.");
     }
 
     state.projects = payload.map(normalizeProject);
@@ -160,6 +166,50 @@ async function loadProjects() {
     renderGridState("Nenhum projeto carregado", "Não foi possível carregar o acervo. Verifique o servidor local e o arquivo projetos.json.", "error");
     renderPanelState("Erro ao carregar conteúdo", "O portfólio não conseguiu ler os dados do acervo. Se você abriu o HTML diretamente do disco, tente servir a pasta por HTTP.", "error");
   }
+}
+
+async function fetchProjectsPayload() {
+  if (shouldUseSupabaseSource()) {
+    return loadProjectsFromSupabase();
+  }
+
+  return loadProjectsFromJson();
+}
+
+function shouldUseSupabaseSource() {
+  return Boolean(
+    BACKEND_CONFIG.enabled &&
+    BACKEND_CONFIG.url &&
+    BACKEND_CONFIG.anonKey
+  );
+}
+
+async function loadProjectsFromJson() {
+  const response = await fetch("projetos.json");
+  if (!response.ok) {
+    throw new Error(`Falha ao carregar projetos.json (${response.status})`);
+  }
+
+  return response.json();
+}
+
+async function loadProjectsFromSupabase() {
+  const url = new URL("/rest/v1/published_project_feed", BACKEND_CONFIG.url);
+  url.searchParams.set("select", "*");
+  url.searchParams.set("order", "published_at.desc.nullslast,created_at.desc");
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      apikey: BACKEND_CONFIG.anonKey,
+      Authorization: `Bearer ${BACKEND_CONFIG.anonKey}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Falha ao carregar feed do Supabase (${response.status})`);
+  }
+
+  return response.json();
 }
 
 async function preloadStaticPanels() {
@@ -177,22 +227,41 @@ async function preloadStaticPanels() {
 }
 
 function normalizeProject(item) {
-  const images = Array.isArray(item?.imagens)
-    ? item.imagens.map(cleanString).filter(Boolean)
+  const imageSource = item?.imagens ?? item?.images;
+  const images = Array.isArray(imageSource)
+    ? imageSource.map((image) => {
+      if (typeof image === "string") return cleanString(image);
+      return cleanString(image?.storage_path);
+    }).filter(Boolean)
     : [];
 
-  const thumb = cleanString(item?.thumb) || images[0] || "";
+  const thumb = cleanString(item?.thumb ?? item?.thumb_path) || images[0] || "";
+  const pairSource = item?.pairs;
+  const pairs = Array.isArray(pairSource)
+    ? pairSource.map((pair) => ({
+      slug: cleanString(pair?.slug),
+      titulo: cleanString(pair?.title ?? pair?.titulo) || formatLabel(cleanString(pair?.slug)),
+      subtitulo: cleanString(pair?.subtitle ?? pair?.subtitulo),
+      label: cleanString(pair?.label ?? pair?.label_override),
+      pairType: cleanString(pair?.pair_type)
+    })).filter((pair) => pair.slug)
+    : [];
+  const tagSource = item?.tags ?? item?.tag_slugs;
+  const tags = Array.isArray(tagSource)
+    ? tagSource.map((tag) => typeof tag === "string" ? cleanString(tag) : cleanString(tag?.slug)).filter(Boolean)
+    : [];
 
   return {
     slug: cleanString(item?.slug),
-    titulo: cleanString(item?.titulo) || formatLabel(cleanString(item?.slug)),
-    subtitulo: cleanString(item?.subtitulo),
-    descricao: cleanString(item?.descricao),
-    tipo: cleanString(item?.tipo),
-    cliente: cleanString(item?.cliente),
-    tags: Array.isArray(item?.tags) ? item.tags.map(cleanString).filter(Boolean) : [],
+    titulo: cleanString(item?.titulo ?? item?.title) || formatLabel(cleanString(item?.slug)),
+    subtitulo: cleanString(item?.subtitulo ?? item?.subtitle),
+    descricao: cleanString(item?.descricao ?? item?.description),
+    tipo: cleanString(item?.tipo ?? item?.project_type),
+    cliente: cleanString(item?.cliente ?? item?.client),
+    tags,
     thumb,
-    imagens: images
+    imagens: images,
+    pares: pairs
   };
 }
 
@@ -343,6 +412,32 @@ function closeViewer() {
   state.currentImageIndex = 0;
   renderViewer();
   renderPanel();
+}
+
+function openProjectBySlug(slug) {
+  const projectIndex = state.filtered.findIndex((project) => project.slug === slug);
+
+  if (projectIndex >= 0) {
+    openProject(projectIndex);
+    return;
+  }
+
+  const project = state.projects.find((item) => item.slug === slug);
+  if (!project) return;
+
+  state.currentProject = project;
+  state.currentImageIndex = 0;
+  renderViewer();
+  renderPanel();
+}
+
+function togglePairList(button) {
+  const wrapper = button.closest(".project-pairs");
+  const list = wrapper?.querySelector(".project-pairs-list");
+  if (!list) return;
+
+  const nextHidden = !list.hidden;
+  list.hidden = nextHidden;
 }
 
 function renderViewer() {
@@ -588,12 +683,40 @@ function renderProjectPanel() {
   const subtitle = project.subtitulo
     ? `<h2 class="titulo-secundario">${escapeHtml(project.subtitulo)}</h2>`
     : "";
+  const pairs = renderProjectPairs(project.pares);
 
   elements.panel.innerHTML = `
     <div class="panel-inner" style="display:block; min-height:auto;">
       <h1 class="titulo-principal">${escapeHtml(project.titulo)}</h1>
       ${subtitle}
       <p>${escapeHtml(description)}</p>
+      ${pairs}
+    </div>
+  `;
+}
+
+function renderProjectPairs(pairs) {
+  if (!Array.isArray(pairs) || !pairs.length) {
+    return "";
+  }
+
+  const label = pairs.length === 1 ? "Veja seu par" : "Veja seus pares";
+
+  return `
+    <div class="project-pairs">
+      <button type="button" class="panel-button" data-action="show-project-pairs">${escapeHtml(label)}</button>
+      <div class="project-pairs-list" hidden>
+        ${pairs.map((pair) => `
+          <button
+            type="button"
+            class="filtro-item"
+            data-action="open-project-by-slug"
+            data-project-slug="${escapeAttribute(pair.slug)}"
+          >
+            ${escapeHtml(pair.titulo)}
+          </button>
+        `).join("")}
+      </div>
     </div>
   `;
 }

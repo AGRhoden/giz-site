@@ -402,6 +402,21 @@ button {
   margin-top: 24px;
 }
 
+.project-pairs {
+  margin-top: 20px;
+}
+
+.project-pairs-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 12px;
+}
+
+.project-pairs-list[hidden] {
+  display: none;
+}
+
 .criterio {
   grid-area: criterio;
 }

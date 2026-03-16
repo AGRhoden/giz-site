@@ -29,6 +29,12 @@
 - The storage bucket migration was created locally, but the last `supabase db push` hit a temporary pooler authentication circuit breaker.
 - Re-run `supabase db push` later to confirm `project-media` bucket creation if it did not apply.
 
+## Frontend Preparedness
+- The frontend now supports an optional Supabase-backed source through `backend.config.js`.
+- If `window.GIZ_BACKEND_CONFIG.enabled = true`, the site will try to read from the `published_project_feed` view.
+- Fallback to local `projetos.json` remains active by default.
+- Project pair UI hooks are in place and will appear when pair data exists.
+
 ## Next Recommended Steps
 - Verify the bucket migration status and apply if still pending.
 - Add an import/update script for future batches.
