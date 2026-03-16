@@ -33,6 +33,7 @@
 
 ## Frontend Preparedness
 - The frontend reads published projects from `published_project_feed` through `backend.config.js`.
+- The frontend resolves Supabase `storage_path` values into public media URLs before rendering thumbs and gallery images.
 - Project pair UI hooks are in place and will appear when pair data exists.
 
 ## Next Recommended Steps
@@ -61,7 +62,7 @@
   - a simpler editorial flow based on saving the project state instead of action-heavy publication controls
   - visible publication state and published timestamp inside cadastro
   - uploading project media to the `project-media` bucket
-  - editing image type, alt text, sort order and publication state
+  - recognizing additional project images by filename convention such as `slug_thumb.jpg` and `slug_03.jpg`
   - removing uploaded media from storage and database
   - adding and removing project pairs through search + click
   - mirrored pair creation so linked projects stay reciprocal

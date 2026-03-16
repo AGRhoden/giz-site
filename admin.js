@@ -50,7 +50,6 @@
   var pairList = document.getElementById("pair-list");
   var mediaUploadForm = document.getElementById("media-upload-form");
   var mediaFiles = document.getElementById("media-files");
-  var mediaKind = document.getElementById("media-kind");
   var mediaUploadButton = document.getElementById("media-upload-button");
   var mediaList = document.getElementById("media-list");
   var newProjectForm = document.getElementById("new-project-form");
@@ -957,37 +956,18 @@
 
     mediaList.innerHTML = images.map(function (image) {
       var publicUrl = buildPublicMediaUrl(image.storage_path);
+      var label = image.kind === "thumb"
+        ? "Thumb"
+        : "Imagem " + String(Number(image.sort_order || 0) + 1).padStart(2, "0");
       return '' +
         '<article class="admin-media-item">' +
           '<img class="admin-media-preview" src="' + escapeHtml(publicUrl) + '" alt="' + escapeHtml(image.alt_text || "") + '">' +
           '<div class="admin-media-body">' +
             '<div class="admin-media-meta">' +
-              '<strong>' + escapeHtml(image.kind === "thumb" ? "Thumb" : "Galeria") + '</strong>' +
+              '<strong>' + escapeHtml(label) + '</strong>' +
               '<div class="admin-media-path">' + escapeHtml(image.storage_path) + '</div>' +
             '</div>' +
-            '<div class="admin-media-fields">' +
-              '<label class="admin-field">' +
-                '<span class="admin-label">Tipo</span>' +
-                '<select class="admin-input" data-media-kind="' + escapeHtml(image.id) + '">' +
-                  '<option value="gallery"' + (image.kind === "gallery" ? " selected" : "") + '>Galeria</option>' +
-                  '<option value="thumb"' + (image.kind === "thumb" ? " selected" : "") + '>Thumb</option>' +
-                '</select>' +
-              '</label>' +
-              '<label class="admin-field">' +
-                '<span class="admin-label">Alt</span>' +
-                '<input class="admin-input" data-media-alt="' + escapeHtml(image.id) + '" type="text" value="' + escapeHtml(image.alt_text || "") + '">' +
-              '</label>' +
-              '<label class="admin-field">' +
-                '<span class="admin-label">Ordem</span>' +
-                '<input class="admin-input" data-media-sort="' + escapeHtml(image.id) + '" type="number" value="' + escapeHtml(image.sort_order) + '">' +
-              '</label>' +
-              '<label class="admin-media-toggle">' +
-                '<input data-media-published="' + escapeHtml(image.id) + '" type="checkbox"' + (image.is_published ? " checked" : "") + '>' +
-                '<span>Publicada</span>' +
-              '</label>' +
-            '</div>' +
             '<div class="admin-media-actions">' +
-              '<button class="admin-secondary-button" type="button" data-save-media="' + escapeHtml(image.id) + '">Salvar midia</button>' +
               '<button class="admin-danger-button" type="button" data-remove-media="' + escapeHtml(image.id) + '">Remover midia</button>' +
             '</div>' +
           '</div>' +
@@ -1373,22 +1353,40 @@
 
     var project = getSelectedProject();
     var files = mediaFiles.files;
-    var kind = String(mediaKind.value || "gallery");
     if (!project || !files || !files.length) {
       setSaveState("Selecione ao menos uma imagem");
       return;
     }
 
-    setSaveState("Enviando imagens...");
+    var currentImages = state.imagesByProject[project.id] || [];
+    var uploads = [];
+    var invalidFiles = [];
 
-    var uploads = Array.prototype.map.call(files, function (file, index) {
-      return uploadSingleImage(project, file, kind, index);
+    Array.prototype.forEach.call(files, function (file) {
+      var parsed = parseIncomingFilename(file.name);
+      if (!parsed || parsed.slug !== project.slug) {
+        invalidFiles.push(file.name);
+        return;
+      }
+
+      uploads.push(overwritePreparedImage(project, currentImages, file, parsed.kind, parsed.sortOrder));
     });
+
+    if (!uploads.length) {
+      setSaveState("Os arquivos precisam seguir o nome do projeto, como " + project.slug + "_thumb.jpg ou " + project.slug + "_03.jpg");
+      return;
+    }
+
+    setSaveState("Enviando imagens...");
 
     Promise.all(uploads)
       .then(function () {
         mediaFiles.value = "";
-        setSaveState("Midia enviada");
+        if (invalidFiles.length) {
+          setSaveState("Imagens enviadas. Ignoradas: " + invalidFiles.join(", "));
+        } else {
+          setSaveState("Imagens enviadas");
+        }
         loadProjectImages(project.id);
       })
       .catch(function () {
@@ -1542,58 +1540,6 @@
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, " ")
       .trim();
-  }
-
-  function uploadSingleImage(project, file, kind, index) {
-    var nextPath = project.slug + "/" + Date.now() + "-" + index + "-" + sanitizeFilename(file.name);
-    var existingItems = state.imagesByProject[project.id] || [];
-    var nextSortOrder = existingItems.filter(function (item) {
-      return item.kind === kind;
-    }).length;
-
-    return fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(nextPath), {
-      method: "POST",
-      headers: {
-        apikey: backend.anonKey,
-        Authorization: "Bearer " + state.token,
-        "x-upsert": "false",
-        "Content-Type": file.type || "application/octet-stream"
-      },
-      body: file
-    })
-      .then(function (response) {
-        if (!response.ok) {
-          return response.json().then(function (payload) {
-            throw new Error(payload.message || payload.msg || "falha no upload");
-          });
-        }
-      })
-      .then(function () {
-        return fetch(backend.url + "/rest/v1/project_images", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Prefer: "return=representation",
-            apikey: backend.anonKey,
-            Authorization: "Bearer " + state.token
-          },
-          body: JSON.stringify({
-            project_id: project.id,
-            storage_path: nextPath,
-            kind: kind,
-            alt_text: null,
-            sort_order: nextSortOrder,
-            is_published: true
-          })
-        });
-      })
-      .then(function (response) {
-        if (!response.ok) {
-          return response.json().then(function (payload) {
-            throw new Error(payload.message || payload.msg || "falha ao registrar imagem");
-          });
-        }
-      });
   }
 
   function uploadPreparedImage(project, file, kind, sortOrder) {
@@ -1789,64 +1735,10 @@
   }
 
   function handleMediaListClick(event) {
-    var saveButton = event.target.closest("[data-save-media]");
-    if (saveButton) {
-      handleMediaMetadataSave(saveButton.getAttribute("data-save-media"));
-      return;
-    }
-
     var removeButton = event.target.closest("[data-remove-media]");
     if (removeButton) {
       handleMediaRemoval(removeButton.getAttribute("data-remove-media"));
     }
-  }
-
-  function handleMediaMetadataSave(imageId) {
-    var project = getSelectedProject();
-    var image = getProjectImageById(project && project.id, imageId);
-    if (!project || !image) return;
-
-    var nextKind = getValue("[data-media-kind=\"" + cssEscape(imageId) + "\"]");
-    var nextAlt = getValue("[data-media-alt=\"" + cssEscape(imageId) + "\"]");
-    var nextSortOrder = Number(getValue("[data-media-sort=\"" + cssEscape(imageId) + "\"]") || 0);
-    var nextPublished = getChecked("[data-media-published=\"" + cssEscape(imageId) + "\"]");
-
-    setSaveState("Salvando midia...");
-
-    fetch(backend.url + "/rest/v1/project_images?id=eq." + encodeURIComponent(imageId), {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-        apikey: backend.anonKey,
-        Authorization: "Bearer " + state.token
-      },
-      body: JSON.stringify({
-        kind: nextKind,
-        alt_text: nextAlt || null,
-        sort_order: nextSortOrder,
-        is_published: Boolean(nextPublished)
-      })
-    })
-      .then(function (response) {
-        if (!response.ok) {
-          return response.json().then(function (payload) {
-            throw new Error(payload.message || payload.msg || "falha ao salvar midia");
-          });
-        }
-        return response.json();
-      })
-      .then(function (items) {
-        if (items && items.length) {
-          replaceProjectImage(project.id, items[0]);
-          renderMediaList();
-          syncPublicationChecklist(project);
-        }
-        setSaveState("Midia salva");
-      })
-      .catch(function () {
-        setSaveState("Erro ao salvar midia");
-      });
   }
 
   function handleMediaRemoval(imageId) {
@@ -2311,20 +2203,6 @@
       .toLowerCase()
       .replace(/[^a-z0-9.\-_]+/g, "-")
       .replace(/-{2,}/g, "-");
-  }
-
-  function getValue(selector) {
-    var element = document.querySelector(selector);
-    return element ? String(element.value || "") : "";
-  }
-
-  function getChecked(selector) {
-    var element = document.querySelector(selector);
-    return element ? Boolean(element.checked) : false;
-  }
-
-  function cssEscape(value) {
-    return String(value || "").replace(/"/g, '\\"');
   }
 
   function resolvePublishedAt(project, nextStatus) {

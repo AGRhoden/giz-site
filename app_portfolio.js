@@ -209,12 +209,12 @@ function normalizeProject(item) {
   const imageSource = item?.imagens ?? item?.images;
   const images = Array.isArray(imageSource)
     ? imageSource.map((image) => {
-      if (typeof image === "string") return cleanString(image);
-      return cleanString(image?.storage_path);
+      if (typeof image === "string") return resolveProjectMediaUrl(cleanString(image));
+      return resolveProjectMediaUrl(cleanString(image?.storage_path));
     }).filter(Boolean)
     : [];
 
-  const thumb = cleanString(item?.thumb ?? item?.thumb_path) || images[0] || "";
+  const thumb = resolveProjectMediaUrl(cleanString(item?.thumb ?? item?.thumb_path)) || images[0] || "";
   const pairSource = item?.pairs;
   const pairs = Array.isArray(pairSource)
     ? pairSource.map((pair) => ({
@@ -246,6 +246,21 @@ function normalizeProject(item) {
 
 function cleanString(value) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function resolveProjectMediaUrl(value) {
+  const path = cleanString(value);
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+  if (!BACKEND_CONFIG.url) return path;
+  return `${BACKEND_CONFIG.url}/storage/v1/object/public/project-media/${encodeStoragePath(path)}`;
+}
+
+function encodeStoragePath(storagePath) {
+  return String(storagePath || "")
+    .split("/")
+    .map((part) => encodeURIComponent(part))
+    .join("/");
 }
 
 function shuffle(array) {

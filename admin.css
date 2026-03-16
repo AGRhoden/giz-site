@@ -550,7 +550,7 @@ select {
 
 .admin-media-upload {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 180px auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   align-items: end;
 }
@@ -594,21 +594,6 @@ select {
   color: var(--admin-muted);
   font-size: 13px;
   word-break: break-all;
-}
-
-.admin-media-fields {
-  display: grid;
-  grid-template-columns: 160px minmax(0, 1fr) 120px auto;
-  gap: 10px;
-  align-items: end;
-}
-
-.admin-media-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--admin-muted);
-  font-size: 14px;
 }
 
 .admin-media-actions {
