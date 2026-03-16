@@ -153,7 +153,7 @@
       state.imagesByProject = {};
       state.projectTagsByProject = {};
       state.editorialFlagsByProject = {};
-      mediaUploadForm.hidden = true;
+      setHidden(mediaUploadForm, true);
       pairResults.innerHTML = "";
       pairList.innerHTML = "";
       mediaList.innerHTML = "";
@@ -190,19 +190,24 @@
     window.history.replaceState({}, document.title, cleanUrl);
   }
 
+  function setHidden(node, value) {
+    if (!node) return;
+    node.hidden = value;
+  }
+
   function renderAuthState() {
     var isLoggedIn = Boolean(state.token);
-    authScreen.hidden = isLoggedIn;
-    adminApp.hidden = !isLoggedIn;
-    authScreen.style.display = isLoggedIn ? "none" : "grid";
-    adminApp.style.display = isLoggedIn ? "block" : "none";
+    setHidden(authScreen, isLoggedIn);
+    setHidden(adminApp, !isLoggedIn);
+    if (authScreen) authScreen.style.display = isLoggedIn ? "none" : "grid";
+    if (adminApp) adminApp.style.display = isLoggedIn ? "block" : "none";
     sessionEmail.textContent = state.sessionEmail || "sessao ativa";
 
     if (!isLoggedIn) {
       projectCount.textContent = "0";
       projectList.innerHTML = "";
-      editorEmpty.hidden = false;
-      editorForm.hidden = true;
+      setHidden(editorEmpty, false);
+      setHidden(editorForm, true);
       renderEditorTabs();
       updatePublicationPanel(null);
       setSaveState("Pronto");
@@ -581,16 +586,16 @@
   function renderEditor() {
     var project = getSelectedProject();
     if (!project) {
-      editorEmpty.hidden = false;
-      editorForm.hidden = true;
+      setHidden(editorEmpty, false);
+      setHidden(editorForm, true);
       renderEditorTabs();
       updatePublicationPanel(null);
       return;
     }
 
-    editorEmpty.hidden = true;
-    editorForm.hidden = false;
-    mediaUploadForm.hidden = false;
+    setHidden(editorEmpty, true);
+    setHidden(editorForm, false);
+    setHidden(mediaUploadForm, false);
     renderEditorTabs();
     editorSlug.textContent = project.slug;
     editorTitle.textContent = project.title;
@@ -1880,7 +1885,7 @@
   function renderIntakeReport(report) {
     if (!intakeReport) return;
     if (!report) {
-      intakeReport.hidden = true;
+      setHidden(intakeReport, true);
       intakeReport.innerHTML = "";
       return;
     }
@@ -1907,7 +1912,7 @@
       blocks.push(renderIntakeReportGroup("Arquivos fora do padrao", report.invalidFiles, "is-error"));
     }
 
-    intakeReport.hidden = !blocks.length;
+    setHidden(intakeReport, !blocks.length);
     intakeReport.innerHTML = blocks.join("");
   }
 
@@ -1944,7 +1949,7 @@
     editorSections.forEach(function (section) {
       var isActive = section.getAttribute("data-editor-section") === activeSection;
       section.classList.toggle("is-active", isActive);
-      section.hidden = !isActive;
+      setHidden(section, !isActive);
     });
   }
 
