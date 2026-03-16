@@ -18,6 +18,7 @@
   var editorEmpty = document.getElementById("editor-empty");
   var editorForm = document.getElementById("editor-form");
   var saveProjectButton = document.getElementById("save-project-button");
+  var deleteProjectButton = document.getElementById("delete-project-button");
   var editorTabs = Array.prototype.slice.call(document.querySelectorAll("[data-editor-tab]"));
   var editorSections = Array.prototype.slice.call(document.querySelectorAll("[data-editor-section]"));
   var editorSlug = document.getElementById("editor-slug");
@@ -116,6 +117,7 @@
   editorForm.addEventListener("click", handleEditorTabClick);
   editorForm.addEventListener("submit", handleProjectSave);
   saveProjectButton.addEventListener("click", handleProjectSave);
+  deleteProjectButton.addEventListener("click", handleProjectDeletion);
   newProjectForm.addEventListener("submit", handleIntakeUpload);
   mediaUploadButton.addEventListener("click", handleMediaUpload);
   mediaList.addEventListener("click", handleMediaListClick);
@@ -622,6 +624,61 @@
   function handleProjectSave(event) {
     if (event && event.preventDefault) event.preventDefault();
     persistCurrentProject();
+  }
+
+  function handleProjectDeletion() {
+    var project = getSelectedProject();
+    if (!project) return;
+
+    var confirmation = window.prompt('Digite "' + project.slug + '" para excluir este projeto.');
+    if (confirmation === null) return;
+
+    if (sanitizeSlug(confirmation) !== project.slug) {
+      setSaveState("Exclusao cancelada");
+      return;
+    }
+
+    setSaveState("Excluindo projeto...");
+
+    loadProjectImagesSnapshot(project.id)
+      .then(function (images) {
+        return Promise.allSettled((images || []).map(function (image) {
+          return deleteStorageObject(image.storage_path);
+        }));
+      })
+      .then(function () {
+        return fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(project.id), {
+          method: "DELETE",
+          headers: {
+            apikey: backend.anonKey,
+            Authorization: "Bearer " + state.token
+          }
+        });
+      })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao excluir projeto");
+          });
+        }
+
+        state.projects = state.projects.filter(function (item) {
+          return item.id !== project.id;
+        });
+        delete state.imagesByProject[project.id];
+        delete state.projectTagsByProject[project.id];
+        delete state.editorialFlagsByProject[project.id];
+        state.pairs = state.pairs.filter(function (pair) {
+          return pair.project_id !== project.id && pair.paired_project_id !== project.id;
+        });
+        state.selectedProjectId = null;
+        applyFilters();
+        renderEditor();
+        window.alert("Projeto excluido.");
+      })
+      .catch(function () {
+        setSaveState("Erro ao excluir projeto");
+      });
   }
 
   function persistCurrentProject(forcedStatus) {
@@ -1799,20 +1856,8 @@
 
     setSaveState("Removendo midia...");
 
-    fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(image.storage_path), {
-      method: "DELETE",
-      headers: {
-        apikey: backend.anonKey,
-        Authorization: "Bearer " + state.token
-      }
-    })
+    deleteStorageObject(image.storage_path)
       .then(function (response) {
-        if (!response.ok) {
-          return response.json().then(function (payload) {
-            throw new Error(payload.message || payload.msg || "falha ao remover arquivo");
-          });
-        }
-
         return fetch(backend.url + "/rest/v1/project_images?id=eq." + encodeURIComponent(imageId), {
           method: "DELETE",
           headers: {
@@ -1834,6 +1879,22 @@
       })
       .catch(function () {
         setSaveState("Erro ao remover midia");
+      });
+  }
+
+  function deleteStorageObject(storagePath) {
+    return fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(storagePath), {
+      method: "DELETE",
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    })
+      .then(function (response) {
+        if (response.ok || response.status === 404) return response;
+        return response.json().then(function (payload) {
+          throw new Error(payload.message || payload.msg || "falha ao remover arquivo");
+        });
       });
   }
 
