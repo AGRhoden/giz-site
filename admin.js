@@ -162,12 +162,14 @@ async function handleAuthSubmit(event) {
     setAuthFeedback(`Nao foi possivel enviar o acesso: ${error.message}`, true);
     authSubmitButton.disabled = false;
     authSubmitButton.textContent = "Enviar acesso";
+    window.alert(`Nao foi possivel enviar o acesso:\n\n${error.message}`);
     return;
   }
 
   setAuthFeedback(`Link enviado para ${email}. Abra o e-mail e clique em "Log In".`, false);
   authSubmitButton.disabled = false;
   authSubmitButton.textContent = "Reenviar acesso";
+  window.alert(`Link enviado para ${email}.\n\nAbra o e-mail e clique em "Log In".`);
 }
 
 async function handleLogout() {
