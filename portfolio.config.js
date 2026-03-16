@@ -1,0 +1,73 @@
+window.GIZ_PORTFOLIO_CONFIG = {
+  defaultPageId: "inicio",
+  portfolioPageId: "portfolio",
+  pages: [
+    { id: "inicio", label: "Início", content: "inicio.html" },
+    { id: "portfolio", label: "Portfólio", content: "portfolio.html" },
+    { id: "quem", label: "Quem somos", content: "quem-somos.html" },
+    { id: "contato", label: "Contato", content: "contato.html" }
+  ],
+  filters: [
+    { id: "editoras", label: "Editoras", source: "cliente", mode: "value" },
+    { id: "temas", label: "Temas", source: "tags", mode: "list", excludeSet: "colorTags" },
+    { id: "cores", label: "Cores", source: "tags", mode: "list", includeSet: "colorTags" },
+    { id: "revistas", label: "Revistas", source: "tipo", mode: "value", fixedOptions: ["revista"] },
+    { id: "especiais", label: "Projetos especiais", source: "tipo", mode: "value", fixedOptions: ["especial"] }
+  ],
+  tagSets: {
+    colorTags: [
+      "preto",
+      "branco",
+      "cinza",
+      "grafite",
+      "verde",
+      "azul",
+      "turquesa",
+      "vermelho",
+      "vinho",
+      "amarelo",
+      "ocre",
+      "laranja",
+      "rosa",
+      "roxo",
+      "marrom",
+      "bege",
+      "creme",
+      "dourado",
+      "prata"
+    ]
+  },
+  labels: {
+    ilustracoes: "Ilustrações",
+    "projeto-grafico": "Projeto gráfico",
+    infantil: "Infantil",
+    ilustrado: "Ilustrado",
+    lettering: "Lettering",
+    mitologia: "Mitologia",
+    gaiman: "Gaiman",
+    preto: "Preto",
+    branco: "Branco",
+    cinza: "Cinza",
+    grafite: "Grafite",
+    verde: "Verde",
+    azul: "Azul",
+    turquesa: "Turquesa",
+    vermelho: "Vermelho",
+    vinho: "Vinho",
+    amarelo: "Amarelo",
+    ocre: "Ocre",
+    laranja: "Laranja",
+    rosa: "Rosa",
+    roxo: "Roxo",
+    marrom: "Marrom",
+    bege: "Bege",
+    creme: "Creme",
+    dourado: "Dourado",
+    prata: "Prata",
+    hq: "HQ",
+    revista: "Revistas",
+    especial: "Projetos especiais",
+    intrinseca: "Intrínseca",
+    permanencia: "Permanência"
+  }
+};

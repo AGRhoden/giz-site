@@ -1,0 +1,24 @@
+alchimised|livro|intrinseca|preto
+algumdia|livro|intrinseca|infantil,ilustrado,amarelo
+casasestranhas1|livro|intrinseca|branco
+casasestranhas2|livro|intrinseca|preto
+feitico|livro|intrinseca|vermelho
+kamala|livro|intrinseca|azul
+katabasis|livro|intrinseca|verde
+medusa|livro|intrinseca|mitologia,verde
+origemdasespecies|livro|intrinseca|lettering,verde
+rachelprize|livro|intrinseca|lettering,bege
+sorria|hq|intrinseca|lettering,verde
+anatomia|livro|intrinseca|lettering,vermelho
+elephant|livro|intrinseca|infantil,lettering,verde
+oceano|livro|intrinseca|infantil,azul,lettering,projeto-grafico
+todomundonaminhafamilia|livro|intrinseca|branco
+cinnamon|livro|intrinseca|infantil,lettering,verde
+killjoy|livro|intrinseca|lettering,branco
+visaonoturna|livro|intrinseca|ilustracoes,projeto-grafico,vermelho
+deuses3|hq|intrinseca|lettering,branco, gaiman
+bluebarry|livro|intrinseca|infantil,lettering,gaiman,amarelo
+cabelodoido|livro|intrinseca|infantil,lettering,branco,gaiman
+coisasfrageis|livro|intrinseca|lettering,gaiman,azul
+alfabetoperigoso|livro|intrinseca|infantil,lettering,gaiman,bege
+ultimodemonio|livro|intrinseca|lettering,roxo
