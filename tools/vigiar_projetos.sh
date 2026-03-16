@@ -2,7 +2,10 @@
 
 echo "Watcher ativo — monitorando projetos e planilha"
 
-cd "$(dirname "$0")" || exit 1
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+cd "$PROJECT_DIR" || exit 1
 
 ultimo=""
 
@@ -19,7 +22,7 @@ while true; do
 
   if [[ "$atual" != "$ultimo" ]]; then
     echo "Alteração detectada -> regenerando JSON"
-    python3 gerar_projetos_json.py
+    python3 tools/gerar_projetos_json.py
     ultimo="$atual"
   fi
 

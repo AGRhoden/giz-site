@@ -43,7 +43,7 @@
 - Define how paired projects will be created and edited in the future admin flow.
 
 ## Admin Progress
-- Added a first admin surface at `/admin.html`.
+- Added a first admin surface at `/admin`.
 - Admin currently supports:
   - email-based magic link login
   - restricted admin access through an explicit admin allowlist

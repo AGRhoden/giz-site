@@ -3,7 +3,8 @@ import json
 import re
 from openpyxl import load_workbook
 
-BASE_DIR = Path(__file__).resolve().parent
+TOOLS_DIR = Path(__file__).resolve().parent
+BASE_DIR = TOOLS_DIR.parent
 PROJETOS_DIR = BASE_DIR / "assets" / "projetos"
 JSON_PATH = BASE_DIR / "projetos.json"
 XLSX_PATH = BASE_DIR / "projetos_metadata.xlsx"
