@@ -30,6 +30,8 @@
             <div><strong>Sessao:</strong> <span id="debug-session">sem sessao</span></div>
             <div><strong>Projetos:</strong> <span id="debug-projects">0</span></div>
             <div><strong>Ultimo erro:</strong> <span id="debug-error">nenhum</span></div>
+            <div><strong>SDK:</strong> <span id="debug-sdk">desconhecido</span></div>
+            <div><strong>Admin JS:</strong> <span id="debug-adminjs">desconhecido</span></div>
           </div>
         </details>
       </div>
@@ -171,8 +173,11 @@
   <script>
     document.getElementById('debug-stage').textContent = 'inline-html-ok';
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="backend.config.js?v=20260316h"></script>
-  <script src="admin.js?v=20260316h"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="document.getElementById('debug-sdk').textContent='sdk-carregado'" onerror="document.getElementById('debug-sdk').textContent='sdk-falhou'; document.getElementById('debug-error').textContent='falha ao carregar supabase-js';"></script>
+  <script>
+    document.getElementById('debug-sdk').textContent = window.supabase ? 'sdk-global-ok' : document.getElementById('debug-sdk').textContent;
+  </script>
+  <script src="backend.config.js?v=20260316i" onload="document.getElementById('debug-adminjs').textContent='config-carregada'" onerror="document.getElementById('debug-adminjs').textContent='config-falhou'; document.getElementById('debug-error').textContent='falha ao carregar backend.config.js';"></script>
+  <script src="admin.js?v=20260316i" onload="document.getElementById('debug-adminjs').textContent = window.__gizAdminInlineClick ? 'adminjs-ok' : 'adminjs-sem-handler'" onerror="document.getElementById('debug-adminjs').textContent='adminjs-falhou'; document.getElementById('debug-error').textContent='falha ao carregar admin.js';"></script>
 </body>
 </html>
