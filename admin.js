@@ -129,12 +129,7 @@ function initializeAdmin() {
     });
   });
 
-  authSubmitButton.addEventListener("click", () => {
-    updateDebug({
-      stage: "click-submit",
-      error: "nenhum"
-    });
-  });
+  authSubmitButton.addEventListener("click", handleAuthButtonClick);
 
   authForm.addEventListener("invalid", () => {
     updateDebug({
@@ -256,14 +251,33 @@ function clearAuthHash() {
 
 async function handleAuthSubmit(event) {
   event.preventDefault();
+  await submitAuthRequest();
+}
+
+async function handleAuthButtonClick() {
+  updateDebug({
+    stage: "click-submit",
+    error: "nenhum"
+  });
+
+  await submitAuthRequest();
+}
+
+async function submitAuthRequest() {
   updateDebug({
     stage: "submit-handler",
     error: "nenhum"
   });
 
-  const form = new FormData(authForm);
-  const email = String(form.get("email") || "").trim().toLowerCase();
-  if (!email) return;
+  const email = authForm.elements.email?.value?.trim().toLowerCase() || "";
+  if (!email || !email.includes("@")) {
+    setAuthFeedback("Digite um e-mail valido.", true);
+    updateDebug({
+      stage: "form-invalid",
+      error: "e-mail invalido ou ausente"
+    });
+    return;
+  }
 
   setAuthFeedback("Enviando magic link...", false);
   updateDebug({

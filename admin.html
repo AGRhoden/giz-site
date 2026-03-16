@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316e">
+  <link rel="stylesheet" href="admin.css?v=20260316f">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -16,10 +16,10 @@
         <p class="admin-copy">
           Entre com seu e-mail para receber um magic link e gerenciar o portfólio.
         </p>
-        <form id="auth-form" class="admin-form">
+        <form id="auth-form" class="admin-form" novalidate>
           <label class="admin-label" for="email">E-mail</label>
           <input class="admin-input" id="email" name="email" type="email" required>
-          <button class="admin-button" id="auth-submit-button" type="submit">Enviar acesso</button>
+          <button class="admin-button" id="auth-submit-button" type="button">Enviar acesso</button>
         </form>
         <p class="admin-feedback" id="auth-feedback" aria-live="polite"></p>
         <details class="admin-debug" open>
@@ -169,7 +169,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="backend.config.js?v=20260316e"></script>
-  <script src="admin.js?v=20260316e"></script>
+  <script src="backend.config.js?v=20260316f"></script>
+  <script src="admin.js?v=20260316f"></script>
 </body>
 </html>
