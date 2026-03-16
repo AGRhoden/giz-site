@@ -1886,11 +1886,13 @@
   }
 
   function setBulkImportFeedback(message, isError) {
+    if (!bulkImportFeedback) return;
     bulkImportFeedback.textContent = message;
     bulkImportFeedback.classList.toggle("is-error", Boolean(isError));
   }
 
   function renderIntakeReport(report) {
+    if (!intakeReport) return;
     if (!report) {
       intakeReport.hidden = true;
       intakeReport.innerHTML = "";
