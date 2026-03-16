@@ -132,6 +132,10 @@ select {
   color: var(--admin-muted);
 }
 
+.admin-feedback.is-error {
+  color: var(--admin-danger);
+}
+
 .admin-topbar {
   display: flex;
   justify-content: space-between;

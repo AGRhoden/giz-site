@@ -1,11 +1,43 @@
 const backend = window.GIZ_BACKEND_CONFIG || {};
-const { createClient } = window.supabase;
+const supabaseBrowser = window.supabase;
 
-if (!backend.url || !backend.anonKey) {
-  throw new Error("Backend config ausente para o admin.");
-}
+const PROJECT_SELECT = `
+  id,
+  slug,
+  title,
+  subtitle,
+  description,
+  client,
+  project_type,
+  status,
+  project_pairs (
+    id,
+    project_id,
+    pair_type,
+    label_override,
+    paired_project_id,
+    paired:projects!project_pairs_paired_project_id_fkey (
+      id,
+      slug,
+      title,
+      subtitle
+    )
+  )
+`;
 
-const supabase = createClient(backend.url, backend.anonKey);
+const PAIR_SELECT = `
+  id,
+  project_id,
+  pair_type,
+  label_override,
+  paired_project_id,
+  paired:projects!project_pairs_paired_project_id_fkey (
+    id,
+    slug,
+    title,
+    subtitle
+  )
+`;
 
 const adminState = {
   session: null,
@@ -46,31 +78,56 @@ const pairResults = document.getElementById("pair-results");
 const addPairButton = document.getElementById("add-pair-button");
 const pairList = document.getElementById("pair-list");
 
-authForm.addEventListener("submit", handleAuthSubmit);
-logoutButton.addEventListener("click", handleLogout);
-projectSearch.addEventListener("input", applyProjectFilters);
-statusFilter.addEventListener("change", applyProjectFilters);
-projectList.addEventListener("click", handleProjectSelection);
-newProjectButton.addEventListener("click", toggleNewProjectForm);
-newProjectForm.addEventListener("submit", handleCreateProject);
-cancelNewProjectButton.addEventListener("click", toggleNewProjectForm);
-editorForm.addEventListener("submit", handleProjectSave);
-pairSearch.addEventListener("input", renderPairCandidates);
-addPairButton.addEventListener("click", handleAddPair);
-pairList.addEventListener("click", handleRemovePair);
+let supabase = null;
 
-boot();
+initializeAdmin();
+
+function initializeAdmin() {
+  if (!backend.url || !backend.anonKey) {
+    setAuthFeedback("Backend config ausente no admin.", true);
+    return;
+  }
+
+  if (!supabaseBrowser?.createClient) {
+    setAuthFeedback("Biblioteca do Supabase nao carregou. Recarregue a pagina.", true);
+    return;
+  }
+
+  supabase = supabaseBrowser.createClient(backend.url, backend.anonKey);
+
+  authForm.addEventListener("submit", handleAuthSubmit);
+  logoutButton.addEventListener("click", handleLogout);
+  projectSearch.addEventListener("input", applyProjectFilters);
+  statusFilter.addEventListener("change", applyProjectFilters);
+  projectList.addEventListener("click", handleProjectSelection);
+  newProjectButton.addEventListener("click", toggleNewProjectForm);
+  newProjectForm.addEventListener("submit", handleCreateProject);
+  cancelNewProjectButton.addEventListener("click", toggleNewProjectForm);
+  editorForm.addEventListener("submit", handleProjectSave);
+  pairSearch.addEventListener("input", renderPairCandidates);
+  addPairButton.addEventListener("click", handleAddPair);
+  pairList.addEventListener("click", handleRemovePair);
+
+  boot();
+}
 
 async function boot() {
-  const { data } = await supabase.auth.getSession();
-  adminState.session = data.session;
+  const { data, error } = await supabase.auth.getSession();
+
+  if (error) {
+    console.error(error);
+    setAuthFeedback(`Falha ao iniciar sessao: ${error.message}`, true);
+  }
+
+  adminState.session = data?.session || null;
   updateAuthUI();
 
-  supabase.auth.onAuthStateChange((_event, session) => {
+  supabase.auth.onAuthStateChange(async (_event, session) => {
     adminState.session = session;
     updateAuthUI();
+
     if (session) {
-      loadProjects();
+      await loadProjects();
     }
   });
 
@@ -81,22 +138,29 @@ async function boot() {
 
 async function handleAuthSubmit(event) {
   event.preventDefault();
+
   const form = new FormData(authForm);
-  const email = String(form.get("email") || "").trim();
+  const email = String(form.get("email") || "").trim().toLowerCase();
   if (!email) return;
 
-  authFeedback.textContent = "Enviando magic link...";
+  setAuthFeedback("Enviando magic link...", false);
 
+  const redirectUrl = new URL("/admin", window.location.origin).toString();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: window.location.origin + window.location.pathname
+      shouldCreateUser: false,
+      emailRedirectTo: redirectUrl
     }
   });
 
-  authFeedback.textContent = error
-    ? `Nao foi possivel enviar o acesso: ${error.message}`
-    : "Link enviado. Abra o e-mail e volte para esta tela.";
+  if (error) {
+    console.error(error);
+    setAuthFeedback(`Nao foi possivel enviar o acesso: ${error.message}`, true);
+    return;
+  }
+
+  setAuthFeedback("Link enviado. Abra o e-mail e volte para esta tela.", false);
 }
 
 async function handleLogout() {
@@ -105,6 +169,7 @@ async function handleLogout() {
 
 function updateAuthUI() {
   const isLoggedIn = Boolean(adminState.session);
+
   authScreen.hidden = isLoggedIn;
   adminApp.hidden = !isLoggedIn;
   sessionEmail.textContent = adminState.session?.user?.email || "";
@@ -117,52 +182,31 @@ function updateAuthUI() {
     projectCount.textContent = "0";
     editorEmpty.hidden = false;
     editorForm.hidden = true;
+    setAuthFeedback("Entre com um e-mail autorizado para acessar o painel.", false);
   }
 }
 
 async function loadProjects() {
   const { data, error } = await supabase
     .from("projects")
-    .select(`
-      id,
-      slug,
-      title,
-      subtitle,
-      description,
-      client,
-      project_type,
-      status,
-      project_pairs (
-        id,
-        pair_type,
-        label_override,
-        paired_project_id,
-        paired:projects!project_pairs_paired_project_id_fkey (
-          id,
-          slug,
-          title,
-          subtitle
-        )
-      )
-    `)
+    .select(PROJECT_SELECT)
     .order("title", { ascending: true });
 
   if (error) {
     console.error(error);
     projectList.innerHTML = `<div class="admin-card">Nao foi possivel carregar os projetos.</div>`;
+    setSaveState("Erro ao carregar projetos", false);
     return;
   }
 
   adminState.projects = data || [];
   adminState.filteredProjects = [...adminState.projects];
-  applyProjectFilters();
 
   if (!adminState.selectedProjectId && adminState.filteredProjects.length) {
     adminState.selectedProjectId = adminState.filteredProjects[0].id;
   }
 
-  renderProjectList();
-  renderEditor();
+  applyProjectFilters();
 }
 
 function toggleNewProjectForm() {
@@ -267,6 +311,7 @@ function getSelectedProject() {
 
 async function handleProjectSave(event) {
   event.preventDefault();
+
   const project = getSelectedProject();
   if (!project) return;
 
@@ -285,21 +330,16 @@ async function handleProjectSave(event) {
     .from("projects")
     .update(payload)
     .eq("id", project.id)
-    .select()
+    .select(PROJECT_SELECT)
     .single();
 
   if (error) {
     console.error(error);
-    setSaveState("Erro ao salvar", false);
+    setSaveState(`Erro ao salvar: ${error.message}`, false);
     return;
   }
 
-  const index = adminState.projects.findIndex((item) => item.id === project.id);
-  adminState.projects[index] = {
-    ...adminState.projects[index],
-    ...data
-  };
-
+  replaceProject(data);
   applyProjectFilters();
   setSaveState("Salvo", false);
 }
@@ -324,28 +364,7 @@ async function handleCreateProject(event) {
       title,
       status: "draft"
     })
-    .select(`
-      id,
-      slug,
-      title,
-      subtitle,
-      description,
-      client,
-      project_type,
-      status,
-      project_pairs (
-        id,
-        pair_type,
-        label_override,
-        paired_project_id,
-        paired:projects!project_pairs_paired_project_id_fkey (
-          id,
-          slug,
-          title,
-          subtitle
-        )
-      )
-    `)
+    .select(PROJECT_SELECT)
     .single();
 
   if (error) {
@@ -354,9 +373,11 @@ async function handleCreateProject(event) {
     return;
   }
 
-  adminState.projects = [...adminState.projects, data].sort((a, b) => a.title.localeCompare(b.title, "pt-BR"));
+  adminState.projects = [...adminState.projects, data].sort((left, right) => {
+    return left.title.localeCompare(right.title, "pt-BR");
+  });
   adminState.selectedProjectId = data.id;
-  toggleNewProjectForm();
+  newProjectForm.hidden = true;
   applyProjectFilters();
   setSaveState("Draft criado", false);
 }
@@ -382,7 +403,9 @@ function renderPairCandidates() {
 
   pairResults.innerHTML = adminState.pairCandidates
     .slice(0, 50)
-    .map((candidate) => `<option value="${candidate.id}">${escapeHtml(candidate.title)} (${escapeHtml(candidate.slug)})</option>`)
+    .map((candidate) => {
+      return `<option value="${candidate.id}">${escapeHtml(candidate.title)} (${escapeHtml(candidate.slug)})</option>`;
+    })
     .join("");
 }
 
@@ -411,24 +434,11 @@ async function handleAddPair() {
     .upsert(pairPayload, {
       onConflict: "project_id,paired_project_id,pair_type"
     })
-    .select(`
-      id,
-      project_id,
-      pair_type,
-      label_override,
-      paired_project_id,
-      paired:projects!project_pairs_paired_project_id_fkey (
-        id,
-        slug,
-        title,
-        subtitle
-      )
-    `)
-    .single();
+    .select(PAIR_SELECT);
 
   if (error) {
     console.error(error);
-    setSaveState("Erro ao salvar pares", false);
+    setSaveState(`Erro ao salvar pares: ${error.message}`, false);
     return;
   }
 
@@ -436,7 +446,10 @@ async function handleAddPair() {
   const reversePair = (data || []).find((pair) => pair.project_id === pairedProjectId);
 
   if (forwardPair) {
-    project.project_pairs = [...(project.project_pairs || []).filter((pair) => pair.id !== forwardPair.id), forwardPair];
+    project.project_pairs = [
+      ...(project.project_pairs || []).filter((pair) => pair.id !== forwardPair.id),
+      forwardPair
+    ];
   }
 
   const pairedProject = adminState.projects.find((candidate) => candidate.id === pairedProjectId);
@@ -495,13 +508,13 @@ async function handleRemovePair(event) {
 
   if (error) {
     console.error(error);
-    setSaveState("Erro ao remover", false);
+    setSaveState(`Erro ao remover: ${error.message}`, false);
     return;
   }
 
-  project.project_pairs = (project.project_pairs || []).filter((pair) => pair.id !== pairId);
-  const pairedProject = adminState.projects.find((candidate) => candidate.id === pair.paired_project_id);
+  project.project_pairs = (project.project_pairs || []).filter((item) => item.id !== pairId);
 
+  const pairedProject = adminState.projects.find((candidate) => candidate.id === pair.paired_project_id);
   if (pairedProject) {
     pairedProject.project_pairs = (pairedProject.project_pairs || []).filter((item) => {
       return !(item.paired_project_id === project.id && item.pair_type === pair.pair_type);
@@ -513,9 +526,20 @@ async function handleRemovePair(event) {
   setSaveState("Salvo", false);
 }
 
+function replaceProject(project) {
+  const index = adminState.projects.findIndex((item) => item.id === project.id);
+  if (index === -1) return;
+  adminState.projects[index] = project;
+}
+
 function setSaveState(message, busy) {
   saveState.textContent = message;
   saveState.classList.toggle("is-busy", busy);
+}
+
+function setAuthFeedback(message, isError) {
+  authFeedback.textContent = message;
+  authFeedback.classList.toggle("is-error", Boolean(isError));
 }
 
 function escapeHtml(value) {

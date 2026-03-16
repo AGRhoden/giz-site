@@ -46,6 +46,7 @@
 - Added a first admin surface at `/admin.html`.
 - Admin currently supports:
   - email-based magic link login
+  - restricted admin access through an explicit admin allowlist
   - project search and filtering by status
   - creating draft projects
   - editing title, subtitle, client, type, description and status
