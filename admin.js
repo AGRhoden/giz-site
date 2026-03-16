@@ -374,7 +374,7 @@
       },
       body: JSON.stringify({
         email: email,
-        redirect_to: window.location.origin + "/auth/reset-password"
+        redirect_to: window.location.origin + "/auth/reset-password/"
       })
     })
       .then(function (response) {
