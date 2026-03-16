@@ -36,6 +36,8 @@
   var markReviewButton = document.getElementById("mark-review-button");
   var publishButton = document.getElementById("publish-button");
   var archiveButton = document.getElementById("archive-button");
+  var checklistSummary = document.getElementById("checklist-summary");
+  var checklistList = document.getElementById("checklist-list");
   var flagSummary = document.getElementById("flag-summary");
   var flagReviewText = document.getElementById("flag-review-text");
   var flagFutureFeature = document.getElementById("flag-future-feature");
@@ -753,6 +755,10 @@
         if (state.selectedProjectId !== projectId) return;
         state.imagesByProject[projectId] = images || [];
         renderMediaList();
+        var selectedProject = getSelectedProject();
+        if (selectedProject && selectedProject.id === projectId) {
+          syncPublicationChecklist(selectedProject);
+        }
       })
       .catch(function () {
         mediaList.innerHTML = '<div class="admin-card">Nao foi possivel carregar as imagens deste projeto.</div>';
@@ -1327,6 +1333,7 @@
         if (items && items.length) {
           replaceProjectImage(project.id, items[0]);
           renderMediaList();
+          syncPublicationChecklist(project);
         }
         setSaveState("Midia salva");
       })
@@ -1372,6 +1379,7 @@
         }
         removeProjectImage(project.id, imageId);
         renderMediaList();
+        syncPublicationChecklist(project);
         setSaveState("Midia removida");
       })
       .catch(function () {
@@ -1478,6 +1486,8 @@
       flagFutureFeature.checked = false;
       flagReviewText.disabled = true;
       flagFutureFeature.disabled = true;
+      checklistSummary.innerHTML = "";
+      checklistList.innerHTML = "";
       flagSummary.innerHTML = "";
       return;
     }
@@ -1493,12 +1503,68 @@
     archiveButton.disabled = status === "archived";
     flagReviewText.disabled = false;
     flagFutureFeature.disabled = false;
+    syncPublicationChecklist(project);
   }
 
   function syncEditorialFlagsPanel(projectId) {
     flagReviewText.checked = hasEditorialFlag(projectId, "review_text");
     flagFutureFeature.checked = hasEditorialFlag(projectId, "future_feature");
     flagSummary.innerHTML = renderEditorialFlagSummary(projectId);
+  }
+
+  function syncPublicationChecklist(project) {
+    var checks = getPublicationChecks(project);
+    var readyCount = checks.filter(function (item) { return item.ok; }).length;
+
+    checklistSummary.innerHTML = '<span class="admin-status-pill">' + readyCount + '/' + checks.length + ' itens</span>';
+    checklistList.innerHTML = checks.map(function (item) {
+      return '' +
+        '<div class="admin-check-item ' + (item.ok ? 'is-ok' : 'is-missing') + '">' +
+          '<div>' +
+            '<strong>' + escapeHtml(item.label) + '</strong>' +
+            '<small>' + escapeHtml(item.help) + '</small>' +
+          '</div>' +
+          '<span class="admin-check-badge ' + (item.ok ? 'is-ok' : 'is-missing') + '">' + (item.ok ? 'ok' : 'falta') + '</span>' +
+        '</div>';
+    }).join("");
+  }
+
+  function getPublicationChecks(project) {
+    var images = state.imagesByProject[project.id] || [];
+    var hasThumb = images.some(function (image) {
+      return image.kind === "thumb";
+    });
+    var hasPrimaryImage = images.some(function (image) {
+      return image.kind === "gallery" && image.sort_order === 0;
+    });
+
+    return [
+      {
+        label: "Titulo principal",
+        ok: Boolean(String(project.title || "").trim()),
+        help: "O projeto pode ser publicado com o titulo principal definido."
+      },
+      {
+        label: "Cliente / editora",
+        ok: Boolean(String(project.client || "").trim()),
+        help: "Ajuda a localizar e filtrar o projeto depois."
+      },
+      {
+        label: "Tipo",
+        ok: Boolean(String(project.project_type || "").trim()),
+        help: "Livro, revista, HQ ou outra classificacao basica."
+      },
+      {
+        label: "Thumb",
+        ok: hasThumb,
+        help: "A thumb e o recorte principal da navegacao no portfolio."
+      },
+      {
+        label: "Imagem 01",
+        ok: hasPrimaryImage,
+        help: "A primeira imagem de galeria deve existir para abrir o projeto."
+      }
+    ];
   }
 
   function handleEditorialFlagChange(event) {

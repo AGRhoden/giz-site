@@ -402,6 +402,67 @@ select {
   margin-top: 8px;
 }
 
+.admin-checklist-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-checklist-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-check-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid var(--admin-line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.admin-check-item strong,
+.admin-check-item small {
+  display: block;
+}
+
+.admin-check-item small {
+  margin-top: 4px;
+  color: var(--admin-muted);
+  line-height: 1.4;
+}
+
+.admin-check-item.is-ok {
+  background: #f6fbf7;
+}
+
+.admin-check-item.is-missing {
+  background: #fff8f2;
+}
+
+.admin-check-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-check-badge.is-ok {
+  background: #e4f1e8;
+  color: #145c33;
+}
+
+.admin-check-badge.is-missing {
+  background: #fff0e1;
+  color: #9a4700;
+}
+
 .admin-flag-panel {
   display: grid;
   gap: 14px;

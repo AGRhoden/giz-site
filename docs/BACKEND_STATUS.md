@@ -51,6 +51,7 @@
   - organizing the editor into dedicated sections for cadastro, publicacao, midia and pares
   - creating tags and linking or unlinking tags per project
   - internal editorial flags such as revisar texto and destaque futuro
+  - a publication checklist for title, client, type, thumb and image 01
   - editing slug, title, subtitle, client, type, description, publication notes, featured state and status
   - quick editorial actions for draft, review, published and archived
   - visible publication state and published timestamp inside the editor
