@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316aa">
+  <link rel="stylesheet" href="admin.css?v=20260316ab">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -101,12 +101,14 @@
                 <p class="admin-kicker" id="editor-slug">identificador interno</p>
                 <h2 id="editor-title">Projeto</h2>
               </div>
-              <span class="admin-save-state" id="save-state">Pronto</span>
+              <div class="admin-editor-meta">
+                <span class="admin-status-pill" id="publication-pill">Draft</span>
+                <span class="admin-save-state" id="save-state">Pronto</span>
+              </div>
             </div>
 
             <nav class="admin-editor-nav" aria-label="Seções do projeto">
               <button class="admin-editor-tab is-active" type="button" data-editor-tab="details">Cadastro</button>
-              <button class="admin-editor-tab" type="button" data-editor-tab="publication">Publicacao</button>
               <button class="admin-editor-tab" type="button" data-editor-tab="media">Midia</button>
               <button class="admin-editor-tab" type="button" data-editor-tab="tags">Tags</button>
               <button class="admin-editor-tab" type="button" data-editor-tab="pairs">Pares</button>
@@ -156,41 +158,28 @@
               </label>
 
               <label class="admin-field">
-                <span class="admin-label">Notas editoriais</span>
+                <span class="admin-label">Observações internas</span>
                 <textarea class="admin-input admin-textarea" id="field-publication-notes"></textarea>
               </label>
 
-              <label class="admin-toggle">
-                <input id="field-featured" type="checkbox">
-                <span>Destacar este projeto no painel editorial</span>
-              </label>
-            </section>
-
-            <section class="admin-subsection admin-editor-section" data-editor-section="publication">
-              <div class="admin-subsection-heading">
-                <div>
-                  <h3>Publicacao</h3>
-                  <p class="admin-copy">Controle o estágio editorial e a entrada do projeto no site público.</p>
+              <div class="admin-subsection admin-details-publication">
+                <div class="admin-subsection-heading">
+                  <div>
+                    <h3>Situação editorial</h3>
+                    <p class="admin-copy">Defina o status do projeto e acompanhe o que ainda falta antes de publicar.</p>
+                  </div>
                 </div>
-                <span class="admin-status-pill" id="publication-pill">Draft</span>
-              </div>
 
-              <div class="admin-publication-meta">
-                <div class="admin-card admin-meta-card">
-                  <span class="admin-label">Estado atual</span>
-                  <strong id="publication-state">Draft</strong>
+                <div class="admin-publication-inline">
+                  <div class="admin-publication-line">
+                    <span class="admin-label">Status atual</span>
+                    <strong id="publication-state">Draft</strong>
+                  </div>
+                  <div class="admin-publication-line">
+                    <span class="admin-label">Publicado em</span>
+                    <strong id="publication-date">Ainda nao publicado</strong>
+                  </div>
                 </div>
-                <div class="admin-card admin-meta-card">
-                  <span class="admin-label">Publicado em</span>
-                  <strong id="publication-date">Ainda nao publicado</strong>
-                </div>
-              </div>
-
-              <div class="admin-inline-actions admin-publication-actions">
-                <button class="admin-secondary-button" id="mark-draft-button" type="button">Mover para draft</button>
-                <button class="admin-secondary-button" id="mark-review-button" type="button">Enviar para review</button>
-                <button class="admin-button" id="publish-button" type="button">Publicar agora</button>
-                <button class="admin-secondary-button" id="archive-button" type="button">Arquivar</button>
               </div>
 
               <div class="admin-checklist-panel">
@@ -320,7 +309,7 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260316aa"></script>
-  <script src="admin.js?v=20260316aa"></script>
+  <script src="backend.config.js?v=20260316ab"></script>
+  <script src="admin.js?v=20260316ab"></script>
 </body>
 </html>

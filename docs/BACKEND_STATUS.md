@@ -39,6 +39,7 @@
 - Add an import/update script for future batches.
 - Build the private admin/editor workflow.
 - Define how paired projects will be created and edited in the future admin flow.
+- Add a safe `Limpar seleção` action to the upload intake.
 
 ## Admin Progress
 - Added a first admin surface at `/admin`.
@@ -58,7 +59,7 @@
   - creating tags and linking or unlinking tags per project
   - internal editorial flags such as revisar texto and destaque futuro
   - a publication checklist for title, client, type, thumb and image 01
-  - editing slug, title, subtitle, client, type, description, publication notes, featured state and status
+  - editing internal identifier, title, subtitle, client, type, description, internal notes and status
   - quick editorial actions for draft, review, published and archived
   - visible publication state and published timestamp inside the editor
   - uploading project media to the `project-media` bucket

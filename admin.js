@@ -30,14 +30,9 @@
   var fieldStatus = document.getElementById("field-status");
   var fieldDescription = document.getElementById("field-description");
   var fieldPublicationNotes = document.getElementById("field-publication-notes");
-  var fieldFeatured = document.getElementById("field-featured");
   var publicationPill = document.getElementById("publication-pill");
   var publicationState = document.getElementById("publication-state");
   var publicationDate = document.getElementById("publication-date");
-  var markDraftButton = document.getElementById("mark-draft-button");
-  var markReviewButton = document.getElementById("mark-review-button");
-  var publishButton = document.getElementById("publish-button");
-  var archiveButton = document.getElementById("archive-button");
   var checklistSummary = document.getElementById("checklist-summary");
   var checklistList = document.getElementById("checklist-list");
   var flagSummary = document.getElementById("flag-summary");
@@ -132,10 +127,6 @@
   addTagButton.addEventListener("click", handleAddTag);
   newTagForm.addEventListener("submit", handleCreateTag);
   tagList.addEventListener("click", handleTagRemoval);
-  markDraftButton.addEventListener("click", function () { handlePublicationAction("draft"); });
-  markReviewButton.addEventListener("click", function () { handlePublicationAction("review"); });
-  publishButton.addEventListener("click", function () { handlePublicationAction("published"); });
-  archiveButton.addEventListener("click", function () { handlePublicationAction("archived"); });
   flagReviewText.addEventListener("change", handleEditorialFlagChange);
   flagFutureFeature.addEventListener("change", handleEditorialFlagChange);
   pairSearch.addEventListener("input", renderPairResults);
@@ -611,7 +602,6 @@
     fieldStatus.value = project.status || "draft";
     fieldDescription.value = project.description || "";
     fieldPublicationNotes.value = project.publication_notes || "";
-    fieldFeatured.checked = Boolean(project.is_featured);
     updatePublicationPanel(project);
     syncEditorialFlagsPanel(project.id);
     renderMediaList();
@@ -668,7 +658,7 @@
         status: nextStatus,
         description: String(fieldDescription.value || "").trim() || null,
         publication_notes: String(fieldPublicationNotes.value || "").trim() || null,
-        is_featured: Boolean(fieldFeatured.checked),
+        is_featured: Boolean(project.is_featured),
         published_at: resolvePublishedAt(project, nextStatus)
       })
     })
@@ -693,10 +683,6 @@
       .catch(function (error) {
         setSaveState("Erro ao salvar");
       });
-  }
-
-  function handlePublicationAction(nextStatus) {
-    persistCurrentProject(nextStatus);
   }
 
   function handleIntakeUpload(event) {
@@ -1968,10 +1954,6 @@
       publicationPill.dataset.status = "draft";
       publicationState.textContent = "Draft";
       publicationDate.textContent = "Ainda nao publicado";
-      markDraftButton.disabled = true;
-      markReviewButton.disabled = true;
-      publishButton.disabled = true;
-      archiveButton.disabled = true;
       flagReviewText.checked = false;
       flagFutureFeature.checked = false;
       flagReviewText.disabled = true;
@@ -1987,10 +1969,6 @@
     publicationPill.dataset.status = status;
     publicationState.textContent = formatStatusLabel(status);
     publicationDate.textContent = project.published_at ? formatDateTime(project.published_at) : "Ainda nao publicado";
-    markDraftButton.disabled = status === "draft";
-    markReviewButton.disabled = status === "review";
-    publishButton.disabled = status === "published";
-    archiveButton.disabled = status === "archived";
     flagReviewText.disabled = false;
     flagFutureFeature.disabled = false;
     syncPublicationChecklist(project);
