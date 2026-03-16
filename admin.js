@@ -36,6 +36,9 @@
   var markReviewButton = document.getElementById("mark-review-button");
   var publishButton = document.getElementById("publish-button");
   var archiveButton = document.getElementById("archive-button");
+  var flagSummary = document.getElementById("flag-summary");
+  var flagReviewText = document.getElementById("flag-review-text");
+  var flagFutureFeature = document.getElementById("flag-future-feature");
   var tagSearch = document.getElementById("tag-search");
   var tagResults = document.getElementById("tag-results");
   var addTagButton = document.getElementById("add-tag-button");
@@ -72,6 +75,7 @@
     projects: [],
     tags: [],
     projectTagsByProject: {},
+    editorialFlagsByProject: {},
     imagesByProject: {},
     pairs: [],
     filteredProjects: [],
@@ -99,6 +103,7 @@
     state.token = null;
     state.sessionEmail = "";
     state.projects = [];
+    state.editorialFlagsByProject = {};
     state.imagesByProject = {};
     state.filteredProjects = [];
     state.selectedProjectId = null;
@@ -128,6 +133,8 @@
   markReviewButton.addEventListener("click", function () { handlePublicationAction("review"); });
   publishButton.addEventListener("click", function () { handlePublicationAction("published"); });
   archiveButton.addEventListener("click", function () { handlePublicationAction("archived"); });
+  flagReviewText.addEventListener("change", handleEditorialFlagChange);
+  flagFutureFeature.addEventListener("change", handleEditorialFlagChange);
   pairSearch.addEventListener("input", renderPairResults);
   pairResults.addEventListener("change", syncPairActionState);
   pairResults.addEventListener("dblclick", handleAddPair);
@@ -151,6 +158,7 @@
       addPairButton.disabled = true;
       state.imagesByProject = {};
       state.projectTagsByProject = {};
+      state.editorialFlagsByProject = {};
       mediaUploadForm.hidden = true;
       bulkImportPanel.open = false;
       pairResults.innerHTML = "";
@@ -158,6 +166,7 @@
       mediaList.innerHTML = "";
       tagResults.innerHTML = "";
       tagList.innerHTML = "";
+      flagSummary.innerHTML = "";
     }
   }
 
@@ -276,6 +285,7 @@
         return Promise.all([
           loadTags().catch(function () { state.tags = []; }),
           loadProjectTags().catch(function () { state.projectTagsByProject = {}; }),
+          loadEditorialFlags().catch(function () { state.editorialFlagsByProject = {}; }),
           loadPairs().catch(function () {
             state.pairs = [];
           })
@@ -357,6 +367,32 @@
       });
   }
 
+  function loadEditorialFlags() {
+    return fetch(backend.url + "/rest/v1/project_editorial_flags?select=id,project_id,flag_key,flag_label,is_public", {
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao carregar flags editoriais");
+          });
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        state.editorialFlagsByProject = {};
+        (items || []).forEach(function (item) {
+          if (!state.editorialFlagsByProject[item.project_id]) {
+            state.editorialFlagsByProject[item.project_id] = [];
+          }
+          state.editorialFlagsByProject[item.project_id].push(item);
+        });
+      });
+  }
+
   function applyFilters() {
     var query = String(projectSearch.value || "").trim().toLowerCase();
     var status = String(statusFilter.value || "");
@@ -400,6 +436,9 @@
           '<div class="admin-project-meta">' +
             "<span>" + escapeHtml(project.client || "sem cliente") + "</span>" +
             "<span>" + escapeHtml(project.slug) + "</span>" +
+          "</div>" +
+          '<div class="admin-project-meta">' +
+            renderProjectFlagPills(project.id) +
           "</div>" +
         "</button>";
     }).join("");
@@ -446,6 +485,7 @@
     fieldPublicationNotes.value = project.publication_notes || "";
     fieldFeatured.checked = Boolean(project.is_featured);
     updatePublicationPanel(project);
+    syncEditorialFlagsPanel(project.id);
     renderMediaList();
     loadProjectImages(project.id);
     renderTagResults();
@@ -1434,6 +1474,11 @@
       markReviewButton.disabled = true;
       publishButton.disabled = true;
       archiveButton.disabled = true;
+      flagReviewText.checked = false;
+      flagFutureFeature.checked = false;
+      flagReviewText.disabled = true;
+      flagFutureFeature.disabled = true;
+      flagSummary.innerHTML = "";
       return;
     }
 
@@ -1446,6 +1491,59 @@
     markReviewButton.disabled = status === "review";
     publishButton.disabled = status === "published";
     archiveButton.disabled = status === "archived";
+    flagReviewText.disabled = false;
+    flagFutureFeature.disabled = false;
+  }
+
+  function syncEditorialFlagsPanel(projectId) {
+    flagReviewText.checked = hasEditorialFlag(projectId, "review_text");
+    flagFutureFeature.checked = hasEditorialFlag(projectId, "future_feature");
+    flagSummary.innerHTML = renderEditorialFlagSummary(projectId);
+  }
+
+  function handleEditorialFlagChange(event) {
+    var project = getSelectedProject();
+    if (!project) return;
+
+    var input = event.target;
+    var flagKey = input.id === "flag-review-text" ? "review_text" : "future_feature";
+    var flagLabel = flagKey === "review_text" ? "Revisar texto" : "Destaque futuro";
+
+    setSaveState("Atualizando flag...");
+
+    if (input.checked) {
+      upsertEditorialFlag(project.id, flagKey, flagLabel)
+        .then(function (item) {
+          if (!state.editorialFlagsByProject[project.id]) {
+            state.editorialFlagsByProject[project.id] = [];
+          }
+          if (!hasEditorialFlag(project.id, flagKey)) {
+            state.editorialFlagsByProject[project.id].push(item);
+          }
+          syncEditorialFlagsPanel(project.id);
+          renderProjectList();
+          setSaveState("Flag atualizada");
+        })
+        .catch(function () {
+          input.checked = false;
+          setSaveState("Erro ao atualizar flag");
+        });
+      return;
+    }
+
+    deleteEditorialFlag(project.id, flagKey)
+      .then(function () {
+        state.editorialFlagsByProject[project.id] = (state.editorialFlagsByProject[project.id] || []).filter(function (flag) {
+          return flag.flag_key !== flagKey;
+        });
+        syncEditorialFlagsPanel(project.id);
+        renderProjectList();
+        setSaveState("Flag removida");
+      })
+      .catch(function () {
+        input.checked = true;
+        setSaveState("Erro ao remover flag");
+      });
   }
 
   function hasPair(projectId, pairedProjectId) {
@@ -1480,6 +1578,94 @@
       }
     }
     return null;
+  }
+
+  function hasEditorialFlag(projectId, flagKey) {
+    return (state.editorialFlagsByProject[projectId] || []).some(function (flag) {
+      return flag.flag_key === flagKey;
+    });
+  }
+
+  function renderProjectFlagPills(projectId) {
+    var pills = [];
+
+    if (hasEditorialFlag(projectId, "review_text")) {
+      pills.push('<span class="admin-status-pill is-review-flag">Texto em revisao</span>');
+    } else {
+      pills.push('<span class="admin-status-pill is-approved-flag">Texto ok</span>');
+    }
+
+    if (hasEditorialFlag(projectId, "future_feature")) {
+      pills.push('<span class="admin-status-pill is-future-flag">Destaque futuro</span>');
+    }
+
+    return pills.join("");
+  }
+
+  function renderEditorialFlagSummary(projectId) {
+    var pills = [];
+
+    if (hasEditorialFlag(projectId, "review_text")) {
+      pills.push('<span class="admin-status-pill is-review-flag">Texto em revisao</span>');
+    } else {
+      pills.push('<span class="admin-status-pill is-approved-flag">Texto aprovado</span>');
+    }
+
+    if (hasEditorialFlag(projectId, "future_feature")) {
+      pills.push('<span class="admin-status-pill is-future-flag">Destaque futuro</span>');
+    }
+
+    return pills.join("");
+  }
+
+  function upsertEditorialFlag(projectId, flagKey, flagLabel) {
+    return fetch(backend.url + "/rest/v1/project_editorial_flags", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify({
+        project_id: projectId,
+        flag_key: flagKey,
+        flag_label: flagLabel,
+        is_public: false
+      })
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao salvar flag");
+          });
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        return items && items.length ? items[0] : {
+          project_id: projectId,
+          flag_key: flagKey,
+          flag_label: flagLabel,
+          is_public: false
+        };
+      });
+  }
+
+  function deleteEditorialFlag(projectId, flagKey) {
+    return fetch(backend.url + "/rest/v1/project_editorial_flags?project_id=eq." + encodeURIComponent(projectId) + "&flag_key=eq." + encodeURIComponent(flagKey), {
+      method: "DELETE",
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    }).then(function (response) {
+      if (!response.ok) {
+        return response.json().then(function (payload) {
+          throw new Error(payload.message || payload.msg || "falha ao remover flag");
+        });
+      }
+    });
   }
 
   function getProjectImageById(projectId, imageId) {

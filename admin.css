@@ -318,6 +318,21 @@ select {
   color: #5d5d5d;
 }
 
+.admin-status-pill.is-review-flag {
+  background: #fff0e1;
+  color: #9a4700;
+}
+
+.admin-status-pill.is-approved-flag {
+  background: #e4f1e8;
+  color: #145c33;
+}
+
+.admin-status-pill.is-future-flag {
+  background: #ece7ff;
+  color: #4e3f90;
+}
+
 .admin-editor-form {
   display: grid;
   gap: 20px;
@@ -385,6 +400,55 @@ select {
 
 .admin-publication-actions {
   margin-top: 8px;
+}
+
+.admin-flag-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-flag-summary {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-flag-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-flag-toggle {
+  display: flex;
+  gap: 12px;
+  align-items: start;
+  padding: 14px 16px;
+  border: 1px solid var(--admin-line);
+  border-radius: 16px;
+  background: #fff;
+}
+
+.admin-flag-toggle input {
+  margin-top: 2px;
+}
+
+.admin-flag-toggle strong,
+.admin-flag-toggle small {
+  display: block;
+}
+
+.admin-flag-toggle small {
+  margin-top: 4px;
+  color: var(--admin-muted);
+  line-height: 1.4;
+}
+
+.admin-flag-toggle-review {
+  background: #fff8f2;
+}
+
+.admin-flag-toggle-feature {
+  background: #faf9ff;
 }
 
 .admin-media-upload {

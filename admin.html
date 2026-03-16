@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316t">
+  <link rel="stylesheet" href="admin.css?v=20260316u">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -214,6 +214,34 @@
                 <button class="admin-button" id="publish-button" type="button">Publicar agora</button>
                 <button class="admin-secondary-button" id="archive-button" type="button">Arquivar</button>
               </div>
+
+              <div class="admin-flag-panel">
+                <div class="admin-subsection-heading">
+                  <div>
+                    <h3>Flags editoriais</h3>
+                    <p class="admin-copy">Marcas internas de acompanhamento e planejamento.</p>
+                  </div>
+                  <div class="admin-flag-summary" id="flag-summary"></div>
+                </div>
+
+                <div class="admin-flag-grid">
+                  <label class="admin-flag-toggle admin-flag-toggle-review">
+                    <input id="flag-review-text" type="checkbox">
+                    <span>
+                      <strong>Revisar texto</strong>
+                      <small>Usa marca quente enquanto o texto ainda nao esta aprovado.</small>
+                    </span>
+                  </label>
+
+                  <label class="admin-flag-toggle admin-flag-toggle-feature">
+                    <input id="flag-future-feature" type="checkbox">
+                    <span>
+                      <strong>Destaque futuro</strong>
+                      <small>Reserva o projeto para alguma acao ou curadoria futura.</small>
+                    </span>
+                  </label>
+                </div>
+              </div>
             </section>
 
             <section class="admin-subsection admin-editor-section" data-editor-section="media">
@@ -302,7 +330,7 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260316t"></script>
-  <script src="admin.js?v=20260316t"></script>
+  <script src="backend.config.js?v=20260316u"></script>
+  <script src="admin.js?v=20260316u"></script>
 </body>
 </html>
