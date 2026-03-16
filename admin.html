@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316c">
+  <link rel="stylesheet" href="admin.css?v=20260316d">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -22,6 +22,16 @@
           <button class="admin-button" id="auth-submit-button" type="submit">Enviar acesso</button>
         </form>
         <p class="admin-feedback" id="auth-feedback" aria-live="polite"></p>
+        <details class="admin-debug" open>
+          <summary>Diagnostico de sessao</summary>
+          <div class="admin-debug-grid">
+            <div><strong>Etapa:</strong> <span id="debug-stage">boot</span></div>
+            <div><strong>Hash:</strong> <span id="debug-hash">sem hash</span></div>
+            <div><strong>Sessao:</strong> <span id="debug-session">sem sessao</span></div>
+            <div><strong>Projetos:</strong> <span id="debug-projects">0</span></div>
+            <div><strong>Ultimo erro:</strong> <span id="debug-error">nenhum</span></div>
+          </div>
+        </details>
       </div>
     </section>
 
@@ -159,7 +169,7 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="backend.config.js?v=20260316c"></script>
-  <script src="admin.js?v=20260316c"></script>
+  <script src="backend.config.js?v=20260316d"></script>
+  <script src="admin.js?v=20260316d"></script>
 </body>
 </html>

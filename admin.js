@@ -52,6 +52,11 @@ const adminApp = document.getElementById("admin-app");
 const authForm = document.getElementById("auth-form");
 const authFeedback = document.getElementById("auth-feedback");
 const authSubmitButton = document.getElementById("auth-submit-button");
+const debugStage = document.getElementById("debug-stage");
+const debugHash = document.getElementById("debug-hash");
+const debugSession = document.getElementById("debug-session");
+const debugProjects = document.getElementById("debug-projects");
+const debugError = document.getElementById("debug-error");
 const sessionEmail = document.getElementById("session-email");
 const logoutButton = document.getElementById("logout-button");
 const projectSearch = document.getElementById("project-search");
@@ -84,13 +89,26 @@ let supabase = null;
 initializeAdmin();
 
 function initializeAdmin() {
+  updateDebug({
+    stage: "init",
+    hash: window.location.hash ? "hash presente" : "sem hash"
+  });
+
   if (!backend.url || !backend.anonKey) {
     setAuthFeedback("Backend config ausente no admin.", true);
+    updateDebug({
+      stage: "erro-config",
+      error: "backend config ausente"
+    });
     return;
   }
 
   if (!supabaseBrowser?.createClient) {
     setAuthFeedback("Biblioteca do Supabase nao carregou. Recarregue a pagina.", true);
+    updateDebug({
+      stage: "erro-sdk",
+      error: "sdk supabase nao carregou"
+    });
     return;
   }
 
@@ -113,13 +131,19 @@ function initializeAdmin() {
 }
 
 async function boot() {
+  updateDebug({ stage: "boot" });
   await consumeAuthHash();
+  updateDebug({ stage: "sessao-local" });
 
   const { data, error } = await supabase.auth.getSession();
 
   if (error) {
     console.error(error);
     setAuthFeedback(`Falha ao iniciar sessao: ${error.message}`, true);
+    updateDebug({
+      stage: "erro-get-session",
+      error: error.message
+    });
   }
 
   adminState.session = data?.session || null;
@@ -128,6 +152,10 @@ async function boot() {
   supabase.auth.onAuthStateChange(async (_event, session) => {
     adminState.session = session;
     updateAuthUI();
+    updateDebug({
+      stage: "auth-state-change",
+      session: session?.user?.email || "sem sessao"
+    });
 
     if (session) {
       await loadProjects();
@@ -150,8 +178,17 @@ async function consumeAuthHash() {
   const refreshToken = hash.get("refresh_token");
   const authError = hash.get("error_description") || hash.get("error_code");
 
+  updateDebug({
+    stage: "consume-hash",
+    hash: accessToken && refreshToken ? "tokens presentes" : "hash sem tokens"
+  });
+
   if (authError) {
     setAuthFeedback(`Falha no link de acesso: ${decodeURIComponent(authError)}`, true);
+    updateDebug({
+      stage: "erro-hash",
+      error: decodeURIComponent(authError)
+    });
     clearAuthHash();
     return;
   }
@@ -168,10 +205,18 @@ async function consumeAuthHash() {
   if (error) {
     console.error(error);
     setAuthFeedback(`Nao foi possivel concluir o login: ${error.message}`, true);
+    updateDebug({
+      stage: "erro-set-session",
+      error: error.message
+    });
     clearAuthHash();
     return;
   }
 
+  updateDebug({
+    stage: "sessao-concluida",
+    session: "token aceito"
+  });
   clearAuthHash();
 }
 
@@ -188,6 +233,10 @@ async function handleAuthSubmit(event) {
   if (!email) return;
 
   setAuthFeedback("Enviando magic link...", false);
+  updateDebug({
+    stage: "enviando-magic-link",
+    error: "nenhum"
+  });
   authSubmitButton.disabled = true;
   authSubmitButton.textContent = "Enviando...";
 
@@ -203,6 +252,10 @@ async function handleAuthSubmit(event) {
   if (error) {
     console.error(error);
     setAuthFeedback(`Nao foi possivel enviar o acesso: ${error.message}`, true);
+    updateDebug({
+      stage: "erro-envio",
+      error: error.message
+    });
     authSubmitButton.disabled = false;
     authSubmitButton.textContent = "Enviar acesso";
     window.alert(`Nao foi possivel enviar o acesso:\n\n${error.message}`);
@@ -210,6 +263,10 @@ async function handleAuthSubmit(event) {
   }
 
   setAuthFeedback(`Link enviado para ${email}. Abra o e-mail e clique em "Log In".`, false);
+  updateDebug({
+    stage: "magic-link-enviado",
+    error: "nenhum"
+  });
   authSubmitButton.disabled = false;
   authSubmitButton.textContent = "Reenviar acesso";
   window.alert(`Link enviado para ${email}.\n\nAbra o e-mail e clique em "Log In".`);
@@ -225,6 +282,9 @@ function updateAuthUI() {
   authScreen.hidden = isLoggedIn;
   adminApp.hidden = !isLoggedIn;
   sessionEmail.textContent = adminState.session?.user?.email || "";
+  updateDebug({
+    session: adminState.session?.user?.email || "sem sessao"
+  });
 
   if (!isLoggedIn) {
     adminState.projects = [];
@@ -250,6 +310,10 @@ async function loadProjects() {
     console.error(error);
     projectList.innerHTML = `<div class="admin-card">Nao foi possivel carregar os projetos.</div>`;
     setSaveState("Erro ao carregar projetos", false);
+    updateDebug({
+      stage: "erro-projetos",
+      error: error.message
+    });
     return;
   }
 
@@ -260,6 +324,11 @@ async function loadProjects() {
     adminState.selectedProjectId = adminState.filteredProjects[0].id;
   }
 
+  updateDebug({
+    stage: "projetos-carregados",
+    projects: String(adminState.projects.length),
+    error: "nenhum"
+  });
   applyProjectFilters();
 }
 
@@ -594,6 +663,14 @@ function setSaveState(message, busy) {
 function setAuthFeedback(message, isError) {
   authFeedback.textContent = message;
   authFeedback.classList.toggle("is-error", Boolean(isError));
+}
+
+function updateDebug(nextState) {
+  if (nextState.stage) debugStage.textContent = nextState.stage;
+  if (nextState.hash) debugHash.textContent = nextState.hash;
+  if (nextState.session) debugSession.textContent = nextState.session;
+  if (nextState.projects) debugProjects.textContent = nextState.projects;
+  if (nextState.error) debugError.textContent = nextState.error;
 }
 
 function escapeHtml(value) {

@@ -142,6 +142,28 @@ select {
   color: var(--admin-danger);
 }
 
+.admin-debug {
+  margin-top: 18px;
+  border-top: 1px solid var(--admin-line);
+  padding-top: 14px;
+}
+
+.admin-debug summary {
+  cursor: pointer;
+  color: var(--admin-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+}
+
+.admin-debug-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  font-size: 14px;
+  color: var(--admin-muted);
+}
+
 .admin-topbar {
   display: flex;
   justify-content: space-between;
