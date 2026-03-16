@@ -10,7 +10,7 @@ const PROJECT_SELECT = `
   client,
   project_type,
   status,
-  project_pairs (
+  project_pairs!project_pairs_project_id_fkey (
     id,
     project_id,
     pair_type,
