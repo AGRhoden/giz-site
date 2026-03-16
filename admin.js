@@ -15,6 +15,8 @@
   var projectList = document.getElementById("project-list");
   var editorEmpty = document.getElementById("editor-empty");
   var editorForm = document.getElementById("editor-form");
+  var editorTabs = Array.prototype.slice.call(document.querySelectorAll("[data-editor-tab]"));
+  var editorSections = Array.prototype.slice.call(document.querySelectorAll("[data-editor-section]"));
   var editorSlug = document.getElementById("editor-slug");
   var editorTitle = document.getElementById("editor-title");
   var saveState = document.getElementById("save-state");
@@ -62,7 +64,8 @@
     imagesByProject: {},
     pairs: [],
     filteredProjects: [],
-    selectedProjectId: null
+    selectedProjectId: null,
+    editorSection: "details"
   };
 
   if (!backend.url || !backend.anonKey) {
@@ -95,6 +98,7 @@
   projectSearch.addEventListener("input", applyFilters);
   statusFilter.addEventListener("change", applyFilters);
   projectList.addEventListener("click", handleProjectSelection);
+  editorForm.addEventListener("click", handleEditorTabClick);
   editorForm.addEventListener("submit", handleProjectSave);
   newProjectButton.addEventListener("click", toggleNewProjectForm);
   cancelNewProjectButton.addEventListener("click", toggleNewProjectForm);
@@ -177,6 +181,7 @@
       projectList.innerHTML = "";
       editorEmpty.hidden = false;
       editorForm.hidden = true;
+      renderEditorTabs();
       updatePublicationPanel(null);
       setSaveState("Pronto");
     }
@@ -338,11 +343,19 @@
     renderEditor();
   }
 
+  function handleEditorTabClick(event) {
+    var button = event.target.closest("[data-editor-tab]");
+    if (!button) return;
+    state.editorSection = button.getAttribute("data-editor-tab") || "details";
+    renderEditorTabs();
+  }
+
   function renderEditor() {
     var project = getSelectedProject();
     if (!project) {
       editorEmpty.hidden = false;
       editorForm.hidden = true;
+      renderEditorTabs();
       updatePublicationPanel(null);
       return;
     }
@@ -350,6 +363,7 @@
     editorEmpty.hidden = true;
     editorForm.hidden = false;
     mediaUploadForm.hidden = false;
+    renderEditorTabs();
     editorSlug.textContent = project.slug;
     editorTitle.textContent = project.title;
     fieldSlug.value = project.slug || "";
@@ -1107,6 +1121,22 @@
 
   function setSaveState(message) {
     saveState.textContent = message;
+  }
+
+  function renderEditorTabs() {
+    var activeSection = state.editorSection || "details";
+
+    editorTabs.forEach(function (button) {
+      var isActive = button.getAttribute("data-editor-tab") === activeSection;
+      button.classList.toggle("is-active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+
+    editorSections.forEach(function (section) {
+      var isActive = section.getAttribute("data-editor-section") === activeSection;
+      section.classList.toggle("is-active", isActive);
+      section.hidden = !isActive;
+    });
   }
 
   function clearBulkImportForm() {
