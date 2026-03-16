@@ -47,6 +47,7 @@
   - restricted admin access through an explicit admin allowlist
   - project search and filtering by status
   - creating draft projects
+  - importing project batches from pasted JSON or line-based lists
   - editing slug, title, subtitle, client, type, description, publication notes, featured state and status
   - quick editorial actions for draft, review, published and archived
   - visible publication state and published timestamp inside the editor

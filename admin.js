@@ -47,6 +47,13 @@
   var newProjectSlug = document.getElementById("new-project-slug");
   var newProjectTitle = document.getElementById("new-project-title");
   var cancelNewProjectButton = document.getElementById("cancel-new-project-button");
+  var bulkImportPanel = document.getElementById("bulk-import-panel");
+  var bulkImportForm = document.getElementById("bulk-import-form");
+  var bulkImportStatus = document.getElementById("bulk-import-status");
+  var bulkImportBatch = document.getElementById("bulk-import-batch");
+  var bulkImportInput = document.getElementById("bulk-import-input");
+  var bulkImportClearButton = document.getElementById("bulk-import-clear-button");
+  var bulkImportFeedback = document.getElementById("bulk-import-feedback");
 
   var state = {
     token: null,
@@ -92,6 +99,8 @@
   newProjectButton.addEventListener("click", toggleNewProjectForm);
   cancelNewProjectButton.addEventListener("click", toggleNewProjectForm);
   newProjectForm.addEventListener("submit", handleCreateProject);
+  bulkImportForm.addEventListener("submit", handleBulkImport);
+  bulkImportClearButton.addEventListener("click", clearBulkImportForm);
   mediaUploadForm.addEventListener("submit", handleMediaUpload);
   mediaList.addEventListener("click", handleMediaListClick);
   markDraftButton.addEventListener("click", function () { handlePublicationAction("draft"); });
@@ -121,6 +130,7 @@
       addPairButton.disabled = true;
       state.imagesByProject = {};
       mediaUploadForm.hidden = true;
+      bulkImportPanel.open = false;
       pairResults.innerHTML = "";
       pairList.innerHTML = "";
       mediaList.innerHTML = "";
@@ -486,6 +496,109 @@
       })
       .catch(function (error) {
         setSaveState("Erro ao criar");
+      });
+  }
+
+  function handleBulkImport(event) {
+    if (event && event.preventDefault) event.preventDefault();
+
+    var rawInput = String(bulkImportInput.value || "").trim();
+    var initialStatus = String(bulkImportStatus.value || "draft");
+    var importedBatch = String(bulkImportBatch.value || "").trim() || null;
+
+    if (!rawInput) {
+      setBulkImportFeedback("Cole o conteúdo do lote antes de importar.", true);
+      return;
+    }
+
+    var parsedItems;
+    try {
+      parsedItems = parseBulkImportInput(rawInput);
+    } catch (error) {
+      setBulkImportFeedback(error.message, true);
+      return;
+    }
+
+    if (!parsedItems.length) {
+      setBulkImportFeedback("Nenhum projeto valido foi encontrado no lote.", true);
+      return;
+    }
+
+    var existingSlugs = {};
+    for (var i = 0; i < state.projects.length; i += 1) {
+      existingSlugs[state.projects[i].slug] = true;
+    }
+
+    var duplicateSlugs = [];
+    var seenInBatch = {};
+    var payload = parsedItems.map(function (item) {
+      var slug = sanitizeSlug(item.slug || item.title);
+      if (!slug || !item.title) {
+        return null;
+      }
+      if (existingSlugs[slug] || seenInBatch[slug]) {
+        duplicateSlugs.push(slug);
+        return null;
+      }
+      seenInBatch[slug] = true;
+      return {
+        slug: slug,
+        title: String(item.title || "").trim(),
+        subtitle: normalizeOptionalText(item.subtitle),
+        client: normalizeOptionalText(item.client),
+        project_type: normalizeOptionalText(item.project_type || item.type),
+        description: normalizeOptionalText(item.description),
+        publication_notes: normalizeOptionalText(item.publication_notes),
+        imported_batch: importedBatch,
+        status: initialStatus
+      };
+    }).filter(Boolean);
+
+    if (!payload.length) {
+      setBulkImportFeedback("O lote foi descartado porque todos os slugs ja existem ou estavam invalidos.", true);
+      return;
+    }
+
+    setBulkImportFeedback("Importando " + payload.length + " projetos...", false);
+
+    fetch(backend.url + "/rest/v1/projects", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify(payload)
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payloadResponse) {
+            throw new Error(payloadResponse.message || payloadResponse.msg || "falha ao importar lote");
+          });
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        var created = items || [];
+        for (var i = 0; i < created.length; i += 1) {
+          state.projects.push(created[i]);
+          state.imagesByProject[created[i].id] = [];
+        }
+        if (created.length) {
+          state.selectedProjectId = created[0].id;
+        }
+        applyFilters();
+        clearBulkImportForm();
+        setBulkImportFeedback(
+          "Lote criado com " + created.length + " projetos." +
+          (duplicateSlugs.length ? " Slugs ignorados: " + duplicateSlugs.join(", ") + "." : ""),
+          false
+        );
+        setSaveState("Lote importado");
+      })
+      .catch(function (error) {
+        setBulkImportFeedback("Nao foi possivel importar o lote: " + error.message, true);
       });
   }
 
@@ -987,8 +1100,20 @@
     authFeedback.classList.toggle("is-error", Boolean(isError));
   }
 
+  function setBulkImportFeedback(message, isError) {
+    bulkImportFeedback.textContent = message;
+    bulkImportFeedback.classList.toggle("is-error", Boolean(isError));
+  }
+
   function setSaveState(message) {
     saveState.textContent = message;
+  }
+
+  function clearBulkImportForm() {
+    bulkImportInput.value = "";
+    bulkImportBatch.value = "";
+    bulkImportStatus.value = "draft";
+    setBulkImportFeedback("", false);
   }
 
   function updatePublicationPanel(project) {
@@ -1088,6 +1213,63 @@
 
   function cssEscape(value) {
     return String(value || "").replace(/"/g, '\\"');
+  }
+
+  function parseBulkImportInput(rawInput) {
+    var trimmed = String(rawInput || "").trim();
+    if (!trimmed) return [];
+
+    if (trimmed.charAt(0) === "[" || trimmed.charAt(0) === "{") {
+      return parseBulkImportJson(trimmed);
+    }
+
+    return parseBulkImportLines(trimmed);
+  }
+
+  function parseBulkImportJson(rawInput) {
+    var parsed = JSON.parse(rawInput);
+    var items = Array.isArray(parsed) ? parsed : [parsed];
+
+    return items.map(function (item, index) {
+      if (!item || typeof item !== "object") {
+        throw new Error("O item " + (index + 1) + " do JSON nao e um objeto valido.");
+      }
+
+      return {
+        slug: item.slug,
+        title: item.title || item.titulo,
+        subtitle: item.subtitle || item.subtitulo,
+        client: item.client || item.cliente || item.editora,
+        project_type: item.project_type || item.tipo,
+        description: item.description || item.descricao,
+        publication_notes: item.publication_notes || item.notas_editoriais
+      };
+    });
+  }
+
+  function parseBulkImportLines(rawInput) {
+    return rawInput
+      .split(/\r?\n/)
+      .map(function (line) { return line.trim(); })
+      .filter(Boolean)
+      .map(function (line, index) {
+        var parts = line.split("|").map(function (part) { return part.trim(); });
+        if (parts.length < 2) {
+          throw new Error("A linha " + (index + 1) + " precisa ter ao menos slug e titulo.");
+        }
+
+        return {
+          slug: parts[0],
+          title: parts[1],
+          client: parts[2] || null,
+          project_type: parts[3] || null
+        };
+      });
+  }
+
+  function normalizeOptionalText(value) {
+    var text = String(value == null ? "" : value).trim();
+    return text || null;
   }
 
   function resolvePublishedAt(project, nextStatus) {
