@@ -159,6 +159,8 @@
     var isLoggedIn = Boolean(state.token);
     authScreen.hidden = isLoggedIn;
     adminApp.hidden = !isLoggedIn;
+    authScreen.style.display = isLoggedIn ? "none" : "grid";
+    adminApp.style.display = isLoggedIn ? "block" : "none";
     sessionEmail.textContent = state.sessionEmail || "sessao ativa";
     updateDebug({ session: isLoggedIn ? (state.sessionEmail || "token salvo") : "sem sessao" });
 
