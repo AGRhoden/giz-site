@@ -36,6 +36,15 @@
   var markReviewButton = document.getElementById("mark-review-button");
   var publishButton = document.getElementById("publish-button");
   var archiveButton = document.getElementById("archive-button");
+  var tagSearch = document.getElementById("tag-search");
+  var tagResults = document.getElementById("tag-results");
+  var addTagButton = document.getElementById("add-tag-button");
+  var newTagForm = document.getElementById("new-tag-form");
+  var newTagLabel = document.getElementById("new-tag-label");
+  var newTagGroup = document.getElementById("new-tag-group");
+  var newTagPublic = document.getElementById("new-tag-public");
+  var newTagFeedback = document.getElementById("new-tag-feedback");
+  var tagList = document.getElementById("tag-list");
   var pairSearch = document.getElementById("pair-search");
   var pairResults = document.getElementById("pair-results");
   var addPairButton = document.getElementById("add-pair-button");
@@ -61,6 +70,8 @@
     token: null,
     sessionEmail: "",
     projects: [],
+    tags: [],
+    projectTagsByProject: {},
     imagesByProject: {},
     pairs: [],
     filteredProjects: [],
@@ -107,6 +118,12 @@
   bulkImportClearButton.addEventListener("click", clearBulkImportForm);
   mediaUploadForm.addEventListener("submit", handleMediaUpload);
   mediaList.addEventListener("click", handleMediaListClick);
+  tagSearch.addEventListener("input", renderTagResults);
+  tagResults.addEventListener("change", syncTagActionState);
+  tagResults.addEventListener("dblclick", handleAddTag);
+  addTagButton.addEventListener("click", handleAddTag);
+  newTagForm.addEventListener("submit", handleCreateTag);
+  tagList.addEventListener("click", handleTagRemoval);
   markDraftButton.addEventListener("click", function () { handlePublicationAction("draft"); });
   markReviewButton.addEventListener("click", function () { handlePublicationAction("review"); });
   publishButton.addEventListener("click", function () { handlePublicationAction("published"); });
@@ -133,11 +150,14 @@
       pairResults.disabled = true;
       addPairButton.disabled = true;
       state.imagesByProject = {};
+      state.projectTagsByProject = {};
       mediaUploadForm.hidden = true;
       bulkImportPanel.open = false;
       pairResults.innerHTML = "";
       pairList.innerHTML = "";
       mediaList.innerHTML = "";
+      tagResults.innerHTML = "";
+      tagList.innerHTML = "";
     }
   }
 
@@ -253,9 +273,13 @@
         if (!state.selectedProjectId && state.filteredProjects.length) {
           state.selectedProjectId = state.filteredProjects[0].id;
         }
-        return loadPairs().catch(function () {
-          state.pairs = [];
-        });
+        return Promise.all([
+          loadTags().catch(function () { state.tags = []; }),
+          loadProjectTags().catch(function () { state.projectTagsByProject = {}; }),
+          loadPairs().catch(function () {
+            state.pairs = [];
+          })
+        ]);
       })
       .then(function () {
         renderAuthState();
@@ -284,6 +308,52 @@
       })
       .then(function (pairs) {
         state.pairs = pairs || [];
+      });
+  }
+
+  function loadTags() {
+    return fetch(backend.url + "/rest/v1/tags?select=id,slug,label,group_name,is_public&order=group_name.asc,label.asc", {
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao carregar tags");
+          });
+        }
+        return response.json();
+      })
+      .then(function (tags) {
+        state.tags = tags || [];
+      });
+  }
+
+  function loadProjectTags() {
+    return fetch(backend.url + "/rest/v1/project_tags?select=project_id,tag_id", {
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao carregar ligacoes de tags");
+          });
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        state.projectTagsByProject = {};
+        (items || []).forEach(function (item) {
+          if (!state.projectTagsByProject[item.project_id]) {
+            state.projectTagsByProject[item.project_id] = [];
+          }
+          state.projectTagsByProject[item.project_id].push(item.tag_id);
+        });
       });
   }
 
@@ -378,6 +448,8 @@
     updatePublicationPanel(project);
     renderMediaList();
     loadProjectImages(project.id);
+    renderTagResults();
+    renderTagList();
     renderPairResults();
     renderPairList();
   }
@@ -499,6 +571,7 @@
       .then(function (items) {
         if (items && items.length) {
           state.projects.push(items[0]);
+          state.projectTagsByProject[items[0].id] = [];
           state.imagesByProject[items[0].id] = [];
           state.selectedProjectId = items[0].id;
           newProjectForm.hidden = true;
@@ -597,6 +670,7 @@
         var created = items || [];
         for (var i = 0; i < created.length; i += 1) {
           state.projects.push(created[i]);
+          state.projectTagsByProject[created[i].id] = [];
           state.imagesByProject[created[i].id] = [];
         }
         if (created.length) {
@@ -701,6 +775,205 @@
           '</div>' +
         '</article>';
     }).join("");
+  }
+
+  function renderTagResults() {
+    var project = getSelectedProject();
+    var query = String(tagSearch.value || "").trim().toLowerCase();
+
+    if (!project) {
+      tagResults.innerHTML = "";
+      addTagButton.disabled = true;
+      tagList.innerHTML = "";
+      return;
+    }
+
+    var linkedIds = state.projectTagsByProject[project.id] || [];
+    var matches = state.tags.filter(function (tag) {
+      if (linkedIds.indexOf(tag.id) !== -1) return false;
+      if (!query) return true;
+      var haystack = [tag.label, tag.slug, tag.group_name].join(" ").toLowerCase();
+      return haystack.indexOf(query) !== -1;
+    }).slice(0, 30);
+
+    if (!matches.length) {
+      tagResults.innerHTML = '<option value="">Nenhuma tag disponivel</option>';
+      addTagButton.disabled = true;
+      return;
+    }
+
+    tagResults.innerHTML = matches.map(function (tag) {
+      return '<option value="' + escapeHtml(tag.id) + '">' +
+        escapeHtml(tag.label) + ' · ' + escapeHtml(tag.group_name) +
+      '</option>';
+    }).join("");
+
+    tagResults.selectedIndex = 0;
+    syncTagActionState();
+  }
+
+  function renderTagList() {
+    var project = getSelectedProject();
+    if (!project) {
+      tagList.innerHTML = "";
+      return;
+    }
+
+    var linkedIds = state.projectTagsByProject[project.id] || [];
+    var linkedTags = linkedIds
+      .map(getTagById)
+      .filter(Boolean);
+
+    if (!linkedTags.length) {
+      tagList.innerHTML = '<div class="admin-card">Nenhuma tag vinculada a este projeto.</div>';
+      return;
+    }
+
+    tagList.innerHTML = linkedTags.map(function (tag) {
+      return '' +
+        '<div class="admin-tag-item">' +
+          '<div class="admin-tag-main">' +
+            '<strong>' + escapeHtml(tag.label) + '</strong>' +
+            '<div class="admin-tag-meta">' + escapeHtml(tag.slug) + ' · ' + escapeHtml(tag.group_name) + (tag.is_public ? ' · publica' : ' · interna') + '</div>' +
+          '</div>' +
+          '<button class="admin-danger-button" type="button" data-remove-tag="' + escapeHtml(tag.id) + '">Remover</button>' +
+        '</div>';
+    }).join("");
+  }
+
+  function syncTagActionState() {
+    addTagButton.disabled = !tagResults.value;
+  }
+
+  function handleAddTag() {
+    var project = getSelectedProject();
+    var tagId = tagResults.value;
+    if (!project || !tagId) return;
+
+    setSaveState("Vinculando tag...");
+
+    fetch(backend.url + "/rest/v1/project_tags", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify({
+        project_id: project.id,
+        tag_id: tagId
+      })
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao vincular tag");
+          });
+        }
+        return response.json();
+      })
+      .then(function () {
+        if (!state.projectTagsByProject[project.id]) {
+          state.projectTagsByProject[project.id] = [];
+        }
+        state.projectTagsByProject[project.id].push(tagId);
+        tagSearch.value = "";
+        renderTagResults();
+        renderTagList();
+        setSaveState("Tag vinculada");
+      })
+      .catch(function () {
+        setSaveState("Erro ao vincular tag");
+      });
+  }
+
+  function handleCreateTag(event) {
+    if (event && event.preventDefault) event.preventDefault();
+
+    var label = String(newTagLabel.value || "").trim();
+    var slug = sanitizeSlug(label);
+    if (!label || !slug) {
+      setNewTagFeedback("Digite um nome valido para a nova tag.", true);
+      return;
+    }
+
+    setNewTagFeedback("Criando tag...", false);
+
+    fetch(backend.url + "/rest/v1/tags", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify({
+        slug: slug,
+        label: label,
+        group_name: String(newTagGroup.value || "tema"),
+        is_public: Boolean(newTagPublic.checked)
+      })
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao criar tag");
+          });
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        if (items && items.length) {
+          state.tags.push(items[0]);
+          state.tags.sort(function (left, right) {
+            return (left.group_name + left.label).localeCompare(right.group_name + right.label);
+          });
+        }
+        newTagLabel.value = "";
+        newTagGroup.value = "tema";
+        newTagPublic.checked = true;
+        renderTagResults();
+        setNewTagFeedback("Tag criada com sucesso.", false);
+      })
+      .catch(function (error) {
+        setNewTagFeedback("Nao foi possivel criar a tag: " + error.message, true);
+      });
+  }
+
+  function handleTagRemoval(event) {
+    var button = event.target.closest("[data-remove-tag]");
+    if (!button) return;
+
+    var project = getSelectedProject();
+    var tagId = button.getAttribute("data-remove-tag");
+    if (!project || !tagId) return;
+
+    setSaveState("Removendo tag...");
+
+    fetch(backend.url + "/rest/v1/project_tags?project_id=eq." + encodeURIComponent(project.id) + "&tag_id=eq." + encodeURIComponent(tagId), {
+      method: "DELETE",
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao remover tag");
+          });
+        }
+        state.projectTagsByProject[project.id] = (state.projectTagsByProject[project.id] || []).filter(function (id) {
+          return id !== tagId;
+        });
+        renderTagResults();
+        renderTagList();
+        setSaveState("Tag removida");
+      })
+      .catch(function () {
+        setSaveState("Erro ao remover tag");
+      });
   }
 
   function renderPairResults() {
@@ -1119,6 +1392,11 @@
     bulkImportFeedback.classList.toggle("is-error", Boolean(isError));
   }
 
+  function setNewTagFeedback(message, isError) {
+    newTagFeedback.textContent = message;
+    newTagFeedback.classList.toggle("is-error", Boolean(isError));
+  }
+
   function setSaveState(message) {
     saveState.textContent = message;
   }
@@ -1190,6 +1468,15 @@
     for (var i = 0; i < state.projects.length; i += 1) {
       if (state.projects[i].id === projectId) {
         return state.projects[i];
+      }
+    }
+    return null;
+  }
+
+  function getTagById(tagId) {
+    for (var i = 0; i < state.tags.length; i += 1) {
+      if (state.tags[i].id === tagId) {
+        return state.tags[i];
       }
     }
     return null;

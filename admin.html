@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316s">
+  <link rel="stylesheet" href="admin.css?v=20260316t">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -130,6 +130,7 @@
               <button class="admin-editor-tab is-active" type="button" data-editor-tab="details">Cadastro</button>
               <button class="admin-editor-tab" type="button" data-editor-tab="publication">Publicacao</button>
               <button class="admin-editor-tab" type="button" data-editor-tab="media">Midia</button>
+              <button class="admin-editor-tab" type="button" data-editor-tab="tags">Tags</button>
               <button class="admin-editor-tab" type="button" data-editor-tab="pairs">Pares</button>
             </nav>
 
@@ -233,6 +234,50 @@
               <div class="admin-media-list" id="media-list"></div>
             </section>
 
+            <section class="admin-subsection admin-editor-section" data-editor-section="tags">
+              <div class="admin-subsection-heading">
+                <h3>Tags</h3>
+                <p class="admin-copy">Associe filtros e crie novas tags editoriais quando necessario.</p>
+              </div>
+
+              <div class="admin-tag-layout">
+                <div class="admin-tag-column">
+                  <label class="admin-field">
+                    <span class="admin-label">Buscar tag existente</span>
+                    <input class="admin-input" id="tag-search" type="search" placeholder="cor, tema, editorial...">
+                  </label>
+                  <select class="admin-input" id="tag-results" size="8"></select>
+                  <button class="admin-secondary-button" id="add-tag-button" type="button">Vincular tag</button>
+                </div>
+
+                <form class="admin-card admin-inline-form admin-tag-create" id="new-tag-form">
+                  <label class="admin-field">
+                    <span class="admin-label">Nova tag</span>
+                    <input class="admin-input" id="new-tag-label" type="text" placeholder="Fantasia sombria">
+                  </label>
+                  <label class="admin-field">
+                    <span class="admin-label">Grupo</span>
+                    <select class="admin-input" id="new-tag-group">
+                      <option value="tema">Tema</option>
+                      <option value="cor">Cor</option>
+                      <option value="editorial">Editorial</option>
+                      <option value="interno">Interno</option>
+                    </select>
+                  </label>
+                  <label class="admin-toggle">
+                    <input id="new-tag-public" type="checkbox" checked>
+                    <span>Disponivel no site publico</span>
+                  </label>
+                  <div class="admin-inline-actions">
+                    <button class="admin-button" type="submit">Criar tag</button>
+                  </div>
+                  <p class="admin-feedback" id="new-tag-feedback" aria-live="polite"></p>
+                </form>
+              </div>
+
+              <div class="admin-tag-list" id="tag-list"></div>
+            </section>
+
             <section class="admin-subsection admin-editor-section" data-editor-section="pairs">
               <div class="admin-subsection-heading">
                 <h3>Pares</h3>
@@ -257,7 +302,7 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260316s"></script>
-  <script src="admin.js?v=20260316s"></script>
+  <script src="backend.config.js?v=20260316t"></script>
+  <script src="admin.js?v=20260316t"></script>
 </body>
 </html>
