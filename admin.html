@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIZ Admin</title>
+  <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-page">
+  <main class="admin-shell">
+    <section class="admin-auth" id="auth-screen">
+      <div class="admin-card">
+        <p class="admin-kicker">GIZ</p>
+        <h1>Painel editorial</h1>
+        <p class="admin-copy">
+          Entre com seu e-mail para receber um magic link e gerenciar o portfólio.
+        </p>
+        <form id="auth-form" class="admin-form">
+          <label class="admin-label" for="email">E-mail</label>
+          <input class="admin-input" id="email" name="email" type="email" required>
+          <button class="admin-button" type="submit">Enviar acesso</button>
+        </form>
+        <p class="admin-feedback" id="auth-feedback" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="admin-app" id="admin-app" hidden>
+      <header class="admin-topbar">
+        <div>
+          <p class="admin-kicker">GIZ</p>
+          <h1>Gestão de projetos</h1>
+        </div>
+        <div class="admin-topbar-actions">
+          <span class="admin-user" id="session-email"></span>
+          <button class="admin-secondary-button" id="logout-button" type="button">Sair</button>
+        </div>
+      </header>
+
+      <section class="admin-toolbar">
+        <label class="admin-search">
+          <span class="admin-label">Buscar</span>
+          <input class="admin-input" id="project-search" type="search" placeholder="Título, slug, editora...">
+        </label>
+        <label class="admin-search">
+          <span class="admin-label">Status</span>
+          <select class="admin-input" id="status-filter">
+            <option value="">Todos</option>
+            <option value="draft">Draft</option>
+            <option value="review">Review</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="admin-layout">
+        <aside class="admin-projects">
+          <div class="admin-panel-heading">
+            <h2>Projetos</h2>
+            <div class="admin-panel-meta">
+              <span id="project-count">0</span>
+              <button class="admin-secondary-button" id="new-project-button" type="button">Novo projeto</button>
+            </div>
+          </div>
+          <form class="admin-card admin-inline-form" id="new-project-form" hidden>
+            <label class="admin-field">
+              <span class="admin-label">Slug</span>
+              <input class="admin-input" id="new-project-slug" type="text" placeholder="novo-projeto" pattern="[a-z0-9]+(?:[-_][a-z0-9]+)*">
+            </label>
+            <label class="admin-field">
+              <span class="admin-label">Titulo</span>
+              <input class="admin-input" id="new-project-title" type="text" placeholder="Titulo do projeto">
+            </label>
+            <div class="admin-inline-actions">
+              <button class="admin-button" type="submit">Criar draft</button>
+              <button class="admin-secondary-button" id="cancel-new-project-button" type="button">Cancelar</button>
+            </div>
+          </form>
+          <div class="admin-list" id="project-list"></div>
+        </aside>
+
+        <section class="admin-editor">
+          <div class="admin-card" id="editor-empty">
+            <h2>Selecione um projeto</h2>
+            <p class="admin-copy">
+              Aqui você poderá ajustar status editorial, revisar dados e conectar pares.
+            </p>
+          </div>
+
+          <form class="admin-card admin-editor-form" id="editor-form" hidden>
+            <div class="admin-panel-heading">
+              <div>
+                <p class="admin-kicker" id="editor-slug">slug</p>
+                <h2 id="editor-title">Projeto</h2>
+              </div>
+              <span class="admin-save-state" id="save-state">Pronto</span>
+            </div>
+
+            <div class="admin-grid">
+              <label class="admin-field">
+                <span class="admin-label">Título</span>
+                <input class="admin-input" id="field-title" type="text" required>
+              </label>
+
+              <label class="admin-field">
+                <span class="admin-label">Subtítulo</span>
+                <input class="admin-input" id="field-subtitle" type="text">
+              </label>
+
+              <label class="admin-field">
+                <span class="admin-label">Editora / cliente</span>
+                <input class="admin-input" id="field-client" type="text">
+              </label>
+
+              <label class="admin-field">
+                <span class="admin-label">Tipo</span>
+                <input class="admin-input" id="field-type" type="text">
+              </label>
+
+              <label class="admin-field">
+                <span class="admin-label">Status</span>
+                <select class="admin-input" id="field-status">
+                  <option value="draft">Draft</option>
+                  <option value="review">Review</option>
+                  <option value="published">Published</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="admin-field">
+              <span class="admin-label">Descrição</span>
+              <textarea class="admin-input admin-textarea" id="field-description"></textarea>
+            </label>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-heading">
+                <h3>Pares</h3>
+                <p class="admin-copy">Conecte capas ou projetos relacionados.</p>
+              </div>
+
+              <div class="admin-pair-controls">
+                <input class="admin-input" id="pair-search" type="search" placeholder="Buscar projeto por título ou slug">
+                <select class="admin-input" id="pair-results" size="6"></select>
+                <button class="admin-secondary-button" id="add-pair-button" type="button">Adicionar par</button>
+              </div>
+
+              <div class="admin-pair-list" id="pair-list"></div>
+            </section>
+
+            <div class="admin-form-actions">
+              <button class="admin-button" type="submit">Salvar alterações</button>
+            </div>
+          </form>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="backend.config.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

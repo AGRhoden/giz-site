@@ -41,3 +41,13 @@
 - Add an import/update script for future batches.
 - Build the private admin/editor workflow.
 - Define how paired projects will be created and edited in the future admin flow.
+
+## Admin Progress
+- Added a first admin surface at `/admin.html`.
+- Admin currently supports:
+  - email-based magic link login
+  - project search and filtering by status
+  - creating draft projects
+  - editing title, subtitle, client, type, description and status
+  - adding and removing project pairs
+  - mirrored pair creation so linked projects stay reciprocal
