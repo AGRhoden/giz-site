@@ -114,6 +114,35 @@ function initializeAdmin() {
 
   supabase = supabaseBrowser.createClient(backend.url, backend.anonKey);
 
+  window.addEventListener("error", (event) => {
+    updateDebug({
+      stage: "window-error",
+      error: event.message || "erro global"
+    });
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason?.message || String(event.reason || "promise rejeitada");
+    updateDebug({
+      stage: "unhandled-rejection",
+      error: reason
+    });
+  });
+
+  authSubmitButton.addEventListener("click", () => {
+    updateDebug({
+      stage: "click-submit",
+      error: "nenhum"
+    });
+  });
+
+  authForm.addEventListener("invalid", () => {
+    updateDebug({
+      stage: "form-invalid",
+      error: "e-mail invalido ou ausente"
+    });
+  }, true);
+
   authForm.addEventListener("submit", handleAuthSubmit);
   logoutButton.addEventListener("click", handleLogout);
   projectSearch.addEventListener("input", applyProjectFilters);
@@ -227,6 +256,10 @@ function clearAuthHash() {
 
 async function handleAuthSubmit(event) {
   event.preventDefault();
+  updateDebug({
+    stage: "submit-handler",
+    error: "nenhum"
+  });
 
   const form = new FormData(authForm);
   const email = String(form.get("email") || "").trim().toLowerCase();
