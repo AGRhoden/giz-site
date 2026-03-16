@@ -17,6 +17,7 @@
   var projectList = document.getElementById("project-list");
   var editorEmpty = document.getElementById("editor-empty");
   var editorForm = document.getElementById("editor-form");
+  var saveProjectButton = document.getElementById("save-project-button");
   var editorTabs = Array.prototype.slice.call(document.querySelectorAll("[data-editor-tab]"));
   var editorSections = Array.prototype.slice.call(document.querySelectorAll("[data-editor-section]"));
   var editorSlug = document.getElementById("editor-slug");
@@ -40,8 +41,8 @@
   var flagFutureFeature = document.getElementById("flag-future-feature");
   var tagSearch = document.getElementById("tag-search");
   var tagResults = document.getElementById("tag-results");
-  var newTagForm = document.getElementById("new-tag-form");
   var newTagLabel = document.getElementById("new-tag-label");
+  var newTagButton = document.getElementById("new-tag-button");
   var newTagFeedback = document.getElementById("new-tag-feedback");
   var pairSearch = document.getElementById("pair-search");
   var pairResults = document.getElementById("pair-results");
@@ -49,6 +50,7 @@
   var mediaUploadForm = document.getElementById("media-upload-form");
   var mediaFiles = document.getElementById("media-files");
   var mediaKind = document.getElementById("media-kind");
+  var mediaUploadButton = document.getElementById("media-upload-button");
   var mediaList = document.getElementById("media-list");
   var newProjectForm = document.getElementById("new-project-form");
   var intakeFiles = document.getElementById("intake-files");
@@ -113,12 +115,17 @@
   projectList.addEventListener("click", handleProjectSelection);
   editorForm.addEventListener("click", handleEditorTabClick);
   editorForm.addEventListener("submit", handleProjectSave);
+  saveProjectButton.addEventListener("click", handleProjectSave);
   newProjectForm.addEventListener("submit", handleIntakeUpload);
-  mediaUploadForm.addEventListener("submit", handleMediaUpload);
+  mediaUploadButton.addEventListener("click", handleMediaUpload);
   mediaList.addEventListener("click", handleMediaListClick);
   tagSearch.addEventListener("input", renderTagResults);
   tagResults.addEventListener("click", handleTagToggle);
-  newTagForm.addEventListener("submit", handleCreateTag);
+  newTagButton.addEventListener("click", handleCreateTag);
+  newTagLabel.addEventListener("keydown", function (event) {
+    if (event.key !== "Enter") return;
+    handleCreateTag(event);
+  });
   flagReviewText.addEventListener("change", handleEditorialFlagChange);
   flagFutureFeature.addEventListener("change", handleEditorialFlagChange);
   pairSearch.addEventListener("input", renderPairResults);

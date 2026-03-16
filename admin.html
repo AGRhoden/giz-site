@@ -172,7 +172,6 @@
                 <div class="admin-subsection-heading">
                   <div>
                     <h3>Situação editorial</h3>
-                    <p class="admin-copy">Defina o status do projeto e acompanhe o que ainda falta antes de publicar.</p>
                   </div>
                 </div>
 
@@ -235,14 +234,14 @@
                 <p class="admin-copy">Use esta area apenas para acrescentar mais imagens a um projeto que ja existe. Videos e links podem entrar depois.</p>
               </div>
 
-              <form class="admin-media-upload" id="media-upload-form">
+              <div class="admin-media-upload" id="media-upload-form">
                 <input class="admin-input" id="media-files" type="file" accept="image/*" multiple>
                 <select class="admin-input" id="media-kind">
                   <option value="gallery">Galeria</option>
                   <option value="thumb">Thumb</option>
                 </select>
-                <button class="admin-secondary-button" type="submit">Carregar mais imagens</button>
-              </form>
+                <button class="admin-secondary-button" id="media-upload-button" type="button">Carregar mais imagens</button>
+              </div>
 
               <div class="admin-media-list" id="media-list"></div>
             </section>
@@ -260,16 +259,16 @@
 
               <div class="admin-tag-picker" id="tag-results"></div>
 
-              <form class="admin-inline-form admin-tag-create-inline" id="new-tag-form">
+              <div class="admin-inline-form admin-tag-create-inline" id="new-tag-form">
                 <label class="admin-field">
                   <span class="admin-label">Criar nova tag</span>
                   <input class="admin-input" id="new-tag-label" type="text" placeholder="Fantasia sombria">
                 </label>
                 <div class="admin-inline-actions">
-                  <button class="admin-secondary-button" type="submit">Criar tag</button>
+                  <button class="admin-secondary-button" id="new-tag-button" type="button">Criar tag</button>
                 </div>
                 <p class="admin-feedback" id="new-tag-feedback" aria-live="polite"></p>
-              </form>
+              </div>
             </section>
 
             <section class="admin-subsection admin-editor-section" data-editor-section="pairs">
@@ -287,7 +286,7 @@
             </section>
 
             <div class="admin-form-actions">
-              <button class="admin-button" type="submit">Salvar alterações</button>
+              <button class="admin-button" id="save-project-button" type="button">Salvar alterações</button>
             </div>
           </form>
         </section>
