@@ -40,16 +40,11 @@
   var flagFutureFeature = document.getElementById("flag-future-feature");
   var tagSearch = document.getElementById("tag-search");
   var tagResults = document.getElementById("tag-results");
-  var addTagButton = document.getElementById("add-tag-button");
   var newTagForm = document.getElementById("new-tag-form");
   var newTagLabel = document.getElementById("new-tag-label");
-  var newTagGroup = document.getElementById("new-tag-group");
-  var newTagPublic = document.getElementById("new-tag-public");
   var newTagFeedback = document.getElementById("new-tag-feedback");
-  var tagList = document.getElementById("tag-list");
   var pairSearch = document.getElementById("pair-search");
   var pairResults = document.getElementById("pair-results");
-  var addPairButton = document.getElementById("add-pair-button");
   var pairList = document.getElementById("pair-list");
   var mediaUploadForm = document.getElementById("media-upload-form");
   var mediaFiles = document.getElementById("media-files");
@@ -122,17 +117,12 @@
   mediaUploadForm.addEventListener("submit", handleMediaUpload);
   mediaList.addEventListener("click", handleMediaListClick);
   tagSearch.addEventListener("input", renderTagResults);
-  tagResults.addEventListener("change", syncTagActionState);
-  tagResults.addEventListener("dblclick", handleAddTag);
-  addTagButton.addEventListener("click", handleAddTag);
+  tagResults.addEventListener("click", handleTagToggle);
   newTagForm.addEventListener("submit", handleCreateTag);
-  tagList.addEventListener("click", handleTagRemoval);
   flagReviewText.addEventListener("change", handleEditorialFlagChange);
   flagFutureFeature.addEventListener("change", handleEditorialFlagChange);
   pairSearch.addEventListener("input", renderPairResults);
-  pairResults.addEventListener("change", syncPairActionState);
-  pairResults.addEventListener("dblclick", handleAddPair);
-  addPairButton.addEventListener("click", handleAddPair);
+  pairResults.addEventListener("click", handleAddPair);
   pairList.addEventListener("click", handlePairRemoval);
 
   boot();
@@ -148,8 +138,6 @@
     } else {
       setAuthFeedback("Entre com um e-mail autorizado para acessar o painel.", false);
       pairSearch.disabled = true;
-      pairResults.disabled = true;
-      addPairButton.disabled = true;
       state.imagesByProject = {};
       state.projectTagsByProject = {};
       state.editorialFlagsByProject = {};
@@ -158,7 +146,6 @@
       pairList.innerHTML = "";
       mediaList.innerHTML = "";
       tagResults.innerHTML = "";
-      tagList.innerHTML = "";
       flagSummary.innerHTML = "";
     }
   }
@@ -612,7 +599,6 @@
     renderMediaList();
     loadProjectImages(project.id);
     renderTagResults();
-    renderTagList();
     renderPairResults();
     renderPairList();
   }
@@ -951,118 +937,87 @@
 
     if (!project) {
       tagResults.innerHTML = "";
-      addTagButton.disabled = true;
-      tagList.innerHTML = "";
       return;
     }
 
     var linkedIds = state.projectTagsByProject[project.id] || [];
     var matches = state.tags.filter(function (tag) {
-      if (linkedIds.indexOf(tag.id) !== -1) return false;
       if (!query) return true;
       var haystack = [tag.label, tag.slug, tag.group_name].join(" ").toLowerCase();
       return haystack.indexOf(query) !== -1;
-    }).slice(0, 30);
+    }).sort(function (left, right) {
+      var leftActive = linkedIds.indexOf(left.id) !== -1 ? 1 : 0;
+      var rightActive = linkedIds.indexOf(right.id) !== -1 ? 1 : 0;
+      if (leftActive !== rightActive) return rightActive - leftActive;
+      return String(left.label || "").localeCompare(String(right.label || ""));
+    }).slice(0, 80);
 
     if (!matches.length) {
-      tagResults.innerHTML = '<option value="">Nenhuma tag disponivel</option>';
-      addTagButton.disabled = true;
+      tagResults.innerHTML = '<p class="admin-inline-empty">Nenhuma tag encontrada.</p>';
       return;
     }
 
     tagResults.innerHTML = matches.map(function (tag) {
-      return '<option value="' + escapeHtml(tag.id) + '">' +
-        escapeHtml(tag.label) + ' · ' + escapeHtml(tag.group_name) +
-      '</option>';
-    }).join("");
-
-    tagResults.selectedIndex = 0;
-    syncTagActionState();
-  }
-
-  function renderTagList() {
-    var project = getSelectedProject();
-    if (!project) {
-      tagList.innerHTML = "";
-      return;
-    }
-
-    var linkedIds = state.projectTagsByProject[project.id] || [];
-    var linkedTags = linkedIds
-      .map(getTagById)
-      .filter(Boolean);
-
-    if (!linkedTags.length) {
-      tagList.innerHTML = '<div class="admin-card">Nenhuma tag vinculada a este projeto.</div>';
-      return;
-    }
-
-    tagList.innerHTML = linkedTags.map(function (tag) {
+      var isActive = linkedIds.indexOf(tag.id) !== -1;
       return '' +
-        '<div class="admin-tag-item">' +
-          '<div class="admin-tag-main">' +
-            '<strong>' + escapeHtml(tag.label) + '</strong>' +
-            '<div class="admin-tag-meta">' + escapeHtml(tag.slug) + ' · ' + escapeHtml(tag.group_name) + (tag.is_public ? ' · publica' : ' · interna') + '</div>' +
-          '</div>' +
-          '<button class="admin-danger-button" type="button" data-remove-tag="' + escapeHtml(tag.id) + '">Remover</button>' +
-        '</div>';
+        '<button class="admin-chip ' + (isActive ? 'is-active' : '') + '" type="button" data-toggle-tag="' + escapeHtml(tag.id) + '">' +
+          escapeHtml(tag.label) +
+        '</button>';
     }).join("");
   }
 
-  function syncTagActionState() {
-    addTagButton.disabled = !tagResults.value;
-  }
+  function handleTagToggle(event) {
+    var button = event.target.closest("[data-toggle-tag]");
+    if (!button) return;
 
-  function handleAddTag() {
     var project = getSelectedProject();
-    var tagId = tagResults.value;
+    var tagId = button.getAttribute("data-toggle-tag");
     if (!project || !tagId) return;
 
-    setSaveState("Vinculando tag...");
+    var linkedIds = state.projectTagsByProject[project.id] || [];
+    if (linkedIds.indexOf(tagId) !== -1) {
+      removeTagFromProject(project.id, tagId);
+      return;
+    }
 
-    fetch(backend.url + "/rest/v1/project_tags", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-        apikey: backend.anonKey,
-        Authorization: "Bearer " + state.token
-      },
-      body: JSON.stringify({
-        project_id: project.id,
-        tag_id: tagId
-      })
-    })
-      .then(function (response) {
-        if (!response.ok) {
-          return response.json().then(function (payload) {
-            throw new Error(payload.message || payload.msg || "falha ao vincular tag");
-          });
-        }
-        return response.json();
-      })
+    addTagToProject(project.id, tagId)
       .then(function () {
-        if (!state.projectTagsByProject[project.id]) {
-          state.projectTagsByProject[project.id] = [];
-        }
-        state.projectTagsByProject[project.id].push(tagId);
-        tagSearch.value = "";
-        renderTagResults();
-        renderTagList();
-        setSaveState("Tag vinculada");
+        setSaveState("Tag marcada");
       })
       .catch(function () {
-        setSaveState("Erro ao vincular tag");
+        setSaveState("Erro ao marcar tag");
       });
   }
 
   function handleCreateTag(event) {
     if (event && event.preventDefault) event.preventDefault();
 
+    var project = getSelectedProject();
     var label = String(newTagLabel.value || "").trim();
     var slug = sanitizeSlug(label);
     if (!label || !slug) {
       setNewTagFeedback("Digite um nome valido para a nova tag.", true);
+      return;
+    }
+
+    var existingTag = state.tags.find(function (tag) {
+      return tag.slug === slug || normalizeTitleKey(tag.label) === normalizeTitleKey(label);
+    });
+
+    if (existingTag) {
+      if (!project) {
+        setNewTagFeedback("Essa tag ja existe.", true);
+        return;
+      }
+
+      addTagToProject(project.id, existingTag.id)
+        .then(function () {
+          newTagLabel.value = "";
+          setNewTagFeedback("Essa tag ja existia e foi marcada no projeto.", false);
+        })
+        .catch(function () {
+          setNewTagFeedback("Nao foi possivel marcar a tag existente.", true);
+        });
       return;
     }
 
@@ -1079,8 +1034,8 @@
       body: JSON.stringify({
         slug: slug,
         label: label,
-        group_name: String(newTagGroup.value || "tema"),
-        is_public: Boolean(newTagPublic.checked)
+        group_name: inferTagGroup(label),
+        is_public: true
       })
     })
       .then(function (response) {
@@ -1095,31 +1050,66 @@
         if (items && items.length) {
           state.tags.push(items[0]);
           state.tags.sort(function (left, right) {
-            return (left.group_name + left.label).localeCompare(right.group_name + right.label);
+            return left.label.localeCompare(right.label);
           });
         }
         newTagLabel.value = "";
-        newTagGroup.value = "tema";
-        newTagPublic.checked = true;
         renderTagResults();
-        setNewTagFeedback("Tag criada com sucesso.", false);
+
+        if (!project || !items || !items.length) {
+          setNewTagFeedback("Tag criada com sucesso.", false);
+          return;
+        }
+
+        return addTagToProject(project.id, items[0].id)
+          .then(function () {
+            setNewTagFeedback("Tag criada e marcada no projeto.", false);
+          });
       })
       .catch(function (error) {
         setNewTagFeedback("Nao foi possivel criar a tag: " + error.message, true);
       });
   }
 
-  function handleTagRemoval(event) {
-    var button = event.target.closest("[data-remove-tag]");
-    if (!button) return;
+  function addTagToProject(projectId, tagId) {
+    setSaveState("Marcando tag...");
 
-    var project = getSelectedProject();
-    var tagId = button.getAttribute("data-remove-tag");
-    if (!project || !tagId) return;
+    return fetch(backend.url + "/rest/v1/project_tags", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify({
+        project_id: projectId,
+        tag_id: tagId
+      })
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao marcar tag");
+          });
+        }
+        return response.json();
+      })
+      .then(function () {
+        if (!state.projectTagsByProject[projectId]) {
+          state.projectTagsByProject[projectId] = [];
+        }
+        if (state.projectTagsByProject[projectId].indexOf(tagId) === -1) {
+          state.projectTagsByProject[projectId].push(tagId);
+        }
+        renderTagResults();
+      });
+  }
 
+  function removeTagFromProject(projectId, tagId) {
     setSaveState("Removendo tag...");
 
-    fetch(backend.url + "/rest/v1/project_tags?project_id=eq." + encodeURIComponent(project.id) + "&tag_id=eq." + encodeURIComponent(tagId), {
+    fetch(backend.url + "/rest/v1/project_tags?project_id=eq." + encodeURIComponent(projectId) + "&tag_id=eq." + encodeURIComponent(tagId), {
       method: "DELETE",
       headers: {
         apikey: backend.anonKey,
@@ -1132,11 +1122,10 @@
             throw new Error(payload.message || payload.msg || "falha ao remover tag");
           });
         }
-        state.projectTagsByProject[project.id] = (state.projectTagsByProject[project.id] || []).filter(function (id) {
+        state.projectTagsByProject[projectId] = (state.projectTagsByProject[projectId] || []).filter(function (id) {
           return id !== tagId;
         });
         renderTagResults();
-        renderTagList();
         setSaveState("Tag removida");
       })
       .catch(function () {
@@ -1150,19 +1139,15 @@
 
     if (!project) {
       pairSearch.disabled = true;
-      pairResults.disabled = true;
-      addPairButton.disabled = true;
       pairResults.innerHTML = "";
       pairList.innerHTML = "";
       return;
     }
 
     pairSearch.disabled = false;
-    pairResults.disabled = false;
 
     if (!query) {
-      pairResults.innerHTML = '<option value="">Digite para buscar um projeto</option>';
-      addPairButton.disabled = true;
+      pairResults.innerHTML = "";
       return;
     }
 
@@ -1182,19 +1167,17 @@
     }).slice(0, 20);
 
     if (!matches.length) {
-      pairResults.innerHTML = '<option value="">Nenhum projeto encontrado</option>';
-      addPairButton.disabled = true;
+      pairResults.innerHTML = '<p class="admin-inline-empty">Nenhum projeto encontrado.</p>';
       return;
     }
 
     pairResults.innerHTML = matches.map(function (candidate) {
-      return '<option value="' + escapeHtml(candidate.id) + '">' +
-        escapeHtml(candidate.title) + ' · ' + escapeHtml(candidate.slug) +
-      '</option>';
+      return '' +
+        '<button class="admin-pair-result" type="button" data-add-pair="' + escapeHtml(candidate.id) + '">' +
+          '<strong>' + escapeHtml(candidate.title) + '</strong>' +
+          '<span>' + escapeHtml(candidate.slug) + '</span>' +
+        '</button>';
     }).join("");
-
-    pairResults.selectedIndex = 0;
-    syncPairActionState();
   }
 
   function renderPairList() {
@@ -1216,7 +1199,7 @@
           '<div class="admin-pair-item">' +
             '<div>' +
               '<div class="admin-pair-title">' + escapeHtml(pairedProject.title) + '</div>' +
-              '<div class="admin-pair-meta">' + escapeHtml(pairedProject.slug) + ' · ' + escapeHtml(pair.pair_type) + '</div>' +
+              '<div class="admin-pair-meta">' + escapeHtml(pairedProject.slug) + '</div>' +
             '</div>' +
             '<button class="admin-danger-button" type="button" data-remove-pair="' + escapeHtml(pair.id) + '" data-paired-project-id="' + escapeHtml(pairedProject.id) + '">Remover</button>' +
           '</div>';
@@ -1224,20 +1207,19 @@
       .filter(Boolean);
 
     if (!items.length) {
-      pairList.innerHTML = '<div class="admin-card">Nenhum par conectado a este projeto.</div>';
+      pairList.innerHTML = '<p class="admin-inline-empty">Nenhum par conectado a este projeto.</p>';
       return;
     }
 
     pairList.innerHTML = items.join("");
   }
 
-  function syncPairActionState() {
-    addPairButton.disabled = !pairResults.value;
-  }
+  function handleAddPair(event) {
+    var button = event.target.closest("[data-add-pair]");
+    if (!button) return;
 
-  function handleAddPair() {
     var project = getSelectedProject();
-    var pairedProjectId = pairResults.value;
+    var pairedProjectId = button.getAttribute("data-add-pair");
     if (!project || !pairedProjectId) return;
 
     if (hasPair(project.id, pairedProjectId)) {
@@ -1246,7 +1228,6 @@
     }
 
     setSaveState("Adicionando par...");
-    addPairButton.disabled = true;
 
     fetch(backend.url + "/rest/v1/project_pairs", {
       method: "POST",
@@ -1284,7 +1265,7 @@
         renderPairList();
         setSaveState("Par adicionado");
       })
-      .catch(function (error) {
+      .catch(function () {
         setSaveState("Erro ao adicionar par");
       });
   }
@@ -1467,6 +1448,27 @@
         return part.charAt(0).toUpperCase() + part.slice(1);
       })
       .join(" ");
+  }
+
+  function inferTagGroup(label) {
+    var value = normalizeTitleKey(label);
+    var colorTerms = {
+      amarelo: true,
+      azul: true,
+      bege: true,
+      branco: true,
+      cinza: true,
+      dourado: true,
+      laranja: true,
+      marrom: true,
+      preto: true,
+      rosa: true,
+      roxo: true,
+      verde: true,
+      vermelho: true
+    };
+
+    return colorTerms[value] ? "cor" : "tema";
   }
 
   function normalizeTitleKey(value) {

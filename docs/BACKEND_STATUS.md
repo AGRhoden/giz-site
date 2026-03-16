@@ -37,8 +37,6 @@
 
 ## Next Recommended Steps
 - Add an import/update script for future batches.
-- Build the private admin/editor workflow.
-- Define how paired projects will be created and edited in the future admin flow.
 - Add a safe `Limpar seleção` action to the upload intake.
 
 ## Admin Progress
@@ -55,15 +53,15 @@
   - optional overwrite of existing project media when the internal identifier already exists
   - upload reporting for created projects, updated projects, duplicates and invalid filenames
   - automatic `revisar texto` marking for projects created from the initial upload flow
-  - organizing the editor into dedicated sections for cadastro, publicacao, midia and pares
-  - creating tags and linking or unlinking tags per project
+  - organizing the editor into dedicated sections for cadastro, mais imagens, tags and pares
+  - direct tag marking by click, with inline tag creation and automatic tag grouping
   - internal editorial flags such as revisar texto and destaque futuro
   - a publication checklist for title, client, type, thumb and image 01
   - editing internal identifier, title, subtitle, client, type, description, internal notes and status
-  - quick editorial actions for draft, review, published and archived
-  - visible publication state and published timestamp inside the editor
+  - a simpler editorial flow based on saving the project state instead of action-heavy publication controls
+  - visible publication state and published timestamp inside cadastro
   - uploading project media to the `project-media` bucket
   - editing image type, alt text, sort order and publication state
   - removing uploaded media from storage and database
-  - adding and removing project pairs
+  - adding and removing project pairs through search + click
   - mirrored pair creation so linked projects stay reciprocal
