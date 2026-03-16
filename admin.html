@@ -31,6 +31,7 @@
             <div><strong>Projetos:</strong> <span id="debug-projects">0</span></div>
             <div><strong>Ultimo erro:</strong> <span id="debug-error">nenhum</span></div>
             <div><strong>SDK:</strong> <span id="debug-sdk">desconhecido</span></div>
+            <div><strong>Config:</strong> <span id="debug-config">desconhecido</span></div>
             <div><strong>Admin JS:</strong> <span id="debug-adminjs">desconhecido</span></div>
           </div>
         </details>
@@ -177,7 +178,7 @@
   <script>
     document.getElementById('debug-sdk').textContent = window.supabase ? 'sdk-global-ok' : document.getElementById('debug-sdk').textContent;
   </script>
-  <script src="backend.config.js?v=20260316i" onload="document.getElementById('debug-adminjs').textContent='config-carregada'" onerror="document.getElementById('debug-adminjs').textContent='config-falhou'; document.getElementById('debug-error').textContent='falha ao carregar backend.config.js';"></script>
-  <script src="admin.js?v=20260316i" onload="document.getElementById('debug-adminjs').textContent = window.__gizAdminInlineClick ? 'adminjs-ok' : 'adminjs-sem-handler'" onerror="document.getElementById('debug-adminjs').textContent='adminjs-falhou'; document.getElementById('debug-error').textContent='falha ao carregar admin.js';"></script>
+  <script src="backend.config.js?v=20260316j" onload="document.getElementById('debug-config').textContent = window.GIZ_BACKEND_CONFIG ? 'config-ok' : 'config-ausente'" onerror="document.getElementById('debug-config').textContent='config-falhou'; document.getElementById('debug-error').textContent='falha ao carregar backend.config.js';"></script>
+  <script src="admin.js?v=20260316j" onload="document.getElementById('debug-adminjs').textContent = window.__gizAdminInlineClick ? 'adminjs-ok' : 'adminjs-sem-handler'" onerror="document.getElementById('debug-adminjs').textContent='adminjs-falhou'; document.getElementById('debug-error').textContent='falha ao carregar admin.js';"></script>
 </body>
 </html>

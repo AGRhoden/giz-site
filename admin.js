@@ -57,6 +57,7 @@ const debugHash = document.getElementById("debug-hash");
 const debugSession = document.getElementById("debug-session");
 const debugProjects = document.getElementById("debug-projects");
 const debugError = document.getElementById("debug-error");
+const debugConfig = document.getElementById("debug-config");
 const sessionEmail = document.getElementById("session-email");
 const logoutButton = document.getElementById("logout-button");
 const projectSearch = document.getElementById("project-search");
@@ -86,6 +87,17 @@ const pairList = document.getElementById("pair-list");
 
 let supabase = null;
 
+window.__gizAdminInlineClick = async (event) => {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  updateDebug({
+    stage: "inline-click",
+    error: "nenhum"
+  });
+  authSubmitButton.textContent = "Clicado";
+  await submitAuthRequest();
+};
+
 initializeAdmin();
 
 function initializeAdmin() {
@@ -98,10 +110,15 @@ function initializeAdmin() {
     setAuthFeedback("Backend config ausente no admin.", true);
     updateDebug({
       stage: "erro-config",
-      error: "backend config ausente"
+      error: "backend config ausente",
+      config: "config-ausente"
     });
     return;
   }
+
+  updateDebug({
+    config: "config-ok"
+  });
 
   if (!supabaseBrowser?.createClient) {
     setAuthFeedback("Biblioteca do Supabase nao carregou. Recarregue a pagina.", true);
@@ -113,17 +130,6 @@ function initializeAdmin() {
   }
 
   supabase = supabaseBrowser.createClient(backend.url, backend.anonKey);
-
-  window.__gizAdminInlineClick = async (event) => {
-    event?.preventDefault?.();
-    event?.stopPropagation?.();
-    updateDebug({
-      stage: "inline-click",
-      error: "nenhum"
-    });
-    authSubmitButton.textContent = "Clicado";
-    await submitAuthRequest();
-  };
 
   window.addEventListener("error", (event) => {
     updateDebug({
@@ -727,6 +733,7 @@ function updateDebug(nextState) {
   if (nextState.session) debugSession.textContent = nextState.session;
   if (nextState.projects) debugProjects.textContent = nextState.projects;
   if (nextState.error) debugError.textContent = nextState.error;
+  if (nextState.config) debugConfig.textContent = nextState.config;
 }
 
 function escapeHtml(value) {
