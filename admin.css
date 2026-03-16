@@ -247,6 +247,13 @@ select {
   cursor: pointer;
 }
 
+.admin-project-item-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
 .admin-project-item.is-active {
   border-color: var(--admin-accent);
   background: var(--admin-accent-soft);
@@ -259,6 +266,38 @@ select {
   margin-top: 8px;
   color: var(--admin-muted);
   font-size: 14px;
+}
+
+.admin-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: #ece7db;
+  color: var(--admin-ink);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-status-pill[data-status="draft"] {
+  background: #ece7db;
+}
+
+.admin-status-pill[data-status="review"] {
+  background: #f7ecd1;
+  color: #7b5610;
+}
+
+.admin-status-pill[data-status="published"] {
+  background: var(--admin-accent-soft);
+  color: var(--admin-accent);
+}
+
+.admin-status-pill[data-status="archived"] {
+  background: #ececec;
+  color: #5d5d5d;
 }
 
 .admin-editor-form {
@@ -275,6 +314,28 @@ select {
 .admin-subsection {
   border-top: 1px solid var(--admin-line);
   padding-top: 20px;
+}
+
+.admin-publication-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-meta-card {
+  padding: 18px 20px;
+  box-shadow: none;
+}
+
+.admin-meta-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 18px;
+}
+
+.admin-publication-actions {
+  margin-top: 8px;
 }
 
 .admin-media-upload {
@@ -401,6 +462,10 @@ select {
   }
 
   .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-publication-meta {
     grid-template-columns: 1fr;
   }
 

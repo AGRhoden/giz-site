@@ -27,6 +27,13 @@
   var fieldDescription = document.getElementById("field-description");
   var fieldPublicationNotes = document.getElementById("field-publication-notes");
   var fieldFeatured = document.getElementById("field-featured");
+  var publicationPill = document.getElementById("publication-pill");
+  var publicationState = document.getElementById("publication-state");
+  var publicationDate = document.getElementById("publication-date");
+  var markDraftButton = document.getElementById("mark-draft-button");
+  var markReviewButton = document.getElementById("mark-review-button");
+  var publishButton = document.getElementById("publish-button");
+  var archiveButton = document.getElementById("archive-button");
   var pairSearch = document.getElementById("pair-search");
   var pairResults = document.getElementById("pair-results");
   var addPairButton = document.getElementById("add-pair-button");
@@ -87,6 +94,10 @@
   newProjectForm.addEventListener("submit", handleCreateProject);
   mediaUploadForm.addEventListener("submit", handleMediaUpload);
   mediaList.addEventListener("click", handleMediaListClick);
+  markDraftButton.addEventListener("click", function () { handlePublicationAction("draft"); });
+  markReviewButton.addEventListener("click", function () { handlePublicationAction("review"); });
+  publishButton.addEventListener("click", function () { handlePublicationAction("published"); });
+  archiveButton.addEventListener("click", function () { handlePublicationAction("archived"); });
   pairSearch.addEventListener("input", renderPairResults);
   pairResults.addEventListener("change", syncPairActionState);
   pairResults.addEventListener("dblclick", handleAddPair);
@@ -156,6 +167,7 @@
       projectList.innerHTML = "";
       editorEmpty.hidden = false;
       editorForm.hidden = true;
+      updatePublicationPanel(null);
       setSaveState("Pronto");
     }
   }
@@ -296,10 +308,13 @@
       var activeClass = project.id === state.selectedProjectId ? " is-active" : "";
       return '' +
         '<button class="admin-project-item' + activeClass + '" type="button" data-project-id="' + escapeHtml(project.id) + '">' +
-          "<strong>" + escapeHtml(project.title) + "</strong>" +
+          '<div class="admin-project-item-head">' +
+            "<strong>" + escapeHtml(project.title) + "</strong>" +
+            '<span class="admin-status-pill" data-status="' + escapeHtml(project.status) + '">' + escapeHtml(formatStatusLabel(project.status)) + '</span>' +
+          '</div>' +
           '<div class="admin-project-meta">' +
             "<span>" + escapeHtml(project.client || "sem cliente") + "</span>" +
-            "<span>" + escapeHtml(project.status) + "</span>" +
+            "<span>" + escapeHtml(project.slug) + "</span>" +
           "</div>" +
         "</button>";
     }).join("");
@@ -318,6 +333,7 @@
     if (!project) {
       editorEmpty.hidden = false;
       editorForm.hidden = true;
+      updatePublicationPanel(null);
       return;
     }
 
@@ -335,6 +351,7 @@
     fieldDescription.value = project.description || "";
     fieldPublicationNotes.value = project.publication_notes || "";
     fieldFeatured.checked = Boolean(project.is_featured);
+    updatePublicationPanel(project);
     renderMediaList();
     loadProjectImages(project.id);
     renderPairResults();
@@ -352,16 +369,21 @@
 
   function handleProjectSave(event) {
     if (event && event.preventDefault) event.preventDefault();
+    persistCurrentProject();
+  }
 
+  function persistCurrentProject(forcedStatus) {
     var project = getSelectedProject();
     if (!project) return;
     var nextSlug = sanitizeSlug(fieldSlug.value);
-    var nextStatus = String(fieldStatus.value || "draft");
+    var nextStatus = String(forcedStatus || fieldStatus.value || "draft");
 
     if (!nextSlug) {
       setSaveState("Slug invalido");
       return;
     }
+
+    fieldStatus.value = nextStatus;
 
     setSaveState("Salvando...");
 
@@ -383,7 +405,7 @@
         description: String(fieldDescription.value || "").trim() || null,
         publication_notes: String(fieldPublicationNotes.value || "").trim() || null,
         is_featured: Boolean(fieldFeatured.checked),
-        published_at: nextStatus === "published" && !project.published_at ? new Date().toISOString() : project.published_at
+        published_at: resolvePublishedAt(project, nextStatus)
       })
     })
       .then(function (response) {
@@ -399,6 +421,7 @@
           replaceProject(items[0]);
           editorSlug.textContent = items[0].slug;
           editorTitle.textContent = items[0].title;
+          updatePublicationPanel(items[0]);
           applyFilters();
         }
         setSaveState("Salvo");
@@ -406,6 +429,10 @@
       .catch(function (error) {
         setSaveState("Erro ao salvar");
       });
+  }
+
+  function handlePublicationAction(nextStatus) {
+    persistCurrentProject(nextStatus);
   }
 
   function toggleNewProjectForm() {
@@ -964,6 +991,30 @@
     saveState.textContent = message;
   }
 
+  function updatePublicationPanel(project) {
+    if (!project) {
+      publicationPill.textContent = "Draft";
+      publicationPill.dataset.status = "draft";
+      publicationState.textContent = "Draft";
+      publicationDate.textContent = "Ainda nao publicado";
+      markDraftButton.disabled = true;
+      markReviewButton.disabled = true;
+      publishButton.disabled = true;
+      archiveButton.disabled = true;
+      return;
+    }
+
+    var status = String(project.status || "draft");
+    publicationPill.textContent = formatStatusLabel(status);
+    publicationPill.dataset.status = status;
+    publicationState.textContent = formatStatusLabel(status);
+    publicationDate.textContent = project.published_at ? formatDateTime(project.published_at) : "Ainda nao publicado";
+    markDraftButton.disabled = status === "draft";
+    markReviewButton.disabled = status === "review";
+    publishButton.disabled = status === "published";
+    archiveButton.disabled = status === "archived";
+  }
+
   function hasPair(projectId, pairedProjectId) {
     return state.pairs.some(function (pair) {
       return pair.project_id === projectId && pair.paired_project_id === pairedProjectId;
@@ -1037,6 +1088,31 @@
 
   function cssEscape(value) {
     return String(value || "").replace(/"/g, '\\"');
+  }
+
+  function resolvePublishedAt(project, nextStatus) {
+    if (nextStatus === "published") {
+      return project.published_at || new Date().toISOString();
+    }
+    return null;
+  }
+
+  function formatStatusLabel(status) {
+    if (status === "review") return "Review";
+    if (status === "published") return "Published";
+    if (status === "archived") return "Archived";
+    return "Draft";
+  }
+
+  function formatDateTime(value) {
+    try {
+      return new Intl.DateTimeFormat("pt-BR", {
+        dateStyle: "medium",
+        timeStyle: "short"
+      }).format(new Date(value));
+    } catch (error) {
+      return value;
+    }
   }
 
   function sanitizeSlug(value) {

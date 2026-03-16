@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316p">
+  <link rel="stylesheet" href="admin.css?v=20260316q">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -151,6 +151,34 @@
 
             <section class="admin-subsection">
               <div class="admin-subsection-heading">
+                <div>
+                  <h3>Publicacao</h3>
+                  <p class="admin-copy">Controle o estágio editorial e a entrada do projeto no site público.</p>
+                </div>
+                <span class="admin-status-pill" id="publication-pill">Draft</span>
+              </div>
+
+              <div class="admin-publication-meta">
+                <div class="admin-card admin-meta-card">
+                  <span class="admin-label">Estado atual</span>
+                  <strong id="publication-state">Draft</strong>
+                </div>
+                <div class="admin-card admin-meta-card">
+                  <span class="admin-label">Publicado em</span>
+                  <strong id="publication-date">Ainda nao publicado</strong>
+                </div>
+              </div>
+
+              <div class="admin-inline-actions admin-publication-actions">
+                <button class="admin-secondary-button" id="mark-draft-button" type="button">Mover para draft</button>
+                <button class="admin-secondary-button" id="mark-review-button" type="button">Enviar para review</button>
+                <button class="admin-button" id="publish-button" type="button">Publicar agora</button>
+                <button class="admin-secondary-button" id="archive-button" type="button">Arquivar</button>
+              </div>
+            </section>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-heading">
                 <h3>Midia</h3>
                 <p class="admin-copy">Suba thumbs e imagens de galeria para este projeto.</p>
               </div>
@@ -191,7 +219,7 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260316p"></script>
-  <script src="admin.js?v=20260316p"></script>
+  <script src="backend.config.js?v=20260316q"></script>
+  <script src="admin.js?v=20260316q"></script>
 </body>
 </html>

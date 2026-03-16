@@ -48,6 +48,8 @@
   - project search and filtering by status
   - creating draft projects
   - editing slug, title, subtitle, client, type, description, publication notes, featured state and status
+  - quick editorial actions for draft, review, published and archived
+  - visible publication state and published timestamp inside the editor
   - uploading project media to the `project-media` bucket
   - editing image type, alt text, sort order and publication state
   - removing uploaded media from storage and database
