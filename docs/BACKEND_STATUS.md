@@ -43,7 +43,9 @@
 ## Admin Progress
 - Added a first admin surface at `/admin`.
 - Admin currently supports:
-  - email-based magic link login
+  - email and password login
+  - password recovery by email
+  - magic link as fallback access flow
   - restricted admin access through an explicit admin allowlist
   - project search and filtering by status
   - creating draft projects

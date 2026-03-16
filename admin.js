@@ -7,6 +7,8 @@
   var authForm = document.getElementById("auth-form");
   var authFeedback = document.getElementById("auth-feedback");
   var authSubmitButton = document.getElementById("auth-submit-button");
+  var authRecoveryButton = document.getElementById("auth-recovery-button");
+  var authMagicLinkButton = document.getElementById("auth-magic-link-button");
   var sessionEmail = document.getElementById("session-email");
   var logoutButton = document.getElementById("logout-button");
   var projectSearch = document.getElementById("project-search");
@@ -92,12 +94,22 @@
 
   authForm.addEventListener("submit", function (event) {
     if (event && event.preventDefault) event.preventDefault();
-    submitAuthRequest();
+    submitPasswordLogin();
   });
 
   authSubmitButton.addEventListener("click", function (event) {
     if (event && event.preventDefault) event.preventDefault();
-    submitAuthRequest();
+    submitPasswordLogin();
+  });
+
+  authRecoveryButton.addEventListener("click", function (event) {
+    if (event && event.preventDefault) event.preventDefault();
+    submitPasswordRecovery();
+  });
+
+  authMagicLinkButton.addEventListener("click", function (event) {
+    if (event && event.preventDefault) event.preventDefault();
+    submitMagicLinkRequest();
   });
 
   logoutButton.addEventListener("click", function () {
@@ -218,7 +230,75 @@
     }
   }
 
-  function submitAuthRequest() {
+  function submitPasswordLogin() {
+    var email = "";
+    var password = "";
+    if (authForm.elements && authForm.elements.email) {
+      email = String(authForm.elements.email.value || "").trim().toLowerCase();
+    }
+    if (authForm.elements && authForm.elements.password) {
+      password = String(authForm.elements.password.value || "");
+    }
+
+    if (!email || email.indexOf("@") === -1) {
+      setAuthFeedback("Digite um e-mail valido.", true);
+      return;
+    }
+
+    if (!password) {
+      setAuthFeedback("Digite sua senha.", true);
+      return;
+    }
+
+    authSubmitButton.disabled = true;
+    authRecoveryButton.disabled = true;
+    authMagicLinkButton.disabled = true;
+    authSubmitButton.textContent = "Entrando...";
+    setAuthFeedback("Validando acesso...", false);
+
+    fetch(backend.url + "/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: backend.anonKey
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password
+      })
+    })
+      .then(function (response) {
+        return response.json().then(function (payload) {
+          if (!response.ok) {
+            throw new Error(payload.msg || payload.error_description || "falha no login");
+          }
+          return payload;
+        });
+      })
+      .then(function (payload) {
+        var accessToken = payload.access_token;
+        var sessionEmailValue = payload.user && payload.user.email ? payload.user.email : email;
+        sessionStorage.setItem(AUTH_STORAGE_KEY, accessToken);
+        state.token = accessToken;
+        state.sessionEmail = sessionEmailValue;
+        setAuthFeedback("Login realizado com sucesso.", false);
+        authSubmitButton.disabled = false;
+        authRecoveryButton.disabled = false;
+        authMagicLinkButton.disabled = false;
+        authSubmitButton.textContent = "Entrar";
+        renderAuthState();
+        loadProjects();
+      })
+      .catch(function (error) {
+        setAuthFeedback("Nao foi possivel entrar: " + error.message, true);
+        authSubmitButton.disabled = false;
+        authRecoveryButton.disabled = false;
+        authMagicLinkButton.disabled = false;
+        authSubmitButton.textContent = "Entrar";
+      });
+  }
+
+  function submitMagicLinkRequest() {
     var email = "";
     if (authForm.elements && authForm.elements.email) {
       email = String(authForm.elements.email.value || "").trim().toLowerCase();
@@ -230,8 +310,10 @@
     }
 
     authSubmitButton.disabled = true;
-    authSubmitButton.textContent = "Enviando...";
-    setAuthFeedback("Enviando magic link...", false);
+    authRecoveryButton.disabled = true;
+    authMagicLinkButton.disabled = true;
+    authMagicLinkButton.textContent = "Enviando...";
+    setAuthFeedback("Enviando link magico...", false);
 
     fetch(backend.url + "/auth/v1/otp", {
       method: "POST",
@@ -254,12 +336,68 @@
         state.sessionEmail = email;
         setAuthFeedback("Link enviado para " + email + ".", false);
         authSubmitButton.disabled = false;
-        authSubmitButton.textContent = "Reenviar acesso";
+        authRecoveryButton.disabled = false;
+        authMagicLinkButton.disabled = false;
+        authMagicLinkButton.textContent = "Enviar link magico";
       })
       .catch(function (error) {
         setAuthFeedback("Nao foi possivel enviar o acesso: " + error.message, true);
         authSubmitButton.disabled = false;
-        authSubmitButton.textContent = "Enviar acesso";
+        authRecoveryButton.disabled = false;
+        authMagicLinkButton.disabled = false;
+        authMagicLinkButton.textContent = "Enviar link magico";
+      });
+  }
+
+  function submitPasswordRecovery() {
+    var email = "";
+    if (authForm.elements && authForm.elements.email) {
+      email = String(authForm.elements.email.value || "").trim().toLowerCase();
+    }
+
+    if (!email || email.indexOf("@") === -1) {
+      setAuthFeedback("Digite um e-mail valido.", true);
+      return;
+    }
+
+    authSubmitButton.disabled = true;
+    authRecoveryButton.disabled = true;
+    authMagicLinkButton.disabled = true;
+    authRecoveryButton.textContent = "Enviando...";
+    setAuthFeedback("Enviando link para definir ou recuperar senha...", false);
+
+    fetch(backend.url + "/auth/v1/recover", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: backend.anonKey
+      },
+      body: JSON.stringify({
+        email: email,
+        redirect_to: window.location.origin + "/auth/reset-password"
+      })
+    })
+      .then(function (response) {
+        return response.json().then(function (payload) {
+          if (!response.ok) {
+            throw new Error(payload.msg || payload.error_description || "falha ao enviar recuperacao");
+          }
+          return payload;
+        });
+      })
+      .then(function () {
+        setAuthFeedback("Email enviado para definir ou recuperar a senha.", false);
+        authSubmitButton.disabled = false;
+        authRecoveryButton.disabled = false;
+        authMagicLinkButton.disabled = false;
+        authRecoveryButton.textContent = "Definir ou recuperar senha";
+      })
+      .catch(function (error) {
+        setAuthFeedback("Nao foi possivel enviar a recuperacao: " + error.message, true);
+        authSubmitButton.disabled = false;
+        authRecoveryButton.disabled = false;
+        authMagicLinkButton.disabled = false;
+        authRecoveryButton.textContent = "Definir ou recuperar senha";
       });
   }
 

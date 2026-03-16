@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316v">
+  <link rel="stylesheet" href="admin.css?v=20260316w">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -14,12 +14,18 @@
         <p class="admin-kicker">GIZ</p>
         <h1>Painel editorial</h1>
         <p class="admin-copy">
-          Entre com seu e-mail para receber um magic link e gerenciar o portfólio.
+          Entre com e-mail e senha para gerenciar o portfolio. Se precisar, voce pode redefinir a senha por e-mail.
         </p>
         <form id="auth-form" class="admin-form" novalidate onsubmit="return false;">
           <label class="admin-label" for="email">E-mail</label>
           <input class="admin-input" id="email" name="email" type="email" required>
-          <button class="admin-button" id="auth-submit-button" type="button">Enviar acesso</button>
+          <label class="admin-label" for="password">Senha</label>
+          <input class="admin-input" id="password" name="password" type="password" autocomplete="current-password" required>
+          <div class="admin-inline-actions">
+            <button class="admin-button" id="auth-submit-button" type="button">Entrar</button>
+            <button class="admin-secondary-button" id="auth-recovery-button" type="button">Definir ou recuperar senha</button>
+            <button class="admin-secondary-button" id="auth-magic-link-button" type="button">Enviar link magico</button>
+          </div>
         </form>
         <p class="admin-feedback" id="auth-feedback" aria-live="polite"></p>
       </div>
@@ -342,7 +348,7 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260316v"></script>
-  <script src="admin.js?v=20260316v"></script>
+  <script src="backend.config.js?v=20260316w"></script>
+  <script src="admin.js?v=20260316w"></script>
 </body>
 </html>
