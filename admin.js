@@ -51,6 +51,7 @@ const authScreen = document.getElementById("auth-screen");
 const adminApp = document.getElementById("admin-app");
 const authForm = document.getElementById("auth-form");
 const authFeedback = document.getElementById("auth-feedback");
+const authSubmitButton = document.getElementById("auth-submit-button");
 const sessionEmail = document.getElementById("session-email");
 const logoutButton = document.getElementById("logout-button");
 const projectSearch = document.getElementById("project-search");
@@ -144,6 +145,8 @@ async function handleAuthSubmit(event) {
   if (!email) return;
 
   setAuthFeedback("Enviando magic link...", false);
+  authSubmitButton.disabled = true;
+  authSubmitButton.textContent = "Enviando...";
 
   const redirectUrl = new URL("/admin", window.location.origin).toString();
   const { error } = await supabase.auth.signInWithOtp({
@@ -157,10 +160,14 @@ async function handleAuthSubmit(event) {
   if (error) {
     console.error(error);
     setAuthFeedback(`Nao foi possivel enviar o acesso: ${error.message}`, true);
+    authSubmitButton.disabled = false;
+    authSubmitButton.textContent = "Enviar acesso";
     return;
   }
 
-  setAuthFeedback("Link enviado. Abra o e-mail e volte para esta tela.", false);
+  setAuthFeedback(`Link enviado para ${email}. Abra o e-mail e clique em "Log In".`, false);
+  authSubmitButton.disabled = false;
+  authSubmitButton.textContent = "Reenviar acesso";
 }
 
 async function handleLogout() {
@@ -182,7 +189,9 @@ function updateAuthUI() {
     projectCount.textContent = "0";
     editorEmpty.hidden = false;
     editorForm.hidden = true;
-    setAuthFeedback("Entre com um e-mail autorizado para acessar o painel.", false);
+    if (!authFeedback.textContent.trim()) {
+      setAuthFeedback("Entre com um e-mail autorizado para acessar o painel.", false);
+    }
   }
 }
 

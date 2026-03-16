@@ -120,6 +120,12 @@ select {
   color: white;
 }
 
+.admin-button[disabled],
+.admin-secondary-button[disabled] {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .admin-secondary-button {
   border: 1px solid var(--admin-line);
   background: #fff;
