@@ -25,9 +25,11 @@
 - tags imported from current color tags
 - thumbs and gallery image paths imported
 
-## Pending Check
-- The storage bucket migration was created locally, but the last `supabase db push` hit a temporary pooler authentication circuit breaker.
-- Re-run `supabase db push` later to confirm `project-media` bucket creation if it did not apply.
+## Supabase Runtime Status
+- `project-media` bucket migration applied remotely.
+- `published_project_feed` view applied remotely.
+- Frontend switched to Supabase feed using the public project URL and publishable key.
+- Local JSON fallback remains in the codebase, but production config is now using Supabase.
 
 ## Frontend Preparedness
 - The frontend now supports an optional Supabase-backed source through `backend.config.js`.
@@ -36,7 +38,6 @@
 - Project pair UI hooks are in place and will appear when pair data exists.
 
 ## Next Recommended Steps
-- Verify the bucket migration status and apply if still pending.
 - Add an import/update script for future batches.
-- Connect the frontend to Supabase reads behind a feature flag.
 - Build the private admin/editor workflow.
+- Define how paired projects will be created and edited in the future admin flow.
