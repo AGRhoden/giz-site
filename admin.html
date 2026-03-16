@@ -19,7 +19,7 @@
         <form id="auth-form" class="admin-form" novalidate onsubmit="return false;">
           <label class="admin-label" for="email">E-mail</label>
           <input class="admin-input" id="email" name="email" type="email" required>
-          <button class="admin-button" id="auth-submit-button" type="button" onclick="document.getElementById('debug-stage').textContent='inline-dom-click'; this.textContent='Inline ok'; window.__gizAdminInlineClick && window.__gizAdminInlineClick(event)">Enviar acesso</button>
+          <button class="admin-button" id="auth-submit-button" type="button">Enviar acesso</button>
         </form>
         <p class="admin-feedback" id="auth-feedback" aria-live="polite"></p>
         <details class="admin-debug" open>
@@ -173,12 +173,9 @@
 
   <script>
     document.getElementById('debug-stage').textContent = 'inline-html-ok';
+    document.getElementById('debug-sdk').textContent = 'sdk-nao-usado';
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" onload="document.getElementById('debug-sdk').textContent='sdk-carregado'" onerror="document.getElementById('debug-sdk').textContent='sdk-falhou'; document.getElementById('debug-error').textContent='falha ao carregar supabase-js';"></script>
-  <script>
-    document.getElementById('debug-sdk').textContent = window.supabase ? 'sdk-global-ok' : document.getElementById('debug-sdk').textContent;
-  </script>
-  <script src="backend.config.js?v=20260316k" onload="document.getElementById('debug-config').textContent = window.GIZ_BACKEND_CONFIG ? 'config-ok' : 'config-ausente'" onerror="document.getElementById('debug-config').textContent='config-falhou'; document.getElementById('debug-error').textContent='falha ao carregar backend.config.js';"></script>
-  <script src="admin.js?v=20260316k" onload="document.getElementById('debug-adminjs').textContent = window.__gizAdminInlineClick ? 'adminjs-ok' : 'adminjs-sem-handler'" onerror="document.getElementById('debug-adminjs').textContent='adminjs-falhou'; document.getElementById('debug-error').textContent='falha ao carregar admin.js';"></script>
+  <script src="backend.config.js?v=20260316l" onload="document.getElementById('debug-config').textContent = window.GIZ_BACKEND_CONFIG ? 'config-ok' : 'config-ausente'" onerror="document.getElementById('debug-config').textContent='config-falhou'; document.getElementById('debug-error').textContent='falha ao carregar backend.config.js';"></script>
+  <script src="admin.js?v=20260316l" onload="document.getElementById('debug-adminjs').textContent = window.__gizAdminInlineClick ? 'adminjs-ok' : 'adminjs-sem-handler'" onerror="document.getElementById('debug-adminjs').textContent='adminjs-falhou'; document.getElementById('debug-error').textContent='falha ao carregar admin.js';"></script>
 </body>
 </html>

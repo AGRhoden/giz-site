@@ -49,13 +49,7 @@
     selectedProjectId: null
   };
 
-  window.__gizAdminInlineClick = function (event) {
-    if (event && event.preventDefault) event.preventDefault();
-    if (event && event.stopPropagation) event.stopPropagation();
-    updateDebug({ stage: "inline-click", error: "nenhum" });
-    authSubmitButton.textContent = "Clicado";
-    submitAuthRequest();
-  };
+  window.__gizAdminInlineClick = submitAuthRequest;
 
   if (!backend.url || !backend.anonKey) {
     updateDebug({
@@ -81,7 +75,6 @@
 
   authSubmitButton.addEventListener("click", function (event) {
     if (event && event.preventDefault) event.preventDefault();
-    updateDebug({ stage: "click-submit", error: "nenhum" });
     submitAuthRequest();
   });
 
