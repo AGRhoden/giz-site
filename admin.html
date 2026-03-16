@@ -66,30 +66,21 @@
             <h2>Projetos</h2>
             <div class="admin-panel-meta">
               <span id="project-count">0</span>
-              <button class="admin-secondary-button" id="new-project-button" type="button">Novo projeto / upload</button>
+              <button class="admin-secondary-button" id="new-project-button" type="button">Upload</button>
             </div>
           </div>
           <form class="admin-card admin-inline-form admin-intake-form" id="new-project-form" hidden>
-            <p class="admin-copy">
-              Selecione um ou varios arquivos. O admin agrupa tudo pelo nome-base e cria cada projeto em
-              <strong>draft</strong>. Convencao esperada:
-              <code>nomedolivro_thumb.jpg</code>,
-              <code>nomedolivro_01.jpg</code>,
-              <code>nomedolivro_02.jpg</code>.
-            </p>
+            <p class="admin-copy">Selecione as thumbs e imagens dos projetos que devem entrar no portfolio.</p>
             <label class="admin-field">
-              <span class="admin-label">Arquivos do lote</span>
+              <span class="admin-label">Arquivos</span>
               <input class="admin-input" id="intake-files" type="file" accept="image/*" multiple>
             </label>
-            <label class="admin-field">
-              <span class="admin-label">Identificacao do lote</span>
-              <input class="admin-input" id="intake-batch" type="text" placeholder="mar-2026-livros">
-            </label>
             <div class="admin-inline-actions">
-              <button class="admin-button" type="submit">Criar projetos a partir dos arquivos</button>
+              <button class="admin-button" type="submit">Enviar arquivos</button>
               <button class="admin-secondary-button" id="cancel-new-project-button" type="button">Cancelar</button>
             </div>
             <p class="admin-feedback" id="bulk-import-feedback" aria-live="polite"></p>
+            <div class="admin-intake-report" id="intake-report" hidden></div>
           </form>
           <div class="admin-list" id="project-list"></div>
         </aside>
@@ -105,7 +96,7 @@
           <form class="admin-card admin-editor-form" id="editor-form" hidden>
             <div class="admin-panel-heading">
               <div>
-                <p class="admin-kicker" id="editor-slug">slug</p>
+                <p class="admin-kicker" id="editor-slug">identificador interno</p>
                 <h2 id="editor-title">Projeto</h2>
               </div>
               <span class="admin-save-state" id="save-state">Pronto</span>
@@ -122,7 +113,7 @@
             <section class="admin-editor-section is-active" data-editor-section="details">
               <div class="admin-grid">
                 <label class="admin-field">
-                  <span class="admin-label">Slug</span>
+                  <span class="admin-label">Identificador interno</span>
                   <input class="admin-input" id="field-slug" type="text" pattern="[a-z0-9]+(?:[-_][a-z0-9]+)*" required>
                 </label>
 

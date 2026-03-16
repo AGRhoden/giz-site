@@ -63,9 +63,9 @@
   var newProjectButton = document.getElementById("new-project-button");
   var newProjectForm = document.getElementById("new-project-form");
   var intakeFiles = document.getElementById("intake-files");
-  var intakeBatch = document.getElementById("intake-batch");
   var cancelNewProjectButton = document.getElementById("cancel-new-project-button");
   var bulkImportFeedback = document.getElementById("bulk-import-feedback");
+  var intakeReport = document.getElementById("intake-report");
 
   var state = {
     token: null,
@@ -704,16 +704,20 @@
 
   function toggleNewProjectForm() {
     newProjectForm.hidden = !newProjectForm.hidden;
+    if (!newProjectForm.hidden) {
+      setBulkImportFeedback("", false);
+      renderIntakeReport(null);
+    }
   }
 
   function handleIntakeUpload(event) {
     if (event && event.preventDefault) event.preventDefault();
 
     var files = intakeFiles.files;
-    var importedBatch = String(intakeBatch.value || "").trim() || null;
 
     if (!files || !files.length) {
       setBulkImportFeedback("Selecione ao menos um arquivo para criar os projetos.", true);
+      renderIntakeReport(null);
       return;
     }
 
@@ -722,36 +726,62 @@
       grouped = groupIncomingFiles(files);
     } catch (error) {
       setBulkImportFeedback(error.message, true);
+      renderIntakeReport(null);
       return;
     }
 
     if (!grouped.items.length) {
-      setBulkImportFeedback("Nenhum arquivo valido foi reconhecido. Use nomes como projeto_thumb.jpg e projeto_01.jpg.", true);
+      setBulkImportFeedback("Nenhum arquivo valido foi reconhecido.", true);
+      renderIntakeReport({
+        invalidFiles: grouped.invalidGroups
+      });
       return;
     }
 
     var existingSlugs = {};
+    var existingTitles = {};
     for (var i = 0; i < state.projects.length; i += 1) {
       existingSlugs[state.projects[i].slug] = true;
+      existingTitles[normalizeTitleKey(state.projects[i].title)] = state.projects[i].title;
     }
 
-    var acceptedGroups = grouped.items.filter(function (item) {
-      return !existingSlugs[item.slug];
-    });
-    var skippedGroups = grouped.items
-      .filter(function (item) { return existingSlugs[item.slug]; })
-      .map(function (item) { return item.slug; })
-      .concat(grouped.invalidGroups);
+    var createdCandidates = [];
+    var duplicateIdentifiers = [];
+    var duplicateTitles = [];
+    var seenTitleKeys = {};
 
-    if (!acceptedGroups.length) {
-      setBulkImportFeedback("Nenhum projeto novo foi criado. Slugs ignorados: " + skippedGroups.join(", ") + ".", true);
+    grouped.items.forEach(function (item) {
+      var titleKey = normalizeTitleKey(buildProvisionalTitle(item.slug));
+
+      if (existingSlugs[item.slug]) {
+        duplicateIdentifiers.push(item.slug);
+        return;
+      }
+
+      if (existingTitles[titleKey] || seenTitleKeys[titleKey]) {
+        duplicateTitles.push(buildProvisionalTitle(item.slug));
+        return;
+      }
+
+      seenTitleKeys[titleKey] = true;
+      createdCandidates.push(item);
+    });
+
+    if (!createdCandidates.length) {
+      setBulkImportFeedback("Nenhum projeto novo foi criado.", true);
+      renderIntakeReport({
+        duplicateIdentifiers: duplicateIdentifiers,
+        duplicateTitles: duplicateTitles,
+        invalidFiles: grouped.invalidGroups
+      });
       return;
     }
 
-    setBulkImportFeedback("Criando " + acceptedGroups.length + " projetos a partir dos arquivos...", false);
+    setBulkImportFeedback("Criando " + createdCandidates.length + " projetos a partir dos arquivos...", false);
+    renderIntakeReport(null);
     setSaveState("Processando upload inicial...");
 
-    createProjectsFromGroups(acceptedGroups, importedBatch)
+    createProjectsFromGroups(createdCandidates)
       .then(function (createdProjects) {
         var uploads = [];
 
@@ -761,7 +791,7 @@
           state.imagesByProject[project.id] = [];
           uploads.push(upsertEditorialFlag(project.id, "review_text", "Revisar texto"));
 
-          var group = findGroupBySlug(acceptedGroups, project.slug);
+          var group = findGroupBySlug(createdCandidates, project.slug);
           if (group) {
             group.files.forEach(function (entry) {
               uploads.push(uploadPreparedImage(project, entry.file, entry.kind, entry.sortOrder));
@@ -794,22 +824,24 @@
 
         newProjectForm.hidden = true;
         intakeFiles.value = "";
-        intakeBatch.value = "";
         applyFilters();
 
         if (state.selectedProjectId) {
           loadProjectImages(state.selectedProjectId);
         }
 
-        setBulkImportFeedback(
-          "Upload concluido com " + createdProjects.length + " projetos em draft." +
-          (skippedGroups.length ? " Ignorados: " + skippedGroups.join(", ") + "." : ""),
-          false
-        );
+        setBulkImportFeedback("Upload concluido.", false);
+        renderIntakeReport({
+          createdProjects: createdProjects.map(function (project) { return project.title; }),
+          duplicateIdentifiers: duplicateIdentifiers,
+          duplicateTitles: duplicateTitles,
+          invalidFiles: grouped.invalidGroups
+        });
         setSaveState("Projetos criados a partir do upload");
       })
       .catch(function (error) {
         setBulkImportFeedback("Nao foi possivel criar os projetos: " + error.message, true);
+        renderIntakeReport(null);
         setSaveState("Erro no upload inicial");
       });
   }
@@ -1311,13 +1343,12 @@
       });
   }
 
-  function createProjectsFromGroups(groups, importedBatch) {
+  function createProjectsFromGroups(groups) {
     var payload = groups.map(function (group) {
       return {
         slug: group.slug,
         title: buildProvisionalTitle(group.slug),
         status: "draft",
-        imported_batch: importedBatch,
         publication_notes: "Projeto criado por upload inicial. Ajustar titulo final, tipo e editora antes de publicar."
       };
     });
@@ -1428,6 +1459,15 @@
         return part.charAt(0).toUpperCase() + part.slice(1);
       })
       .join(" ");
+  }
+
+  function normalizeTitleKey(value) {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
   }
 
   function uploadSingleImage(project, file, kind, index) {
@@ -1696,6 +1736,47 @@
   function setBulkImportFeedback(message, isError) {
     bulkImportFeedback.textContent = message;
     bulkImportFeedback.classList.toggle("is-error", Boolean(isError));
+  }
+
+  function renderIntakeReport(report) {
+    if (!report) {
+      intakeReport.hidden = true;
+      intakeReport.innerHTML = "";
+      return;
+    }
+
+    var blocks = [];
+
+    if (report.createdProjects && report.createdProjects.length) {
+      blocks.push(renderIntakeReportGroup("Projetos criados", report.createdProjects, "is-created"));
+    }
+
+    if (report.duplicateIdentifiers && report.duplicateIdentifiers.length) {
+      blocks.push(renderIntakeReportGroup("Ja existentes", report.duplicateIdentifiers, "is-warning"));
+    }
+
+    if (report.duplicateTitles && report.duplicateTitles.length) {
+      blocks.push(renderIntakeReportGroup("Titulos repetidos ou muito proximos", report.duplicateTitles, "is-warning"));
+    }
+
+    if (report.invalidFiles && report.invalidFiles.length) {
+      blocks.push(renderIntakeReportGroup("Arquivos fora do padrao", report.invalidFiles, "is-error"));
+    }
+
+    intakeReport.hidden = !blocks.length;
+    intakeReport.innerHTML = blocks.join("");
+  }
+
+  function renderIntakeReportGroup(title, items, modifierClass) {
+    return '' +
+      '<section class="admin-intake-report-group ' + modifierClass + '">' +
+        '<h3>' + escapeHtml(title) + '</h3>' +
+        '<ul>' +
+          items.map(function (item) {
+            return '<li>' + escapeHtml(item) + '</li>';
+          }).join("") +
+        '</ul>' +
+      '</section>';
   }
 
   function setNewTagFeedback(message, isError) {

@@ -235,9 +235,48 @@ select {
   margin-bottom: 12px;
 }
 
-.admin-intake-form code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 13px;
+.admin-intake-report {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.admin-intake-report[hidden] {
+  display: none;
+}
+
+.admin-intake-report-group {
+  border: 1px solid var(--admin-line);
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.admin-intake-report-group h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.admin-intake-report-group ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--admin-muted);
+}
+
+.admin-intake-report-group li + li {
+  margin-top: 4px;
+}
+
+.admin-intake-report-group.is-created h3 {
+  color: var(--admin-accent);
+}
+
+.admin-intake-report-group.is-warning h3 {
+  color: #a35d00;
+}
+
+.admin-intake-report-group.is-error h3 {
+  color: var(--admin-danger);
 }
 
 .admin-inline-actions {
