@@ -231,20 +231,11 @@ select {
   margin-bottom: 12px;
 }
 
-.admin-import {
+.admin-intake-form {
   margin-bottom: 12px;
 }
 
-.admin-import-summary {
-  cursor: pointer;
-  font-size: 14px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--admin-muted);
-}
-
-.admin-import-textarea {
-  min-height: 180px;
+.admin-intake-form code {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 13px;
 }

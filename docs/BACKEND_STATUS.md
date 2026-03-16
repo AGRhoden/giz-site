@@ -48,8 +48,10 @@
   - magic link as fallback access flow
   - restricted admin access through an explicit admin allowlist
   - project search and filtering by status
-  - creating draft projects
-  - importing project batches from pasted JSON or line-based lists
+  - creating draft projects from one or many uploaded files
+  - grouping incoming files by naming convention such as `projeto_thumb.jpg` and `projeto_01.jpg`
+  - automatic initial upload of thumb and gallery images during project creation
+  - automatic `revisar texto` marking for projects created from the initial upload flow
   - organizing the editor into dedicated sections for cadastro, publicacao, midia and pares
   - creating tags and linking or unlinking tags per project
   - internal editorial flags such as revisar texto and destaque futuro

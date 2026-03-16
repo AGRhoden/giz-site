@@ -62,15 +62,9 @@
   var mediaList = document.getElementById("media-list");
   var newProjectButton = document.getElementById("new-project-button");
   var newProjectForm = document.getElementById("new-project-form");
-  var newProjectSlug = document.getElementById("new-project-slug");
-  var newProjectTitle = document.getElementById("new-project-title");
+  var intakeFiles = document.getElementById("intake-files");
+  var intakeBatch = document.getElementById("intake-batch");
   var cancelNewProjectButton = document.getElementById("cancel-new-project-button");
-  var bulkImportPanel = document.getElementById("bulk-import-panel");
-  var bulkImportForm = document.getElementById("bulk-import-form");
-  var bulkImportStatus = document.getElementById("bulk-import-status");
-  var bulkImportBatch = document.getElementById("bulk-import-batch");
-  var bulkImportInput = document.getElementById("bulk-import-input");
-  var bulkImportClearButton = document.getElementById("bulk-import-clear-button");
   var bulkImportFeedback = document.getElementById("bulk-import-feedback");
 
   var state = {
@@ -132,9 +126,7 @@
   editorForm.addEventListener("submit", handleProjectSave);
   newProjectButton.addEventListener("click", toggleNewProjectForm);
   cancelNewProjectButton.addEventListener("click", toggleNewProjectForm);
-  newProjectForm.addEventListener("submit", handleCreateProject);
-  bulkImportForm.addEventListener("submit", handleBulkImport);
-  bulkImportClearButton.addEventListener("click", clearBulkImportForm);
+  newProjectForm.addEventListener("submit", handleIntakeUpload);
   mediaUploadForm.addEventListener("submit", handleMediaUpload);
   mediaList.addEventListener("click", handleMediaListClick);
   tagSearch.addEventListener("input", renderTagResults);
@@ -174,7 +166,6 @@
       state.projectTagsByProject = {};
       state.editorialFlagsByProject = {};
       mediaUploadForm.hidden = true;
-      bulkImportPanel.open = false;
       pairResults.innerHTML = "";
       pairList.innerHTML = "";
       mediaList.innerHTML = "";
@@ -715,79 +706,27 @@
     newProjectForm.hidden = !newProjectForm.hidden;
   }
 
-  function handleCreateProject(event) {
+  function handleIntakeUpload(event) {
     if (event && event.preventDefault) event.preventDefault();
 
-    var slug = String(newProjectSlug.value || "").trim().toLowerCase();
-    var title = String(newProjectTitle.value || "").trim();
+    var files = intakeFiles.files;
+    var importedBatch = String(intakeBatch.value || "").trim() || null;
 
-    if (!slug || !title) {
-      setSaveState("Preencha slug e titulo");
+    if (!files || !files.length) {
+      setBulkImportFeedback("Selecione ao menos um arquivo para criar os projetos.", true);
       return;
     }
 
-    fetch(backend.url + "/rest/v1/projects", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-        apikey: backend.anonKey,
-        Authorization: "Bearer " + state.token
-      },
-      body: JSON.stringify({
-        slug: slug,
-        title: title,
-        status: "draft"
-      })
-    })
-      .then(function (response) {
-        if (!response.ok) {
-          return response.json().then(function (payload) {
-            throw new Error(payload.message || payload.msg || "falha ao criar projeto");
-          });
-        }
-        return response.json();
-      })
-      .then(function (items) {
-        if (items && items.length) {
-          state.projects.push(items[0]);
-          state.projectTagsByProject[items[0].id] = [];
-          state.imagesByProject[items[0].id] = [];
-          state.selectedProjectId = items[0].id;
-          newProjectForm.hidden = true;
-          newProjectSlug.value = "";
-          newProjectTitle.value = "";
-          applyFilters();
-        }
-        setSaveState("Draft criado");
-      })
-      .catch(function (error) {
-        setSaveState("Erro ao criar");
-      });
-  }
-
-  function handleBulkImport(event) {
-    if (event && event.preventDefault) event.preventDefault();
-
-    var rawInput = String(bulkImportInput.value || "").trim();
-    var initialStatus = String(bulkImportStatus.value || "draft");
-    var importedBatch = String(bulkImportBatch.value || "").trim() || null;
-
-    if (!rawInput) {
-      setBulkImportFeedback("Cole o conteúdo do lote antes de importar.", true);
-      return;
-    }
-
-    var parsedItems;
+    var grouped;
     try {
-      parsedItems = parseBulkImportInput(rawInput);
+      grouped = groupIncomingFiles(files);
     } catch (error) {
       setBulkImportFeedback(error.message, true);
       return;
     }
 
-    if (!parsedItems.length) {
-      setBulkImportFeedback("Nenhum projeto valido foi encontrado no lote.", true);
+    if (!grouped.items.length) {
+      setBulkImportFeedback("Nenhum arquivo valido foi reconhecido. Use nomes como projeto_thumb.jpg e projeto_01.jpg.", true);
       return;
     }
 
@@ -796,77 +735,82 @@
       existingSlugs[state.projects[i].slug] = true;
     }
 
-    var duplicateSlugs = [];
-    var seenInBatch = {};
-    var payload = parsedItems.map(function (item) {
-      var slug = sanitizeSlug(item.slug || item.title);
-      if (!slug || !item.title) {
-        return null;
-      }
-      if (existingSlugs[slug] || seenInBatch[slug]) {
-        duplicateSlugs.push(slug);
-        return null;
-      }
-      seenInBatch[slug] = true;
-      return {
-        slug: slug,
-        title: String(item.title || "").trim(),
-        subtitle: normalizeOptionalText(item.subtitle),
-        client: normalizeOptionalText(item.client),
-        project_type: normalizeOptionalText(item.project_type || item.type),
-        description: normalizeOptionalText(item.description),
-        publication_notes: normalizeOptionalText(item.publication_notes),
-        imported_batch: importedBatch,
-        status: initialStatus
-      };
-    }).filter(Boolean);
+    var acceptedGroups = grouped.items.filter(function (item) {
+      return !existingSlugs[item.slug];
+    });
+    var skippedGroups = grouped.items
+      .filter(function (item) { return existingSlugs[item.slug]; })
+      .map(function (item) { return item.slug; })
+      .concat(grouped.invalidGroups);
 
-    if (!payload.length) {
-      setBulkImportFeedback("O lote foi descartado porque todos os slugs ja existem ou estavam invalidos.", true);
+    if (!acceptedGroups.length) {
+      setBulkImportFeedback("Nenhum projeto novo foi criado. Slugs ignorados: " + skippedGroups.join(", ") + ".", true);
       return;
     }
 
-    setBulkImportFeedback("Importando " + payload.length + " projetos...", false);
+    setBulkImportFeedback("Criando " + acceptedGroups.length + " projetos a partir dos arquivos...", false);
+    setSaveState("Processando upload inicial...");
 
-    fetch(backend.url + "/rest/v1/projects", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-        apikey: backend.anonKey,
-        Authorization: "Bearer " + state.token
-      },
-      body: JSON.stringify(payload)
-    })
-      .then(function (response) {
-        if (!response.ok) {
-          return response.json().then(function (payloadResponse) {
-            throw new Error(payloadResponse.message || payloadResponse.msg || "falha ao importar lote");
-          });
-        }
-        return response.json();
+    createProjectsFromGroups(acceptedGroups, importedBatch)
+      .then(function (createdProjects) {
+        var uploads = [];
+
+        createdProjects.forEach(function (project) {
+          state.projects.push(project);
+          state.projectTagsByProject[project.id] = [];
+          state.imagesByProject[project.id] = [];
+          uploads.push(upsertEditorialFlag(project.id, "review_text", "Revisar texto"));
+
+          var group = findGroupBySlug(acceptedGroups, project.slug);
+          if (group) {
+            group.files.forEach(function (entry) {
+              uploads.push(uploadPreparedImage(project, entry.file, entry.kind, entry.sortOrder));
+            });
+          }
+        });
+
+        return Promise.all(uploads).then(function () {
+          return createdProjects;
+        });
       })
-      .then(function (items) {
-        var created = items || [];
-        for (var i = 0; i < created.length; i += 1) {
-          state.projects.push(created[i]);
-          state.projectTagsByProject[created[i].id] = [];
-          state.imagesByProject[created[i].id] = [];
+      .then(function (createdProjects) {
+        createdProjects.forEach(function (project) {
+          if (!state.editorialFlagsByProject[project.id]) {
+            state.editorialFlagsByProject[project.id] = [];
+          }
+          if (!hasEditorialFlag(project.id, "review_text")) {
+            state.editorialFlagsByProject[project.id].push({
+              project_id: project.id,
+              flag_key: "review_text",
+              flag_label: "Revisar texto",
+              is_public: false
+            });
+          }
+        });
+
+        if (createdProjects.length) {
+          state.selectedProjectId = createdProjects[0].id;
         }
-        if (created.length) {
-          state.selectedProjectId = created[0].id;
-        }
+
+        newProjectForm.hidden = true;
+        intakeFiles.value = "";
+        intakeBatch.value = "";
         applyFilters();
-        clearBulkImportForm();
+
+        if (state.selectedProjectId) {
+          loadProjectImages(state.selectedProjectId);
+        }
+
         setBulkImportFeedback(
-          "Lote criado com " + created.length + " projetos." +
-          (duplicateSlugs.length ? " Slugs ignorados: " + duplicateSlugs.join(", ") + "." : ""),
+          "Upload concluido com " + createdProjects.length + " projetos em draft." +
+          (skippedGroups.length ? " Ignorados: " + skippedGroups.join(", ") + "." : ""),
           false
         );
-        setSaveState("Lote importado");
+        setSaveState("Projetos criados a partir do upload");
       })
       .catch(function (error) {
-        setBulkImportFeedback("Nao foi possivel importar o lote: " + error.message, true);
+        setBulkImportFeedback("Nao foi possivel criar os projetos: " + error.message, true);
+        setSaveState("Erro no upload inicial");
       });
   }
 
@@ -1367,6 +1311,125 @@
       });
   }
 
+  function createProjectsFromGroups(groups, importedBatch) {
+    var payload = groups.map(function (group) {
+      return {
+        slug: group.slug,
+        title: buildProvisionalTitle(group.slug),
+        status: "draft",
+        imported_batch: importedBatch,
+        publication_notes: "Projeto criado por upload inicial. Ajustar titulo final, tipo e editora antes de publicar."
+      };
+    });
+
+    return fetch(backend.url + "/rest/v1/projects", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify(payload)
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payloadResponse) {
+            throw new Error(payloadResponse.message || payloadResponse.msg || "falha ao criar projetos do upload");
+          });
+        }
+        return response.json();
+      });
+  }
+
+  function findGroupBySlug(groups, slug) {
+    for (var i = 0; i < groups.length; i += 1) {
+      if (groups[i].slug === slug) return groups[i];
+    }
+    return null;
+  }
+
+  function groupIncomingFiles(fileList) {
+    var groupsBySlug = {};
+    var invalidGroups = [];
+
+    Array.prototype.forEach.call(fileList, function (file) {
+      var parsed = parseIncomingFilename(file.name);
+      if (!parsed) {
+        invalidGroups.push(file.name);
+        return;
+      }
+
+      if (!groupsBySlug[parsed.slug]) {
+        groupsBySlug[parsed.slug] = {
+          slug: parsed.slug,
+          files: []
+        };
+      }
+
+      groupsBySlug[parsed.slug].files.push({
+        file: file,
+        kind: parsed.kind,
+        sortOrder: parsed.sortOrder
+      });
+    });
+
+    var items = Object.keys(groupsBySlug)
+      .sort()
+      .map(function (slug) {
+        var group = groupsBySlug[slug];
+        group.files.sort(function (left, right) {
+          if (left.kind !== right.kind) return left.kind === "thumb" ? -1 : 1;
+          return left.sortOrder - right.sortOrder;
+        });
+        return group;
+      });
+
+    return {
+      items: items,
+      invalidGroups: invalidGroups
+    };
+  }
+
+  function parseIncomingFilename(filename) {
+    var safeName = String(filename || "").trim();
+    var extensionless = safeName.replace(/\.[^.]+$/, "");
+    var match = extensionless.match(/^(.*?)[-_](thumb|o?\d{1,2})$/i);
+    if (!match) return null;
+
+    var rawBase = match[1];
+    var rawSuffix = String(match[2] || "").toLowerCase();
+    var slug = sanitizeSlug(rawBase);
+    if (!slug) return null;
+
+    if (rawSuffix === "thumb") {
+      return {
+        slug: slug,
+        kind: "thumb",
+        sortOrder: 0
+      };
+    }
+
+    var imageNumber = Number(rawSuffix.replace(/^o/i, ""));
+    if (!imageNumber || imageNumber < 1) return null;
+
+    return {
+      slug: slug,
+      kind: "gallery",
+      sortOrder: imageNumber - 1
+    };
+  }
+
+  function buildProvisionalTitle(slug) {
+    return String(slug || "")
+      .split(/[-_]+/)
+      .filter(Boolean)
+      .map(function (part) {
+        return part.charAt(0).toUpperCase() + part.slice(1);
+      })
+      .join(" ");
+  }
+
   function uploadSingleImage(project, file, kind, index) {
     var nextPath = project.slug + "/" + Date.now() + "-" + index + "-" + sanitizeFilename(file.name);
     var existingItems = state.imagesByProject[project.id] || [];
@@ -1416,6 +1479,63 @@
             throw new Error(payload.message || payload.msg || "falha ao registrar imagem");
           });
         }
+      });
+  }
+
+  function uploadPreparedImage(project, file, kind, sortOrder) {
+    var nextPath = project.slug + "/" + sanitizeFilename(file.name);
+
+    return fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(nextPath), {
+      method: "POST",
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token,
+        "x-upsert": "false",
+        "Content-Type": file.type || "application/octet-stream"
+      },
+      body: file
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha no upload inicial");
+          });
+        }
+      })
+      .then(function () {
+        return fetch(backend.url + "/rest/v1/project_images", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            apikey: backend.anonKey,
+            Authorization: "Bearer " + state.token
+          },
+          body: JSON.stringify({
+            project_id: project.id,
+            storage_path: nextPath,
+            kind: kind,
+            alt_text: null,
+            sort_order: sortOrder,
+            is_published: true
+          })
+        });
+      })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao registrar imagem inicial");
+          });
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        if (!items || !items.length) return;
+        if (!state.imagesByProject[project.id]) {
+          state.imagesByProject[project.id] = [];
+        }
+        state.imagesByProject[project.id].push(items[0]);
+        state.imagesByProject[project.id] = sortProjectImages(state.imagesByProject[project.id]);
       });
   }
 
@@ -1601,13 +1721,6 @@
       section.classList.toggle("is-active", isActive);
       section.hidden = !isActive;
     });
-  }
-
-  function clearBulkImportForm() {
-    bulkImportInput.value = "";
-    bulkImportBatch.value = "";
-    bulkImportStatus.value = "draft";
-    setBulkImportFeedback("", false);
   }
 
   function updatePublicationPanel(project) {
@@ -1920,63 +2033,6 @@
 
   function cssEscape(value) {
     return String(value || "").replace(/"/g, '\\"');
-  }
-
-  function parseBulkImportInput(rawInput) {
-    var trimmed = String(rawInput || "").trim();
-    if (!trimmed) return [];
-
-    if (trimmed.charAt(0) === "[" || trimmed.charAt(0) === "{") {
-      return parseBulkImportJson(trimmed);
-    }
-
-    return parseBulkImportLines(trimmed);
-  }
-
-  function parseBulkImportJson(rawInput) {
-    var parsed = JSON.parse(rawInput);
-    var items = Array.isArray(parsed) ? parsed : [parsed];
-
-    return items.map(function (item, index) {
-      if (!item || typeof item !== "object") {
-        throw new Error("O item " + (index + 1) + " do JSON nao e um objeto valido.");
-      }
-
-      return {
-        slug: item.slug,
-        title: item.title || item.titulo,
-        subtitle: item.subtitle || item.subtitulo,
-        client: item.client || item.cliente || item.editora,
-        project_type: item.project_type || item.tipo,
-        description: item.description || item.descricao,
-        publication_notes: item.publication_notes || item.notas_editoriais
-      };
-    });
-  }
-
-  function parseBulkImportLines(rawInput) {
-    return rawInput
-      .split(/\r?\n/)
-      .map(function (line) { return line.trim(); })
-      .filter(Boolean)
-      .map(function (line, index) {
-        var parts = line.split("|").map(function (part) { return part.trim(); });
-        if (parts.length < 2) {
-          throw new Error("A linha " + (index + 1) + " precisa ter ao menos slug e titulo.");
-        }
-
-        return {
-          slug: parts[0],
-          title: parts[1],
-          client: parts[2] || null,
-          project_type: parts[3] || null
-        };
-      });
-  }
-
-  function normalizeOptionalText(value) {
-    var text = String(value == null ? "" : value).trim();
-    return text || null;
   }
 
   function resolvePublishedAt(project, nextStatus) {

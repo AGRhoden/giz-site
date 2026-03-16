@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316x">
+  <link rel="stylesheet" href="admin.css?v=20260316y">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -66,52 +66,31 @@
             <h2>Projetos</h2>
             <div class="admin-panel-meta">
               <span id="project-count">0</span>
-              <button class="admin-secondary-button" id="new-project-button" type="button">Novo projeto</button>
+              <button class="admin-secondary-button" id="new-project-button" type="button">Novo projeto / upload</button>
             </div>
           </div>
-          <form class="admin-card admin-inline-form" id="new-project-form" hidden>
+          <form class="admin-card admin-inline-form admin-intake-form" id="new-project-form" hidden>
+            <p class="admin-copy">
+              Selecione um ou varios arquivos. O admin agrupa tudo pelo nome-base e cria cada projeto em
+              <strong>draft</strong>. Convencao esperada:
+              <code>nomedolivro_thumb.jpg</code>,
+              <code>nomedolivro_01.jpg</code>,
+              <code>nomedolivro_02.jpg</code>.
+            </p>
             <label class="admin-field">
-              <span class="admin-label">Slug</span>
-              <input class="admin-input" id="new-project-slug" type="text" placeholder="novo-projeto" pattern="[a-z0-9]+(?:[-_][a-z0-9]+)*">
+              <span class="admin-label">Arquivos do lote</span>
+              <input class="admin-input" id="intake-files" type="file" accept="image/*" multiple>
             </label>
             <label class="admin-field">
-              <span class="admin-label">Titulo</span>
-              <input class="admin-input" id="new-project-title" type="text" placeholder="Titulo do projeto">
+              <span class="admin-label">Identificacao do lote</span>
+              <input class="admin-input" id="intake-batch" type="text" placeholder="mar-2026-livros">
             </label>
             <div class="admin-inline-actions">
-              <button class="admin-button" type="submit">Criar draft</button>
+              <button class="admin-button" type="submit">Criar projetos a partir dos arquivos</button>
               <button class="admin-secondary-button" id="cancel-new-project-button" type="button">Cancelar</button>
             </div>
+            <p class="admin-feedback" id="bulk-import-feedback" aria-live="polite"></p>
           </form>
-          <details class="admin-card admin-import" id="bulk-import-panel">
-            <summary class="admin-import-summary">Importar em lote</summary>
-            <p class="admin-copy">
-              Cole um JSON com vários projetos ou uma lista em linhas no formato
-              <code>slug | título | cliente | tipo</code>.
-            </p>
-            <form class="admin-inline-form" id="bulk-import-form">
-              <label class="admin-field">
-                <span class="admin-label">Status inicial</span>
-                <select class="admin-input" id="bulk-import-status">
-                  <option value="draft">Draft</option>
-                  <option value="review">Review</option>
-                </select>
-              </label>
-              <label class="admin-field">
-                <span class="admin-label">Lote</span>
-                <input class="admin-input" id="bulk-import-batch" type="text" placeholder="mar-2026-livros">
-              </label>
-              <label class="admin-field">
-                <span class="admin-label">Conteúdo</span>
-                <textarea class="admin-input admin-textarea admin-import-textarea" id="bulk-import-input" placeholder='[{"slug":"exemplo","title":"Projeto exemplo","client":"Editora","project_type":"Livro"}]'></textarea>
-              </label>
-              <div class="admin-inline-actions">
-                <button class="admin-button" type="submit">Criar lote</button>
-                <button class="admin-secondary-button" id="bulk-import-clear-button" type="button">Limpar</button>
-              </div>
-              <p class="admin-feedback" id="bulk-import-feedback" aria-live="polite"></p>
-            </form>
-          </details>
           <div class="admin-list" id="project-list"></div>
         </aside>
 
@@ -119,7 +98,7 @@
           <div class="admin-card" id="editor-empty">
             <h2>Selecione um projeto</h2>
             <p class="admin-copy">
-              Aqui você poderá ajustar status editorial, revisar dados e conectar pares.
+              Selecione um projeto existente ou crie novos projetos a partir do upload inicial de thumbs e imagens.
             </p>
           </div>
 
@@ -348,7 +327,7 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260316x"></script>
-  <script src="admin.js?v=20260316x"></script>
+  <script src="backend.config.js?v=20260316y"></script>
+  <script src="admin.js?v=20260316y"></script>
 </body>
 </html>
