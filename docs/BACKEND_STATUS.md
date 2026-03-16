@@ -48,5 +48,8 @@
   - project search and filtering by status
   - creating draft projects
   - editing slug, title, subtitle, client, type, description, publication notes, featured state and status
+  - uploading project media to the `project-media` bucket
+  - editing image type, alt text, sort order and publication state
+  - removing uploaded media from storage and database
   - adding and removing project pairs
   - mirrored pair creation so linked projects stay reciprocal

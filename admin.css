@@ -277,6 +277,75 @@ select {
   padding-top: 20px;
 }
 
+.admin-media-upload {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.admin-media-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.admin-media-item {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 16px;
+  padding: 14px;
+  border: 1px solid var(--admin-line);
+  border-radius: 18px;
+  background: #fff;
+}
+
+.admin-media-preview {
+  inline-size: 112px;
+  block-size: 112px;
+  object-fit: cover;
+  border-radius: 14px;
+  background: #f1eee6;
+}
+
+.admin-media-body {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-media-meta {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.admin-media-path {
+  color: var(--admin-muted);
+  font-size: 13px;
+  word-break: break-all;
+}
+
+.admin-media-fields {
+  display: grid;
+  grid-template-columns: 160px minmax(0, 1fr) 120px auto;
+  gap: 10px;
+  align-items: end;
+}
+
+.admin-media-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--admin-muted);
+  font-size: 14px;
+}
+
+.admin-media-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .admin-pair-controls {
   display: grid;
   gap: 12px;
@@ -332,6 +401,15 @@ select {
   }
 
   .admin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-media-upload,
+  .admin-media-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-media-item {
     grid-template-columns: 1fr;
   }
 

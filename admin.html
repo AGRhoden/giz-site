@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316o">
+  <link rel="stylesheet" href="admin.css?v=20260316p">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -151,6 +151,24 @@
 
             <section class="admin-subsection">
               <div class="admin-subsection-heading">
+                <h3>Midia</h3>
+                <p class="admin-copy">Suba thumbs e imagens de galeria para este projeto.</p>
+              </div>
+
+              <form class="admin-media-upload" id="media-upload-form">
+                <input class="admin-input" id="media-files" type="file" accept="image/*" multiple>
+                <select class="admin-input" id="media-kind">
+                  <option value="gallery">Galeria</option>
+                  <option value="thumb">Thumb</option>
+                </select>
+                <button class="admin-secondary-button" type="submit">Enviar imagens</button>
+              </form>
+
+              <div class="admin-media-list" id="media-list"></div>
+            </section>
+
+            <section class="admin-subsection">
+              <div class="admin-subsection-heading">
                 <h3>Pares</h3>
                 <p class="admin-copy">Conecte capas ou projetos relacionados.</p>
               </div>
@@ -173,7 +191,7 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260316o"></script>
-  <script src="admin.js?v=20260316o"></script>
+  <script src="backend.config.js?v=20260316p"></script>
+  <script src="admin.js?v=20260316p"></script>
 </body>
 </html>
