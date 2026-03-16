@@ -47,6 +47,6 @@
   - restricted admin access through an explicit admin allowlist
   - project search and filtering by status
   - creating draft projects
-  - editing title, subtitle, client, type, description and status
+  - editing slug, title, subtitle, client, type, description, publication notes, featured state and status
   - adding and removing project pairs
   - mirrored pair creation so linked projects stay reciprocal

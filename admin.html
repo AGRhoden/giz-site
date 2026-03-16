@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
-  <link rel="stylesheet" href="admin.css?v=20260316h">
+  <link rel="stylesheet" href="admin.css?v=20260316o">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -22,19 +22,6 @@
           <button class="admin-button" id="auth-submit-button" type="button">Enviar acesso</button>
         </form>
         <p class="admin-feedback" id="auth-feedback" aria-live="polite"></p>
-        <details class="admin-debug" open>
-          <summary>Diagnostico de sessao</summary>
-          <div class="admin-debug-grid">
-            <div><strong>Etapa:</strong> <span id="debug-stage">boot</span></div>
-            <div><strong>Hash:</strong> <span id="debug-hash">sem hash</span></div>
-            <div><strong>Sessao:</strong> <span id="debug-session">sem sessao</span></div>
-            <div><strong>Projetos:</strong> <span id="debug-projects">0</span></div>
-            <div><strong>Ultimo erro:</strong> <span id="debug-error">nenhum</span></div>
-            <div><strong>SDK:</strong> <span id="debug-sdk">desconhecido</span></div>
-            <div><strong>Config:</strong> <span id="debug-config">desconhecido</span></div>
-            <div><strong>Admin JS:</strong> <span id="debug-adminjs">desconhecido</span></div>
-          </div>
-        </details>
       </div>
     </section>
 
@@ -112,6 +99,11 @@
 
             <div class="admin-grid">
               <label class="admin-field">
+                <span class="admin-label">Slug</span>
+                <input class="admin-input" id="field-slug" type="text" pattern="[a-z0-9]+(?:[-_][a-z0-9]+)*" required>
+              </label>
+
+              <label class="admin-field">
                 <span class="admin-label">Título</span>
                 <input class="admin-input" id="field-title" type="text" required>
               </label>
@@ -147,6 +139,16 @@
               <textarea class="admin-input admin-textarea" id="field-description"></textarea>
             </label>
 
+            <label class="admin-field">
+              <span class="admin-label">Notas editoriais</span>
+              <textarea class="admin-input admin-textarea" id="field-publication-notes"></textarea>
+            </label>
+
+            <label class="admin-toggle">
+              <input id="field-featured" type="checkbox">
+              <span>Destacar este projeto no painel editorial</span>
+            </label>
+
             <section class="admin-subsection">
               <div class="admin-subsection-heading">
                 <h3>Pares</h3>
@@ -171,11 +173,7 @@
     </section>
   </main>
 
-  <script>
-    document.getElementById('debug-stage').textContent = 'inline-html-ok';
-    document.getElementById('debug-sdk').textContent = 'sdk-nao-usado';
-  </script>
-  <script src="backend.config.js?v=20260316m" onload="document.getElementById('debug-config').textContent = window.GIZ_BACKEND_CONFIG ? 'config-ok' : 'config-ausente'" onerror="document.getElementById('debug-config').textContent='config-falhou'; document.getElementById('debug-error').textContent='falha ao carregar backend.config.js';"></script>
-  <script src="admin.js?v=20260316m" onload="document.getElementById('debug-adminjs').textContent = window.__gizAdminInlineClick ? 'adminjs-ok' : 'adminjs-sem-handler'" onerror="document.getElementById('debug-adminjs').textContent='adminjs-falhou'; document.getElementById('debug-error').textContent='falha ao carregar admin.js';"></script>
+  <script src="backend.config.js?v=20260316o"></script>
+  <script src="admin.js?v=20260316o"></script>
 </body>
 </html>

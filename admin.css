@@ -106,6 +106,18 @@ select {
   resize: vertical;
 }
 
+.admin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--admin-ink);
+}
+
+.admin-toggle input {
+  inline-size: 18px;
+  block-size: 18px;
+}
+
 .admin-button,
 .admin-secondary-button {
   appearance: none;
@@ -140,28 +152,6 @@ select {
 
 .admin-feedback.is-error {
   color: var(--admin-danger);
-}
-
-.admin-debug {
-  margin-top: 18px;
-  border-top: 1px solid var(--admin-line);
-  padding-top: 14px;
-}
-
-.admin-debug summary {
-  cursor: pointer;
-  color: var(--admin-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-size: 12px;
-}
-
-.admin-debug-grid {
-  display: grid;
-  gap: 8px;
-  margin-top: 12px;
-  font-size: 14px;
-  color: var(--admin-muted);
 }
 
 .admin-topbar {

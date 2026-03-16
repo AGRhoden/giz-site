@@ -7,13 +7,6 @@
   var authForm = document.getElementById("auth-form");
   var authFeedback = document.getElementById("auth-feedback");
   var authSubmitButton = document.getElementById("auth-submit-button");
-  var debugStage = document.getElementById("debug-stage");
-  var debugHash = document.getElementById("debug-hash");
-  var debugSession = document.getElementById("debug-session");
-  var debugProjects = document.getElementById("debug-projects");
-  var debugError = document.getElementById("debug-error");
-  var debugSdk = document.getElementById("debug-sdk");
-  var debugConfig = document.getElementById("debug-config");
   var sessionEmail = document.getElementById("session-email");
   var logoutButton = document.getElementById("logout-button");
   var projectSearch = document.getElementById("project-search");
@@ -25,12 +18,15 @@
   var editorSlug = document.getElementById("editor-slug");
   var editorTitle = document.getElementById("editor-title");
   var saveState = document.getElementById("save-state");
+  var fieldSlug = document.getElementById("field-slug");
   var fieldTitle = document.getElementById("field-title");
   var fieldSubtitle = document.getElementById("field-subtitle");
   var fieldClient = document.getElementById("field-client");
   var fieldType = document.getElementById("field-type");
   var fieldStatus = document.getElementById("field-status");
   var fieldDescription = document.getElementById("field-description");
+  var fieldPublicationNotes = document.getElementById("field-publication-notes");
+  var fieldFeatured = document.getElementById("field-featured");
   var pairSearch = document.getElementById("pair-search");
   var pairResults = document.getElementById("pair-results");
   var addPairButton = document.getElementById("add-pair-button");
@@ -45,28 +41,15 @@
     token: null,
     sessionEmail: "",
     projects: [],
+    pairs: [],
     filteredProjects: [],
     selectedProjectId: null
   };
 
-  window.__gizAdminInlineClick = submitAuthRequest;
-
   if (!backend.url || !backend.anonKey) {
-    updateDebug({
-      stage: "erro-config",
-      config: "config-ausente",
-      error: "backend config ausente"
-    });
     setAuthFeedback("Backend config ausente no admin.", true);
     return;
   }
-
-  updateDebug({
-    stage: "init",
-    hash: window.location.hash ? "hash presente" : "sem hash",
-    sdk: "sdk-nao-usado",
-    config: "config-ok"
-  });
 
   authForm.addEventListener("submit", function (event) {
     if (event && event.preventDefault) event.preventDefault();
@@ -96,11 +79,11 @@
   newProjectButton.addEventListener("click", toggleNewProjectForm);
   cancelNewProjectButton.addEventListener("click", toggleNewProjectForm);
   newProjectForm.addEventListener("submit", handleCreateProject);
-
-  pairSearch.disabled = true;
-  pairResults.disabled = true;
-  addPairButton.disabled = true;
-  pairList.innerHTML = '<div class="admin-card">Gestao de pares volta depois que o login estiver estavel.</div>';
+  pairSearch.addEventListener("input", renderPairResults);
+  pairResults.addEventListener("change", syncPairActionState);
+  pairResults.addEventListener("dblclick", handleAddPair);
+  addPairButton.addEventListener("click", handleAddPair);
+  pairList.addEventListener("click", handlePairRemoval);
 
   boot();
 
@@ -113,8 +96,12 @@
     if (state.token) {
       loadProjects();
     } else {
-      updateDebug({ stage: "aguardando-login", session: "sem sessao" });
       setAuthFeedback("Entre com um e-mail autorizado para acessar o painel.", false);
+      pairSearch.disabled = true;
+      pairResults.disabled = true;
+      addPairButton.disabled = true;
+      pairResults.innerHTML = "";
+      pairList.innerHTML = "";
     }
   }
 
@@ -126,13 +113,7 @@
     var email = decodeURIComponent(hash.get("email") || "");
     var authError = hash.get("error_description") || hash.get("error_code");
 
-    updateDebug({ hash: accessToken ? "tokens presentes" : "hash sem tokens" });
-
     if (authError) {
-      updateDebug({
-        stage: "erro-hash",
-        error: decodeURIComponent(authError)
-      });
       setAuthFeedback("Falha no link de acesso: " + decodeURIComponent(authError), true);
       clearHash();
       return;
@@ -143,10 +124,6 @@
     sessionStorage.setItem(AUTH_STORAGE_KEY, accessToken);
     state.token = accessToken;
     state.sessionEmail = email || "admin autenticado";
-    updateDebug({
-      stage: "token-capturado",
-      session: state.sessionEmail
-    });
     clearHash();
   }
 
@@ -162,13 +139,13 @@
     authScreen.style.display = isLoggedIn ? "none" : "grid";
     adminApp.style.display = isLoggedIn ? "block" : "none";
     sessionEmail.textContent = state.sessionEmail || "sessao ativa";
-    updateDebug({ session: isLoggedIn ? (state.sessionEmail || "token salvo") : "sem sessao" });
 
     if (!isLoggedIn) {
       projectCount.textContent = "0";
       projectList.innerHTML = "";
       editorEmpty.hidden = false;
       editorForm.hidden = true;
+      setSaveState("Pronto");
     }
   }
 
@@ -178,18 +155,14 @@
       email = String(authForm.elements.email.value || "").trim().toLowerCase();
     }
 
-    updateDebug({ stage: "submit-handler", error: "nenhum" });
-
     if (!email || email.indexOf("@") === -1) {
       setAuthFeedback("Digite um e-mail valido.", true);
-      updateDebug({ stage: "form-invalid", error: "e-mail invalido ou ausente" });
       return;
     }
 
     authSubmitButton.disabled = true;
     authSubmitButton.textContent = "Enviando...";
     setAuthFeedback("Enviando magic link...", false);
-    updateDebug({ stage: "enviando-magic-link", error: "nenhum" });
 
     fetch(backend.url + "/auth/v1/otp", {
       method: "POST",
@@ -210,14 +183,11 @@
           });
         }
         state.sessionEmail = email;
-        updateDebug({ stage: "magic-link-enviado", session: email });
         setAuthFeedback("Link enviado para " + email + ".", false);
         authSubmitButton.disabled = false;
         authSubmitButton.textContent = "Reenviar acesso";
-        window.alert("Link enviado para " + email + ". Abra o e-mail e clique em Log In.");
       })
       .catch(function (error) {
-        updateDebug({ stage: "erro-envio", error: error.message });
         setAuthFeedback("Nao foi possivel enviar o acesso: " + error.message, true);
         authSubmitButton.disabled = false;
         authSubmitButton.textContent = "Enviar acesso";
@@ -225,9 +195,7 @@
   }
 
   function loadProjects() {
-    updateDebug({ stage: "carregando-projetos", error: "nenhum" });
-
-    fetch(backend.url + "/rest/v1/projects?select=id,slug,title,subtitle,description,client,project_type,status&order=title.asc", {
+    fetch(backend.url + "/rest/v1/projects?select=id,slug,title,subtitle,description,client,project_type,status,publication_notes,published_at,is_featured&order=title.asc", {
       headers: {
         apikey: backend.anonKey,
         Authorization: "Bearer " + state.token
@@ -247,18 +215,37 @@
         if (!state.selectedProjectId && state.filteredProjects.length) {
           state.selectedProjectId = state.filteredProjects[0].id;
         }
-        updateDebug({
-          stage: "projetos-carregados",
-          projects: String(state.projects.length),
-          error: "nenhum"
+        return loadPairs().catch(function () {
+          state.pairs = [];
         });
+      })
+      .then(function () {
         renderAuthState();
         applyFilters();
       })
       .catch(function (error) {
-        updateDebug({ stage: "erro-projetos", error: error.message });
         setSaveState("Erro ao carregar projetos");
         projectList.innerHTML = '<div class="admin-card">Nao foi possivel carregar os projetos.</div>';
+      });
+  }
+
+  function loadPairs() {
+    return fetch(backend.url + "/rest/v1/project_pairs?select=id,project_id,paired_project_id,pair_type,label_override&order=created_at.asc", {
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao carregar pares");
+          });
+        }
+        return response.json();
+      })
+      .then(function (pairs) {
+        state.pairs = pairs || [];
       });
   }
 
@@ -327,12 +314,17 @@
     editorForm.hidden = false;
     editorSlug.textContent = project.slug;
     editorTitle.textContent = project.title;
+    fieldSlug.value = project.slug || "";
     fieldTitle.value = project.title || "";
     fieldSubtitle.value = project.subtitle || "";
     fieldClient.value = project.client || "";
     fieldType.value = project.project_type || "";
     fieldStatus.value = project.status || "draft";
     fieldDescription.value = project.description || "";
+    fieldPublicationNotes.value = project.publication_notes || "";
+    fieldFeatured.checked = Boolean(project.is_featured);
+    renderPairResults();
+    renderPairList();
   }
 
   function getSelectedProject() {
@@ -349,6 +341,13 @@
 
     var project = getSelectedProject();
     if (!project) return;
+    var nextSlug = sanitizeSlug(fieldSlug.value);
+    var nextStatus = String(fieldStatus.value || "draft");
+
+    if (!nextSlug) {
+      setSaveState("Slug invalido");
+      return;
+    }
 
     setSaveState("Salvando...");
 
@@ -361,12 +360,16 @@
         Authorization: "Bearer " + state.token
       },
       body: JSON.stringify({
+        slug: nextSlug,
         title: String(fieldTitle.value || "").trim(),
         subtitle: String(fieldSubtitle.value || "").trim() || null,
         client: String(fieldClient.value || "").trim() || null,
         project_type: String(fieldType.value || "").trim() || null,
-        status: String(fieldStatus.value || "draft"),
-        description: String(fieldDescription.value || "").trim() || null
+        status: nextStatus,
+        description: String(fieldDescription.value || "").trim() || null,
+        publication_notes: String(fieldPublicationNotes.value || "").trim() || null,
+        is_featured: Boolean(fieldFeatured.checked),
+        published_at: nextStatus === "published" && !project.published_at ? new Date().toISOString() : project.published_at
       })
     })
       .then(function (response) {
@@ -380,12 +383,13 @@
       .then(function (items) {
         if (items && items.length) {
           replaceProject(items[0]);
+          editorSlug.textContent = items[0].slug;
+          editorTitle.textContent = items[0].title;
           applyFilters();
         }
         setSaveState("Salvo");
       })
       .catch(function (error) {
-        updateDebug({ stage: "erro-save", error: error.message });
         setSaveState("Erro ao salvar");
       });
   }
@@ -439,8 +443,186 @@
         setSaveState("Draft criado");
       })
       .catch(function (error) {
-        updateDebug({ stage: "erro-create", error: error.message });
         setSaveState("Erro ao criar");
+      });
+  }
+
+  function renderPairResults() {
+    var project = getSelectedProject();
+    var query = String(pairSearch.value || "").trim().toLowerCase();
+
+    if (!project) {
+      pairSearch.disabled = true;
+      pairResults.disabled = true;
+      addPairButton.disabled = true;
+      pairResults.innerHTML = "";
+      pairList.innerHTML = "";
+      return;
+    }
+
+    pairSearch.disabled = false;
+    pairResults.disabled = false;
+
+    if (!query) {
+      pairResults.innerHTML = '<option value="">Digite para buscar um projeto</option>';
+      addPairButton.disabled = true;
+      return;
+    }
+
+    var connectedIds = getConnectedProjectIds(project.id);
+    var matches = state.projects.filter(function (candidate) {
+      if (candidate.id === project.id) return false;
+      if (connectedIds.indexOf(candidate.id) !== -1) return false;
+
+      var haystack = [
+        candidate.title,
+        candidate.slug,
+        candidate.client,
+        candidate.project_type
+      ].join(" ").toLowerCase();
+
+      return haystack.indexOf(query) !== -1;
+    }).slice(0, 20);
+
+    if (!matches.length) {
+      pairResults.innerHTML = '<option value="">Nenhum projeto encontrado</option>';
+      addPairButton.disabled = true;
+      return;
+    }
+
+    pairResults.innerHTML = matches.map(function (candidate) {
+      return '<option value="' + escapeHtml(candidate.id) + '">' +
+        escapeHtml(candidate.title) + ' · ' + escapeHtml(candidate.slug) +
+      '</option>';
+    }).join("");
+
+    pairResults.selectedIndex = 0;
+    syncPairActionState();
+  }
+
+  function renderPairList() {
+    var project = getSelectedProject();
+    if (!project) {
+      pairList.innerHTML = "";
+      return;
+    }
+
+    var items = state.pairs
+      .filter(function (pair) {
+        return pair.project_id === project.id;
+      })
+      .map(function (pair) {
+        var pairedProject = getProjectById(pair.paired_project_id);
+        if (!pairedProject) return null;
+
+        return '' +
+          '<div class="admin-pair-item">' +
+            '<div>' +
+              '<div class="admin-pair-title">' + escapeHtml(pairedProject.title) + '</div>' +
+              '<div class="admin-pair-meta">' + escapeHtml(pairedProject.slug) + ' · ' + escapeHtml(pair.pair_type) + '</div>' +
+            '</div>' +
+            '<button class="admin-danger-button" type="button" data-remove-pair="' + escapeHtml(pair.id) + '" data-paired-project-id="' + escapeHtml(pairedProject.id) + '">Remover</button>' +
+          '</div>';
+      })
+      .filter(Boolean);
+
+    if (!items.length) {
+      pairList.innerHTML = '<div class="admin-card">Nenhum par conectado a este projeto.</div>';
+      return;
+    }
+
+    pairList.innerHTML = items.join("");
+  }
+
+  function syncPairActionState() {
+    addPairButton.disabled = !pairResults.value;
+  }
+
+  function handleAddPair() {
+    var project = getSelectedProject();
+    var pairedProjectId = pairResults.value;
+    if (!project || !pairedProjectId) return;
+
+    if (hasPair(project.id, pairedProjectId)) {
+      setSaveState("Esse par ja existe");
+      return;
+    }
+
+    setSaveState("Adicionando par...");
+    addPairButton.disabled = true;
+
+    fetch(backend.url + "/rest/v1/project_pairs", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify([
+        {
+          project_id: project.id,
+          paired_project_id: pairedProjectId,
+          pair_type: "pair"
+        },
+        {
+          project_id: pairedProjectId,
+          paired_project_id: project.id,
+          pair_type: "pair"
+        }
+      ])
+    })
+      .then(function (response) {
+        if (!response.ok) {
+          return response.json().then(function (payload) {
+            throw new Error(payload.message || payload.msg || "falha ao adicionar par");
+          });
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        state.pairs = state.pairs.concat(items || []);
+        pairSearch.value = "";
+        renderPairResults();
+        renderPairList();
+        setSaveState("Par adicionado");
+      })
+      .catch(function (error) {
+        setSaveState("Erro ao adicionar par");
+      });
+  }
+
+  function handlePairRemoval(event) {
+    var button = event.target.closest("[data-remove-pair]");
+    if (!button) return;
+
+    var pairId = button.getAttribute("data-remove-pair");
+    var pairedProjectId = button.getAttribute("data-paired-project-id");
+    var project = getSelectedProject();
+    if (!pairId || !pairedProjectId || !project) return;
+
+    var mirroredPair = state.pairs.find(function (pair) {
+      return pair.project_id === pairedProjectId &&
+        pair.paired_project_id === project.id &&
+        pair.pair_type === "pair";
+    });
+
+    setSaveState("Removendo par...");
+
+    Promise.all([
+      deletePairById(pairId),
+      mirroredPair ? deletePairById(mirroredPair.id) : Promise.resolve()
+    ])
+      .then(function () {
+        state.pairs = state.pairs.filter(function (pair) {
+          return pair.id !== pairId && (!mirroredPair || pair.id !== mirroredPair.id);
+        });
+        renderPairResults();
+        renderPairList();
+        setSaveState("Par removido");
+      })
+      .catch(function () {
+        setSaveState("Erro ao remover par");
       });
   }
 
@@ -453,6 +635,22 @@
     }
   }
 
+  function deletePairById(pairId) {
+    return fetch(backend.url + "/rest/v1/project_pairs?id=eq." + encodeURIComponent(pairId), {
+      method: "DELETE",
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    }).then(function (response) {
+      if (!response.ok) {
+        return response.json().then(function (payload) {
+          throw new Error(payload.message || payload.msg || "falha ao remover par");
+        });
+      }
+    });
+  }
+
   function setAuthFeedback(message, isError) {
     authFeedback.textContent = message;
     authFeedback.classList.toggle("is-error", Boolean(isError));
@@ -462,14 +660,38 @@
     saveState.textContent = message;
   }
 
-  function updateDebug(nextState) {
-    if (nextState.stage) debugStage.textContent = nextState.stage;
-    if (nextState.hash) debugHash.textContent = nextState.hash;
-    if (nextState.session) debugSession.textContent = nextState.session;
-    if (nextState.projects) debugProjects.textContent = nextState.projects;
-    if (nextState.error) debugError.textContent = nextState.error;
-    if (nextState.sdk) debugSdk.textContent = nextState.sdk;
-    if (nextState.config) debugConfig.textContent = nextState.config;
+  function hasPair(projectId, pairedProjectId) {
+    return state.pairs.some(function (pair) {
+      return pair.project_id === projectId && pair.paired_project_id === pairedProjectId;
+    });
+  }
+
+  function getConnectedProjectIds(projectId) {
+    return state.pairs
+      .filter(function (pair) {
+        return pair.project_id === projectId;
+      })
+      .map(function (pair) {
+        return pair.paired_project_id;
+      });
+  }
+
+  function getProjectById(projectId) {
+    for (var i = 0; i < state.projects.length; i += 1) {
+      if (state.projects[i].id === projectId) {
+        return state.projects[i];
+      }
+    }
+    return null;
+  }
+
+  function sanitizeSlug(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\-_]+/g, "-")
+      .replace(/-{2,}/g, "-")
+      .replace(/^[-_]+|[-_]+$/g, "");
   }
 
   function escapeHtml(value) {
