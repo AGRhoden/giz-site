@@ -151,7 +151,7 @@ function handleViewerClick(event) {
 
 async function loadProjects() {
   try {
-    const payload = await fetchProjectsPayload();
+    const payload = await loadProjectsFromSupabase();
     if (!Array.isArray(payload)) {
       throw new Error("A fonte de dados do portfólio não retornou uma lista de projetos.");
     }
@@ -163,37 +163,16 @@ async function loadProjects() {
     state.loadFailed = true;
     state.projects = [];
     state.shuffled = [];
-    renderGridState("Nenhum projeto carregado", "Não foi possível carregar o acervo. Verifique o servidor local e o arquivo projetos.json.", "error");
-    renderPanelState("Erro ao carregar conteúdo", "O portfólio não conseguiu ler os dados do acervo. Se você abriu o HTML diretamente do disco, tente servir a pasta por HTTP.", "error");
+    renderGridState("Nenhum projeto carregado", "Não foi possível carregar o acervo no Supabase.", "error");
+    renderPanelState("Erro ao carregar conteúdo", "O portfólio não conseguiu ler os dados publicados no Supabase.", "error");
   }
-}
-
-async function fetchProjectsPayload() {
-  if (shouldUseSupabaseSource()) {
-    return loadProjectsFromSupabase();
-  }
-
-  return loadProjectsFromJson();
-}
-
-function shouldUseSupabaseSource() {
-  return Boolean(
-    BACKEND_CONFIG.enabled &&
-    BACKEND_CONFIG.url &&
-    BACKEND_CONFIG.anonKey
-  );
-}
-
-async function loadProjectsFromJson() {
-  const response = await fetch("projetos.json");
-  if (!response.ok) {
-    throw new Error(`Falha ao carregar projetos.json (${response.status})`);
-  }
-
-  return response.json();
 }
 
 async function loadProjectsFromSupabase() {
+  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) {
+    throw new Error("Backend config ausente para carregar o portfólio do Supabase.");
+  }
+
   const url = new URL("/rest/v1/published_project_feed", BACKEND_CONFIG.url);
   url.searchParams.set("select", "*");
   url.searchParams.set("order", "published_at.desc.nullslast,created_at.desc");

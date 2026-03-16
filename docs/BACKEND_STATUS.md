@@ -4,7 +4,7 @@
 - Cloudflare Pages is live at `https://giz-site.pages.dev`.
 - This repo is linked to Supabase project `epinzzvsbyglmztasspa`.
 - Core schema migration has been applied remotely.
-- Initial seed migration from `projetos.json` has been applied remotely.
+- Initial seed migration for the portfolio dataset has been applied remotely.
 
 ## Database Migrations
 - `20260316041248_init_giz_portfolio_schema.sql`
@@ -21,20 +21,18 @@
 - public-read RLS for published portfolio content
 
 ## Seeded Content
-- 45 initial projects imported from `projetos.json`
+- 45 initial projects imported into Supabase
 - tags imported from current color tags
 - thumbs and gallery image paths imported
 
 ## Supabase Runtime Status
 - `project-media` bucket migration applied remotely.
 - `published_project_feed` view applied remotely.
-- Frontend switched to Supabase feed using the public project URL and publishable key.
-- Local JSON fallback remains in the codebase, but production config is now using Supabase.
+- Frontend now uses the Supabase feed as its only runtime source.
+- `backend.config.js` is required for the public site and the admin.
 
 ## Frontend Preparedness
-- The frontend now supports an optional Supabase-backed source through `backend.config.js`.
-- If `window.GIZ_BACKEND_CONFIG.enabled = true`, the site will try to read from the `published_project_feed` view.
-- Fallback to local `projetos.json` remains active by default.
+- The frontend reads published projects from `published_project_feed` through `backend.config.js`.
 - Project pair UI hooks are in place and will appear when pair data exists.
 
 ## Next Recommended Steps
