@@ -114,6 +114,17 @@ function initializeAdmin() {
 
   supabase = supabaseBrowser.createClient(backend.url, backend.anonKey);
 
+  window.__gizAdminInlineClick = async (event) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    updateDebug({
+      stage: "inline-click",
+      error: "nenhum"
+    });
+    authSubmitButton.textContent = "Clicado";
+    await submitAuthRequest();
+  };
+
   window.addEventListener("error", (event) => {
     updateDebug({
       stage: "window-error",
@@ -128,8 +139,6 @@ function initializeAdmin() {
       error: reason
     });
   });
-
-  authSubmitButton.addEventListener("click", handleAuthButtonClick);
 
   authForm.addEventListener("invalid", () => {
     updateDebug({
