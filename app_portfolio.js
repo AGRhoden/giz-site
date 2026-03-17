@@ -252,6 +252,8 @@ function resolveProjectMediaUrl(value) {
   const path = cleanString(value);
   if (!path) return "";
   if (/^https?:\/\//i.test(path)) return path;
+  if (/^(assets|textos)\//i.test(path)) return path;
+  if (path.startsWith("/")) return path;
   if (!BACKEND_CONFIG.url) return path;
   return `${BACKEND_CONFIG.url}/storage/v1/object/public/project-media/${encodeStoragePath(path)}`;
 }
