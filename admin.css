@@ -699,16 +699,6 @@ select {
   cursor: pointer;
 }
 
-.admin-danger-zone {
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--admin-line);
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-}
-
 .admin-save-state {
   color: var(--admin-muted);
 }
@@ -737,8 +727,7 @@ select {
 
   .admin-panel-heading,
   .admin-subsection-heading,
-  .admin-panel-meta,
-  .admin-danger-zone {
+  .admin-panel-meta {
     align-items: stretch;
     flex-direction: column;
   }

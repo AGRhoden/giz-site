@@ -27,7 +27,9 @@
   var fieldSlug = document.getElementById("field-slug");
   var fieldTitle = document.getElementById("field-title");
   var fieldSubtitle = document.getElementById("field-subtitle");
-  var fieldClient = document.getElementById("field-client");
+  var fieldClientSelect = document.getElementById("field-client-select");
+  var fieldClientCustomWrap = document.getElementById("field-client-custom-wrap");
+  var fieldClientCustom = document.getElementById("field-client-custom");
   var fieldType = document.getElementById("field-type");
   var fieldStatus = document.getElementById("field-status");
   var fieldDescription = document.getElementById("field-description");
@@ -132,6 +134,10 @@
   pairSearch.addEventListener("input", renderPairResults);
   pairResults.addEventListener("click", handleAddPair);
   pairList.addEventListener("click", handlePairRemoval);
+  fieldTitle.addEventListener("input", syncCurrentPublicationChecklist);
+  fieldType.addEventListener("input", syncCurrentPublicationChecklist);
+  fieldClientSelect.addEventListener("change", handlePublisherSelectionChange);
+  fieldClientCustom.addEventListener("input", syncCurrentPublicationChecklist);
 
   boot();
 
@@ -553,7 +559,7 @@
             '<span class="admin-status-pill" data-status="' + escapeHtml(project.status) + '">' + escapeHtml(formatStatusLabel(project.status)) + '</span>' +
           '</div>' +
           '<div class="admin-project-meta">' +
-            "<span>" + escapeHtml(project.client || "sem cliente") + "</span>" +
+            "<span>" + escapeHtml(project.client || "sem editora") + "</span>" +
             "<span>" + escapeHtml(project.slug) + "</span>" +
           "</div>" +
           '<div class="admin-project-meta">' +
@@ -597,7 +603,8 @@
     fieldSlug.value = project.slug || "";
     fieldTitle.value = project.title || "";
     fieldSubtitle.value = project.subtitle || "";
-    fieldClient.value = project.client || "";
+    renderPublisherOptions(project.client || "");
+    syncPublisherField(project.client || "");
     fieldType.value = project.project_type || "";
     fieldStatus.value = project.status || "draft";
     fieldDescription.value = project.description || "";
@@ -623,6 +630,86 @@
   function handleProjectSave(event) {
     if (event && event.preventDefault) event.preventDefault();
     persistCurrentProject();
+  }
+
+  function handlePublisherSelectionChange() {
+    var isCustom = fieldClientSelect.value === "__custom__";
+    setHidden(fieldClientCustomWrap, !isCustom);
+
+    if (!isCustom) {
+      fieldClientCustom.value = "";
+    }
+
+    syncCurrentPublicationChecklist();
+  }
+
+  function renderPublisherOptions(currentValue) {
+    var selectedValue = String(currentValue || "").trim();
+    var publishers = state.projects
+      .map(function (project) { return String(project.client || "").trim(); })
+      .filter(Boolean)
+      .filter(function (value, index, list) { return list.indexOf(value) === index; })
+      .sort(function (left, right) { return left.localeCompare(right); });
+
+    fieldClientSelect.innerHTML = '<option value="">Selecione</option>' +
+      publishers.map(function (publisher) {
+        return '<option value="' + escapeHtml(publisher) + '">' + escapeHtml(publisher) + '</option>';
+      }).join("") +
+      '<option value="__custom__">+ nova editora</option>';
+
+    if (!selectedValue) {
+      fieldClientSelect.value = "";
+      fieldClientCustom.value = "";
+      setHidden(fieldClientCustomWrap, true);
+      return;
+    }
+  }
+
+  function syncPublisherField(value) {
+    var selectedValue = String(value || "").trim();
+    var hasKnownOption = Array.prototype.some.call(fieldClientSelect.options, function (option) {
+      return option.value === selectedValue;
+    });
+
+    if (!selectedValue) {
+      fieldClientSelect.value = "";
+      fieldClientCustom.value = "";
+      setHidden(fieldClientCustomWrap, true);
+      return;
+    }
+
+    if (hasKnownOption) {
+      fieldClientSelect.value = selectedValue;
+      fieldClientCustom.value = "";
+      setHidden(fieldClientCustomWrap, true);
+      return;
+    }
+
+    fieldClientSelect.value = "__custom__";
+    fieldClientCustom.value = selectedValue;
+    setHidden(fieldClientCustomWrap, false);
+  }
+
+  function getPublisherFieldValue() {
+    if (fieldClientSelect.value === "__custom__") {
+      return String(fieldClientCustom.value || "").trim() || null;
+    }
+    return String(fieldClientSelect.value || "").trim() || null;
+  }
+
+  function syncCurrentPublicationChecklist() {
+    var project = getSelectedProject();
+    if (!project) return;
+    syncPublicationChecklist(buildPublicationDraft(project));
+  }
+
+  function buildPublicationDraft(project) {
+    return {
+      id: project.id,
+      title: String(fieldTitle.value || "").trim(),
+      client: getPublisherFieldValue(),
+      project_type: String(fieldType.value || "").trim()
+    };
   }
 
   function handleProjectDeletion() {
@@ -707,7 +794,7 @@
         slug: nextSlug,
         title: String(fieldTitle.value || "").trim(),
         subtitle: String(fieldSubtitle.value || "").trim() || null,
-        client: String(fieldClient.value || "").trim() || null,
+        client: getPublisherFieldValue(),
         project_type: String(fieldType.value || "").trim() || null,
         status: nextStatus,
         description: String(fieldDescription.value || "").trim() || null,
@@ -727,6 +814,8 @@
       .then(function (items) {
         if (items && items.length) {
           replaceProject(items[0]);
+          renderPublisherOptions(items[0].client || "");
+          syncPublisherField(items[0].client || "");
           editorSlug.textContent = items[0].slug;
           editorTitle.textContent = items[0].title;
           updatePublicationPanel(items[0]);
@@ -1980,7 +2069,7 @@
         help: "O projeto pode ser publicado com o titulo principal definido."
       },
       {
-        label: "Cliente / editora",
+        label: "Editora",
         ok: Boolean(String(project.client || "").trim()),
         help: "Ajuda a localizar e filtrar o projeto depois."
       },

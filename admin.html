@@ -132,8 +132,16 @@
                 </label>
 
                 <label class="admin-field">
-                  <span class="admin-label">Editora / cliente</span>
-                  <input class="admin-input" id="field-client" type="text">
+                  <span class="admin-label">Editora</span>
+                  <select class="admin-input" id="field-client-select">
+                    <option value="">Selecione</option>
+                    <option value="__custom__">+ nova editora</option>
+                  </select>
+                </label>
+
+                <label class="admin-field" id="field-client-custom-wrap" hidden>
+                  <span class="admin-label">Nova editora</span>
+                  <input class="admin-input" id="field-client-custom" type="text" placeholder="Digite a editora">
                 </label>
 
                 <label class="admin-field">
@@ -191,7 +199,6 @@
                 <div class="admin-subsection-heading">
                   <div>
                     <h3>Checklist de publicacao</h3>
-                    <p class="admin-copy">Confere os itens minimos para o projeto entrar no site.</p>
                   </div>
                   <div class="admin-flag-summary" id="checklist-summary"></div>
                 </div>
@@ -283,13 +290,6 @@
 
             <div class="admin-form-actions">
               <button class="admin-button" id="save-project-button" type="button">Salvar alterações</button>
-            </div>
-
-            <div class="admin-danger-zone">
-              <div>
-                <strong>Excluir projeto</strong>
-                <p class="admin-copy">Apaga este projeto, suas imagens e as ligacoes associadas.</p>
-              </div>
               <button class="admin-danger-button" id="delete-project-button" type="button">Excluir projeto</button>
             </div>
           </form>
