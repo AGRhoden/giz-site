@@ -21,16 +21,14 @@
   var deleteProjectButton = document.getElementById("delete-project-button");
   var editorTabs = Array.prototype.slice.call(document.querySelectorAll("[data-editor-tab]"));
   var editorSections = Array.prototype.slice.call(document.querySelectorAll("[data-editor-section]"));
-  var editorSlug = document.getElementById("editor-slug");
   var editorTitle = document.getElementById("editor-title");
   var saveState = document.getElementById("save-state");
-  var fieldSlug = document.getElementById("field-slug");
   var fieldTitle = document.getElementById("field-title");
   var fieldSubtitle = document.getElementById("field-subtitle");
   var fieldClientSelect = document.getElementById("field-client-select");
-  var fieldClientCustomWrap = document.getElementById("field-client-custom-wrap");
   var fieldClientCustom = document.getElementById("field-client-custom");
-  var fieldType = document.getElementById("field-type");
+  var fieldTypeSelect = document.getElementById("field-type-select");
+  var fieldTypeCustom = document.getElementById("field-type-custom");
   var fieldStatus = document.getElementById("field-status");
   var fieldDescription = document.getElementById("field-description");
   var fieldPublicationNotes = document.getElementById("field-publication-notes");
@@ -135,7 +133,8 @@
   pairResults.addEventListener("click", handleAddPair);
   pairList.addEventListener("click", handlePairRemoval);
   fieldTitle.addEventListener("input", syncCurrentPublicationChecklist);
-  fieldType.addEventListener("input", syncCurrentPublicationChecklist);
+  fieldTypeSelect.addEventListener("change", handleProjectTypeSelectionChange);
+  fieldTypeCustom.addEventListener("input", syncCurrentPublicationChecklist);
   fieldClientSelect.addEventListener("change", handlePublisherSelectionChange);
   fieldClientCustom.addEventListener("input", syncCurrentPublicationChecklist);
 
@@ -598,14 +597,12 @@
     setHidden(editorForm, false);
     setHidden(mediaUploadForm, false);
     renderEditorTabs();
-    editorSlug.textContent = project.slug;
     editorTitle.textContent = project.title;
-    fieldSlug.value = project.slug || "";
     fieldTitle.value = project.title || "";
     fieldSubtitle.value = project.subtitle || "";
     renderPublisherOptions(project.client || "");
     syncPublisherField(project.client || "");
-    fieldType.value = project.project_type || "";
+    syncProjectTypeField(project.project_type || "");
     fieldStatus.value = project.status || "draft";
     fieldDescription.value = project.description || "";
     fieldPublicationNotes.value = project.publication_notes || "";
@@ -634,7 +631,7 @@
 
   function handlePublisherSelectionChange() {
     var isCustom = fieldClientSelect.value === "__custom__";
-    setHidden(fieldClientCustomWrap, !isCustom);
+    setHidden(fieldClientCustom, !isCustom);
 
     if (!isCustom) {
       fieldClientCustom.value = "";
@@ -655,12 +652,12 @@
       publishers.map(function (publisher) {
         return '<option value="' + escapeHtml(publisher) + '">' + escapeHtml(publisher) + '</option>';
       }).join("") +
-      '<option value="__custom__">+ nova editora</option>';
+      '<option value="__custom__">Outra editora</option>';
 
     if (!selectedValue) {
       fieldClientSelect.value = "";
       fieldClientCustom.value = "";
-      setHidden(fieldClientCustomWrap, true);
+      setHidden(fieldClientCustom, true);
       return;
     }
   }
@@ -674,20 +671,20 @@
     if (!selectedValue) {
       fieldClientSelect.value = "";
       fieldClientCustom.value = "";
-      setHidden(fieldClientCustomWrap, true);
+      setHidden(fieldClientCustom, true);
       return;
     }
 
     if (hasKnownOption) {
       fieldClientSelect.value = selectedValue;
       fieldClientCustom.value = "";
-      setHidden(fieldClientCustomWrap, true);
+      setHidden(fieldClientCustom, true);
       return;
     }
 
     fieldClientSelect.value = "__custom__";
     fieldClientCustom.value = selectedValue;
-    setHidden(fieldClientCustomWrap, false);
+    setHidden(fieldClientCustom, false);
   }
 
   function getPublisherFieldValue() {
@@ -695,6 +692,49 @@
       return String(fieldClientCustom.value || "").trim() || null;
     }
     return String(fieldClientSelect.value || "").trim() || null;
+  }
+
+  function handleProjectTypeSelectionChange() {
+    var isCustom = fieldTypeSelect.value === "__custom__";
+    setHidden(fieldTypeCustom, !isCustom);
+
+    if (!isCustom) {
+      fieldTypeCustom.value = "";
+    }
+
+    syncCurrentPublicationChecklist();
+  }
+
+  function syncProjectTypeField(value) {
+    var selectedValue = String(value || "").trim();
+    var hasKnownOption = Array.prototype.some.call(fieldTypeSelect.options, function (option) {
+      return option.value === selectedValue;
+    });
+
+    if (!selectedValue) {
+      fieldTypeSelect.value = "";
+      fieldTypeCustom.value = "";
+      setHidden(fieldTypeCustom, true);
+      return;
+    }
+
+    if (hasKnownOption) {
+      fieldTypeSelect.value = selectedValue;
+      fieldTypeCustom.value = "";
+      setHidden(fieldTypeCustom, true);
+      return;
+    }
+
+    fieldTypeSelect.value = "__custom__";
+    fieldTypeCustom.value = selectedValue;
+    setHidden(fieldTypeCustom, false);
+  }
+
+  function getProjectTypeValue() {
+    if (fieldTypeSelect.value === "__custom__") {
+      return String(fieldTypeCustom.value || "").trim() || null;
+    }
+    return String(fieldTypeSelect.value || "").trim() || null;
   }
 
   function syncCurrentPublicationChecklist() {
@@ -708,7 +748,7 @@
       id: project.id,
       title: String(fieldTitle.value || "").trim(),
       client: getPublisherFieldValue(),
-      project_type: String(fieldType.value || "").trim()
+      project_type: getProjectTypeValue()
     };
   }
 
@@ -770,13 +810,8 @@
   function persistCurrentProject(forcedStatus) {
     var project = getSelectedProject();
     if (!project) return;
-    var nextSlug = sanitizeSlug(fieldSlug.value);
+    var nextSlug = project.slug;
     var nextStatus = String(forcedStatus || fieldStatus.value || "draft");
-
-    if (!nextSlug) {
-      setSaveState("Slug invalido");
-      return;
-    }
 
     fieldStatus.value = nextStatus;
 
@@ -795,7 +830,7 @@
         title: String(fieldTitle.value || "").trim(),
         subtitle: String(fieldSubtitle.value || "").trim() || null,
         client: getPublisherFieldValue(),
-        project_type: String(fieldType.value || "").trim() || null,
+        project_type: getProjectTypeValue(),
         status: nextStatus,
         description: String(fieldDescription.value || "").trim() || null,
         publication_notes: String(fieldPublicationNotes.value || "").trim() || null,
@@ -816,7 +851,7 @@
           replaceProject(items[0]);
           renderPublisherOptions(items[0].client || "");
           syncPublisherField(items[0].client || "");
-          editorSlug.textContent = items[0].slug;
+          syncProjectTypeField(items[0].project_type || "");
           editorTitle.textContent = items[0].title;
           updatePublicationPanel(items[0]);
           applyFilters();

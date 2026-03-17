@@ -98,7 +98,6 @@
           <form class="admin-card admin-editor-form" id="editor-form" hidden>
             <div class="admin-panel-heading">
               <div>
-                <p class="admin-kicker" id="editor-slug">identificador interno</p>
                 <h2 id="editor-title">Projeto</h2>
               </div>
               <div class="admin-editor-meta">
@@ -117,11 +116,6 @@
             <section class="admin-editor-section is-active" data-editor-section="details">
               <div class="admin-grid">
                 <label class="admin-field">
-                  <span class="admin-label">Identificador interno</span>
-                  <input class="admin-input" id="field-slug" type="text" pattern="[a-z0-9]+(?:[-_][a-z0-9]+)*" required>
-                </label>
-
-                <label class="admin-field">
                   <span class="admin-label">Título</span>
                   <input class="admin-input" id="field-title" type="text" required>
                 </label>
@@ -135,24 +129,22 @@
                   <span class="admin-label">Editora</span>
                   <select class="admin-input" id="field-client-select">
                     <option value="">Selecione</option>
-                    <option value="__custom__">+ nova editora</option>
+                    <option value="__custom__">Outra editora</option>
                   </select>
-                </label>
-
-                <label class="admin-field" id="field-client-custom-wrap" hidden>
-                  <span class="admin-label">Nova editora</span>
-                  <input class="admin-input" id="field-client-custom" type="text" placeholder="Digite a editora">
+                  <input class="admin-input" id="field-client-custom" type="text" placeholder="Digite a editora" hidden>
                 </label>
 
                 <label class="admin-field">
                   <span class="admin-label">Tipo</span>
-                  <input class="admin-input" id="field-type" type="text" list="project-type-options" placeholder="Livro, HQ, Revista...">
-                  <datalist id="project-type-options">
-                    <option value="Livro"></option>
-                    <option value="HQ"></option>
-                    <option value="Revista"></option>
-                    <option value="Outros"></option>
-                  </datalist>
+                  <select class="admin-input" id="field-type-select">
+                    <option value="">Selecione</option>
+                    <option value="Livro">Livro</option>
+                    <option value="HQ">HQ</option>
+                    <option value="Revista">Revista</option>
+                    <option value="Outros">Outros</option>
+                    <option value="__custom__">Outro tipo</option>
+                  </select>
+                  <input class="admin-input" id="field-type-custom" type="text" placeholder="Digite o tipo" hidden>
                 </label>
 
                 <label class="admin-field">
@@ -210,7 +202,6 @@
                 <div class="admin-subsection-heading">
                   <div>
                     <h3>Flags editoriais</h3>
-                    <p class="admin-copy">Marcas internas de acompanhamento e planejamento.</p>
                   </div>
                   <div class="admin-flag-summary" id="flag-summary"></div>
                 </div>
