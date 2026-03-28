@@ -6,86 +6,71 @@
 - Goal: editorial portfolio site with a custom admin panel and a Supabase-backed content system
 - Hosting: Cloudflare Pages
 - Backend: Supabase project `epinzzvsbyglmztasspa`
-- Current priority: close the public frontend phase before taking on real launch costs
+- GitHub: `AGRhoden/giz-site` (privado → público, branch `main`)
+- Current priority: redesign editorial do frontend público (fase 003)
+
+## Arquivos canônicos confirmados (28 Mar 2026)
+
+| Arquivo | Linhas | Data | Notas |
+|---|---|---|---|
+| `admin.html` | — | 17 Mar | HTML do painel admin |
+| `admin.js` | 3635 | 17 Mar | JS completo do admin (ex admin 3.js) |
+| `admin.css` | — | 17 Mar | CSS do admin |
+| `app_portfolio.js` | 1548 | 18 Mar | Frontend público confirmado |
+| `portfolio.css` | — | 18 Mar | CSS confirmado (par do app_portfolio.js) |
+| `portfolio.config.js` | — | 18 Mar | Configuração de filtros e páginas |
+| `index.html` | — | — | Shell do frontend público |
+| `backend.config.js` | — | — | **NÃO commitado** (gitignored, credenciais) |
 
 ## Current Status
 
 ### Admin
-
-- Admin login works with email/password, password recovery and magic link support.
-- Project editing is working and now feels substantially more stable for real use.
-- The admin is split into two workspaces:
-  - `Projetos`
-  - `Conteúdo do site`
-- `Projetos` currently covers:
-  - search and status filtering
-  - alphabetical navigation
-  - project editing
-  - image upload and removal
-  - tag assignment on the project
-  - pair linking
-  - batch editing
-  - initial import flow
-- `Conteúdo do site` currently covers:
-  - taxonomy management
-  - menu labels
-  - static page HTML
-  - portfolio trail text
+- Login funcional: e-mail/senha, recuperação e magic link.
+- Dois workspaces: `Projetos` e `Conteúdo do site`.
+- `Projetos`: busca, filtro por status, navegação alfabética, edição, upload de imagens, tags, pares, batch.
+- `Conteúdo do site`: labels de menu, HTML de páginas, trilha do portfólio.
 
 ### Supabase
+- Schema completo aplicado remotamente (10 migrations).
+- `published_project_feed` com `is_featured`, `sort_year`, metadados de pares.
+- `site_config` como fonte editorial para navegação e conteúdo de páginas.
+- 50 projetos no banco.
 
-- Core portfolio schema exists remotely.
-- `published_project_feed` is live and now includes:
-  - `is_featured`
-  - `sort_year`
-  - richer pair payloads with metadata/thumb info
-- `site_config` now exists remotely and is the new editorial source for:
-  - navigation labels
-  - page content
-  - portfolio trail copy
-- The following migrations are confirmed both locally and remotely:
-  - `20260316041248_init_giz_portfolio_schema.sql`
-  - `20260316041542_seed_initial_projects_from_json.sql`
-  - `20260316041748_create_project_media_bucket.sql`
-  - `20260316050000_create_published_project_feed_view.sql`
-  - `20260316053000_enable_authenticated_editor_access.sql`
-  - `20260316105500_restrict_editor_access_to_admins.sql`
-  - `20260316123000_restrict_project_media_storage_to_admins.sql`
-  - `20260316130000_add_is_featured_to_published_project_feed.sql`
-  - `20260317012000_add_sort_year_and_pair_media_to_published_project_feed.sql`
-  - `20260317164000_create_site_config_table.sql`
+### Frontend público
+- Versão canônica confirmada visualmente em 28 Mar 2026.
+- Grid à esquerda, painel à direita, navegação discreta no topo.
+- Botão de grid roxo com rotação anti-horária para navegação de pares (`grid-button-reverse`).
+- Lê dados do Supabase (`published_project_feed`).
+- **Próxima fase:** redesign editorial (003) — melhorar hierarquia, ritmo visual, navegação por filtros/cores/pares.
 
-### Public Site
-
-- The frontend reads project data from Supabase.
-- The frontend now also reads site-level content from `site_config`, with local-file fallback.
-- The public frontend now becomes the next major work phase.
-- Launch spending should remain conservative until the public experience is navigable and substantially loaded.
+### Git
+- Repositório inicializado do zero (28 Mar 2026, .git anterior corrompido).
+- Remote: `https://github.com/AGRhoden/giz-site.git`
+- Branch principal: `main`
 
 ## Working Assumptions
 
-- Desktop is the primary target for the admin panel.
-- Mobile admin access is secondary and only for occasional light edits.
-- The admin should prioritize clarity, hierarchy and speed over generic dashboard aesthetics.
-- The public frontend must not inherit admin-style card logic blindly.
+- Desktop é o alvo principal do admin. Mobile é secundário.
+- O admin prioriza clareza e velocidade, não estética de dashboard.
+- O frontend público não deve herdar a lógica visual do admin.
+- Gastos de infraestrutura reais só começam quando o site estiver navegável e com conteúdo suficiente.
 
 ## Known Gaps
 
-- Site content editing currently supports changing existing items, not creating brand new menu items or brand new portfolio trails.
-- The full public label dictionary is not yet editable in the admin.
-- The public frontend still needs a fresh visual/system pass after the backend phase is considered stable.
+- Edição de conteúdo do site suporta apenas itens existentes (não cria novos menus ou trilhas).
+- O dicionário público de labels ainda não é editável no admin.
+- O redesign editorial do frontend está pendente.
 
 ## Resume Here
 
-If a future session needs to resume quickly:
-
-1. Read [DECISIONS.md](/Users/antonio/Documents/giz-site/docs/DECISIONS.md).
-2. Read the relevant file in [tasks](/Users/antonio/Documents/giz-site/tasks/README.md).
-3. Check `git status`.
-4. If the work touches Supabase-backed site content, verify `site_config` exists remotely before debugging UI behavior.
+1. Servidor local: `ruby -run -e httpd . -p 3000` na pasta do projeto.
+2. Admin: `http://localhost:3000/admin.html`
+3. Front: `http://localhost:3000/index.html`
+4. Ler `DECISIONS.md` antes de decisões de arquitetura.
+5. Verificar `site_config` no Supabase se o conteúdo do site não carregar.
 
 ## Last Consolidated Direction
 
-- Backend/admin is structurally strong enough for real content operations.
-- The content system has been moved out of static-file-only land and into Supabase.
-- Next major phase: deliberate public frontend redesign with a custom visual language, followed by launch preparation.
+- Admin e backend estáveis para operações reais de conteúdo.
+- Frontend público na versão canônica confirmada.
+- Próxima fase: redesign editorial deliberado com linguagem visual própria, seguido de preparação para lançamento.
