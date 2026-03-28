@@ -5,38 +5,15 @@ const FILTERS = Array.isArray(CONFIG.filters) ? CONFIG.filters : [];
 const PAGE_BY_ID = new Map(PAGES.map((page) => [page.id, page]));
 const FILTER_BY_ID = new Map(FILTERS.map((filter) => [filter.id, filter]));
 const PANEL_CACHE = new Map();
-const SITE_PANEL_OVERRIDES = {};
 const FALLBACK_PROJECT_MESSAGE = "Imagem do projeto indisponível no momento.";
 const ENABLE_HOVER_ZOOM = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-const COLOR_SWATCHES = {
-  preto: "#17110f",
-  branco: "#f6f1e8",
-  cinza: "#9b948d",
-  grafite: "#47413d",
-  verde: "#2f8c66",
-  azul: "#3f6ea8",
-  turquesa: "#4eb5b7",
-  vermelho: "#b14a42",
-  vinho: "#74394d",
-  amarelo: "#d7b645",
-  ocre: "#b78435",
-  laranja: "#d86f36",
-  rosa: "#cf8aa0",
-  roxo: "#7c5ea7",
-  marrom: "#7a5a42",
-  bege: "#cab28b",
-  creme: "#ede1c8",
-  dourado: "#c4a24b",
-  prata: "#b7bcc4"
-};
 
 const elements = {
   grid: document.getElementById("grid"),
   gridView: document.getElementById("grid-view"),
   viewerShell: document.getElementById("viewer-shell"),
   panel: document.getElementById("panel"),
-  menuNav: document.getElementById("menu-nav"),
-  collectionIntro: document.getElementById("collection-intro")
+  menuNav: document.getElementById("menu-nav")
 };
 
 const state = {
@@ -49,10 +26,12 @@ const state = {
   currentCriterionId: FILTERS[0]?.id || null,
   filters: createEmptyFilters(),
   currentProject: null,
-  currentImageIndex: 0
+  currentImageIndex: 0,
+  panelRequestId: 0
 };
 
 document.addEventListener("DOMContentLoaded", () => {
+  renderMenu();
   bindEvents();
   initialize();
 });
@@ -64,144 +43,11 @@ function createEmptyFilters() {
   }, {});
 }
 
-function buildDefaultSiteSettings() {
-  return {
-    navigation: PAGES.map((page) => ({
-      id: page.id,
-      label: page.label
-    })),
-    filters: FILTERS.map((filter) => ({
-      id: filter.id,
-      label: filter.label,
-      summary: filter.summary || "",
-      description: filter.description || ""
-    })),
-    labels: Object.assign({}, CONFIG.labels || {}),
-    pageContent: {}
-  };
-}
-
-async function loadSiteSettings() {
-  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) {
-    return;
-  }
-
-  try {
-    const response = await fetch(new URL("/rest/v1/site_config?select=navigation,filters,labels,page_content&key=eq.main&limit=1", BACKEND_CONFIG.url).toString(), {
-      headers: {
-        apikey: BACKEND_CONFIG.anonKey,
-        Authorization: `Bearer ${BACKEND_CONFIG.anonKey}`
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Falha ao carregar conteúdo do site (${response.status})`);
-    }
-
-    const payload = await response.json();
-    applySiteSettings(payload?.[0]);
-  } catch (error) {
-    console.warn("Nao foi possivel carregar configuracoes do site:", error);
-  }
-}
-
-function applySiteSettings(payload) {
-  const defaults = buildDefaultSiteSettings();
-  const navigation = normalizeSiteNavigation(payload?.navigation, defaults.navigation);
-  const filters = normalizeSiteFilters(payload?.filters, defaults.filters);
-  const labels = payload?.labels && typeof payload.labels === "object"
-    ? Object.assign({}, defaults.labels, payload.labels)
-    : defaults.labels;
-  const pageContent = payload?.page_content && typeof payload.page_content === "object"
-    ? payload.page_content
-    : {};
-
-  replaceArrayContents(PAGES, navigation.map((item) => {
-    const page = CONFIG.pages?.find((candidate) => candidate.id === item.id) || {};
-    return Object.assign({}, page, { id: item.id, label: item.label || item.id });
-  }));
-
-  replaceArrayContents(FILTERS, filters.map((item) => {
-    const filter = CONFIG.filters?.find((candidate) => candidate.id === item.id) || {};
-    return Object.assign({}, filter, {
-      id: item.id,
-      label: item.label || filter.label || item.id,
-      summary: item.summary || "",
-      description: item.description || ""
-    });
-  }));
-
-  PAGE_BY_ID.clear();
-  PAGES.forEach((page) => PAGE_BY_ID.set(page.id, page));
-
-  FILTER_BY_ID.clear();
-  FILTERS.forEach((filter) => FILTER_BY_ID.set(filter.id, filter));
-
-  Object.keys(SITE_PANEL_OVERRIDES).forEach((key) => delete SITE_PANEL_OVERRIDES[key]);
-  Object.keys(pageContent).forEach((pageId) => {
-    SITE_PANEL_OVERRIDES[pageId] = String(pageContent[pageId] || "");
-  });
-
-  CONFIG.labels = labels;
-  state.currentCriterionId = FILTERS[0]?.id || null;
-  state.filters = createEmptyFilters();
-}
-
-function normalizeSiteNavigation(items, defaults) {
-  const byId = new Map();
-
-  if (Array.isArray(items)) {
-    items.forEach((item) => {
-      if (!item?.id) return;
-      byId.set(item.id, {
-        id: item.id,
-        label: String(item.label || "").trim() || item.id
-      });
-    });
-  }
-
-  return defaults
-    .filter((item) => byId.has(item.id) || item.id)
-    .map((item) => byId.get(item.id) || item);
-}
-
-function normalizeSiteFilters(items, defaults) {
-  const byId = new Map();
-
-  if (Array.isArray(items)) {
-    items.forEach((item) => {
-      if (!item?.id) return;
-      byId.set(item.id, {
-        id: item.id,
-        label: String(item.label || "").trim(),
-        summary: String(item.summary || "").trim(),
-        description: String(item.description || "").trim()
-      });
-    });
-  }
-
-  return defaults
-    .filter((item) => byId.has(item.id) || item.id)
-    .map((item) => Object.assign({}, item, byId.get(item.id) || {}));
-}
-
-function replaceArrayContents(target, nextItems) {
-  target.length = 0;
-  nextItems.forEach((item) => target.push(item));
-}
-
 async function initialize() {
-  await loadSiteSettings();
-  renderMenu();
   updateMenu();
-  renderCollectionIntro();
   await Promise.all([loadProjects(), preloadStaticPanels()]);
-  if (state.loadFailed) {
-    renderCollectionIntro();
-    return;
-  }
+  if (state.loadFailed) return;
   applyFilters();
-  renderCollectionIntro();
   renderGrid();
   renderPanel();
 }
@@ -210,7 +56,6 @@ function bindEvents() {
   elements.menuNav.addEventListener("click", handleMenuClick);
   elements.grid.addEventListener("click", handleGridClick);
   elements.panel.addEventListener("click", handlePanelClick);
-  elements.collectionIntro.addEventListener("click", handlePanelClick);
   elements.viewerShell.addEventListener("click", handleViewerClick);
 }
 
@@ -238,16 +83,6 @@ function handlePanelClick(event) {
 
   if (action === "enter-criterion") {
     enterCriterion(actionElement.dataset.criterionId);
-    return;
-  }
-
-  if (action === "open-page") {
-    openPage(actionElement.dataset.pageId);
-    return;
-  }
-
-  if (action === "open-criterion-page") {
-    openCriterionPage(actionElement.dataset.criterionId);
     return;
   }
 
@@ -283,8 +118,8 @@ function handlePanelClick(event) {
     return;
   }
 
-  if (action === "close-viewer") {
-    closeViewer();
+  if (action === "show-project-pairs") {
+    togglePairList(actionElement);
     return;
   }
 
@@ -387,11 +222,7 @@ function normalizeProject(item) {
       titulo: cleanString(pair?.title ?? pair?.titulo) || formatLabel(cleanString(pair?.slug)),
       subtitulo: cleanString(pair?.subtitle ?? pair?.subtitulo),
       label: cleanString(pair?.label ?? pair?.label_override),
-      pairType: cleanString(pair?.pair_type),
-      thumb: resolveProjectMediaUrl(cleanString(pair?.thumb_path)),
-      cliente: cleanString(pair?.client ?? pair?.cliente),
-      tipo: normalizeProjectType(pair?.project_type ?? pair?.tipo),
-      ano: normalizeProjectYear(pair?.sort_year ?? pair?.ano)
+      pairType: cleanString(pair?.pair_type)
     })).filter((pair) => pair.slug)
     : [];
   const tagSource = item?.tags ?? item?.tag_slugs;
@@ -404,11 +235,8 @@ function normalizeProject(item) {
     titulo: cleanString(item?.titulo ?? item?.title) || formatLabel(cleanString(item?.slug)),
     subtitulo: cleanString(item?.subtitulo ?? item?.subtitle),
     descricao: cleanString(item?.descricao ?? item?.description),
-    tipo: normalizeProjectType(item?.tipo ?? item?.project_type),
+    tipo: cleanString(item?.tipo ?? item?.project_type),
     cliente: cleanString(item?.cliente ?? item?.client),
-    ano: normalizeProjectYear(item?.ano ?? item?.sort_year),
-    destaque: item?.is_featured ? "destaque" : "",
-    isFeatured: Boolean(item?.is_featured),
     tags,
     thumb,
     imagens: images,
@@ -418,26 +246,6 @@ function normalizeProject(item) {
 
 function cleanString(value) {
   return typeof value === "string" ? value.trim() : "";
-}
-
-function normalizeProjectType(value) {
-  const normalized = cleanString(value);
-  const folded = normalized.toLowerCase();
-
-  if (!folded) return "";
-  if (folded === "hq") return "hq";
-  if (folded === "livro" || folded === "livros") return "livro";
-  if (folded === "revista" || folded === "revistas") return "revista";
-  if (folded === "especial" || folded === "projeto especial" || folded === "projetos especiais") return "especial";
-  if (folded === "outro" || folded === "outros") return "outros";
-
-  return normalized;
-}
-
-function normalizeProjectYear(value) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric < 1000) return "";
-  return String(Math.trunc(numeric));
 }
 
 function resolveProjectMediaUrl(value) {
@@ -466,52 +274,8 @@ function shuffle(array) {
   return array;
 }
 
-function getFeaturedProjects() {
-  return state.shuffled.filter((project) => project.isFeatured);
-}
-
-function getVisibleProjects() {
-  if (state.currentPage === CONFIG.portfolioPageId) {
-    return state.filtered;
-  }
-
-  const featured = getFeaturedProjects();
-
-  if (state.currentPage === "inicio") {
-    return (featured.length ? featured : state.shuffled).slice(0, 9);
-  }
-
-  if (state.currentPage === "quem") {
-    return (featured.length ? featured : state.shuffled).slice(0, 6);
-  }
-
-  if (state.currentPage === "contato") {
-    return state.shuffled.slice(0, 4);
-  }
-
-  return state.shuffled.slice(0, 6);
-}
-
-function getDefaultCriterionId() {
-  return FILTERS[0]?.id || "";
-}
-
-function getFeaturedCriterionId() {
-  return FILTER_BY_ID.has("destaques") ? "destaques" : getDefaultCriterionId();
-}
-
-function getColorCriterionId() {
-  const colorCriterion = FILTERS.find((criterion) => criterion.includeSet === "colorTags" || criterion.id === "cores");
-  return colorCriterion?.id || getDefaultCriterionId();
-}
-
 function openPage(pageId) {
   if (!PAGE_BY_ID.has(pageId)) return;
-
-  const leavingPortfolio = state.currentPage === CONFIG.portfolioPageId && pageId !== CONFIG.portfolioPageId;
-  if (leavingPortfolio) {
-    resetPortfolioNavigation();
-  }
 
   state.currentPage = pageId;
   state.currentProject = null;
@@ -526,18 +290,6 @@ function openPage(pageId) {
   applyFilters();
   renderGrid();
   renderPanel();
-}
-
-function resetPortfolioNavigation() {
-  state.filters = createEmptyFilters();
-  state.currentCriterionId = FILTERS[0]?.id || null;
-  state.portfolioMode = "intro";
-  state.currentProject = null;
-  state.currentImageIndex = 0;
-}
-
-function hasActiveFilters() {
-  return Object.values(state.filters).some((values) => values.length > 0);
 }
 
 function updateMenu() {
@@ -560,142 +312,6 @@ function renderMenu() {
     button.textContent = page.label;
     elements.menuNav.appendChild(button);
   });
-}
-
-function renderCollectionIntro() {
-  if (!elements.collectionIntro) return;
-
-  const page = PAGE_BY_ID.get(state.currentPage);
-  const visibleProjects = getVisibleProjects();
-  const totalProjects = state.projects.length;
-  const activeFilterCount = Object.values(state.filters).reduce((total, values) => total + values.length, 0);
-  const currentCriterion = FILTER_BY_ID.get(state.currentCriterionId);
-  const pageNumber = Math.max(1, PAGES.findIndex((item) => item.id === state.currentPage) + 1);
-  let title = page?.label || "GIZ";
-  let note = "Portfólio editorial em construção contínua.";
-  let countLabel = totalProjects ? `${visibleProjects.length} em foco` : "Aguardando acervo";
-  let chips = [];
-  let actions = [];
-
-  if (state.currentProject) {
-    const project = state.currentProject;
-    title = project.titulo;
-    note = project.subtitulo || project.descricao || "Abra as imagens e use os pares para continuar navegando por afinidade.";
-    countLabel = project.imagens.length === 1 ? "1 imagem" : `${project.imagens.length} imagens`;
-    chips = [
-      renderCollectionChip(project.cliente),
-      renderCollectionChip(project.tipo ? formatLabel(project.tipo) : ""),
-      renderCollectionChip(project.ano)
-    ].filter(Boolean);
-    actions = [
-      '<button type="button" class="collection-button collection-button-secondary" data-action="close-viewer">Fechar projeto</button>',
-      state.currentPage === CONFIG.portfolioPageId
-        ? '<button type="button" class="collection-button collection-button-primary" data-action="show-portfolio-intro">Voltar às trilhas</button>'
-        : `<button type="button" class="collection-button collection-button-primary" data-action="open-page" data-page-id="${escapeAttribute(CONFIG.portfolioPageId)}">Abrir no portfólio</button>`
-    ];
-  } else if (page?.id === CONFIG.portfolioPageId) {
-    if (state.portfolioMode === "criterio" && currentCriterion) {
-      title = currentCriterion.label;
-      note = currentCriterion.description || "Combine filtros sem perder o contexto do acervo.";
-      countLabel = totalProjects ? formatProjectCount(state.filtered.length, totalProjects) : "Aguardando acervo";
-      chips = getActiveFilterChipMarkup();
-      actions = [
-        '<button type="button" class="collection-button collection-button-secondary" data-action="show-portfolio-intro">Trocar trilha</button>',
-        '<button type="button" class="collection-button collection-button-primary" data-action="clear-filters">Limpar filtros</button>'
-      ];
-    } else {
-      title = "Acervo por trilhas, cores e afinidades";
-      note = "Entre pelo recorte mais intuitivo e depois combine filtros, pares e temas para aprofundar a leitura.";
-      countLabel = totalProjects ? `${totalProjects} publicados` : "Aguardando acervo";
-      chips = [
-        renderCollectionChip(FILTERS.length === 1 ? "1 trilha ativa" : `${FILTERS.length} trilhas disponíveis`),
-        renderCollectionChip(getFeaturedProjects().length ? `${getFeaturedProjects().length} destaques` : ""),
-        activeFilterCount ? renderCollectionChip(activeFilterCount === 1 ? "1 filtro ativo" : `${activeFilterCount} filtros ativos`) : ""
-      ].filter(Boolean);
-      actions = [
-        `<button type="button" class="collection-button collection-button-primary" data-action="enter-criterion" data-criterion-id="${escapeAttribute(getFeaturedCriterionId())}">Começar pelos destaques</button>`
-      ];
-    }
-  } else if (page?.id === "inicio") {
-    title = "Portfólio editorial com leitura de conjunto";
-    note = "Uma entrada mais guiada para o acervo, com destaque para relações, ritmo e identidade visual.";
-    countLabel = totalProjects ? `${visibleProjects.length} em vitrine` : "Aguardando acervo";
-    chips = [
-      renderCollectionChip(getFeaturedProjects().length ? `${getFeaturedProjects().length} projetos em destaque` : ""),
-      renderCollectionChip("Navegação por pares"),
-      renderCollectionChip("Critérios cromáticos")
-    ].filter(Boolean);
-    actions = [
-      `<button type="button" class="collection-button collection-button-primary" data-action="open-page" data-page-id="${escapeAttribute(CONFIG.portfolioPageId)}">Entrar no acervo completo</button>`,
-      `<button type="button" class="collection-button collection-button-secondary" data-action="open-criterion-page" data-criterion-id="${escapeAttribute(getColorCriterionId())}">Explorar por cores</button>`
-    ];
-  } else if (page?.id === "quem") {
-    title = "Direção editorial, imagem e sistema";
-    note = "Uma visão mais institucional do estúdio, acompanhada por uma amostra compacta do acervo publicado.";
-    countLabel = totalProjects ? `${visibleProjects.length} projetos ao lado` : "Aguardando acervo";
-    chips = [
-      renderCollectionChip("Estratégia visual"),
-      renderCollectionChip("Projetos autorais e comissionados")
-    ];
-    actions = [
-      `<button type="button" class="collection-button collection-button-primary" data-action="open-page" data-page-id="${escapeAttribute(CONFIG.portfolioPageId)}">Ver portfólio</button>`
-    ];
-  } else if (page?.id === "contato") {
-    title = "Conversas editoriais começam aqui";
-    note = "O contato precisa parecer continuação do trabalho: direto, legível e sem ruído.";
-    countLabel = totalProjects ? `${visibleProjects.length} projetos em amostra` : "Aguardando acervo";
-    chips = [
-      renderCollectionChip("Livros"),
-      renderCollectionChip("Revistas"),
-      renderCollectionChip("Projetos especiais")
-    ];
-    actions = [
-      `<button type="button" class="collection-button collection-button-primary" data-action="open-page" data-page-id="${escapeAttribute(CONFIG.portfolioPageId)}">Consultar o acervo</button>`
-    ];
-  }
-
-  elements.collectionIntro.innerHTML = `
-    <div class="collection-context">
-      <div class="collection-head">
-        <div class="collection-title-block">
-          <p class="collection-index">${String(pageNumber).padStart(2, "0")} ${escapeHtml(page?.label || "Página")}</p>
-          <h2 class="collection-title">${escapeHtml(title)}</h2>
-          <p class="collection-note">${escapeHtml(note)}</p>
-        </div>
-        <p class="collection-count">${escapeHtml(countLabel)}</p>
-      </div>
-      ${chips.length ? `<div class="collection-meta">${chips.join("")}</div>` : ""}
-      ${actions.length ? `<div class="collection-actions">${actions.join("")}</div>` : ""}
-    </div>
-  `;
-}
-
-function renderCollectionChip(label, swatchValue = "") {
-  if (!label) return "";
-
-  return `
-    <span class="collection-chip">
-      ${renderColorSwatch(swatchValue, "collection-chip-swatch")}
-      ${escapeHtml(label)}
-    </span>
-  `;
-}
-
-function getActiveFilterChipMarkup() {
-  const chips = [];
-
-  Object.entries(state.filters).forEach(([criterionId, values]) => {
-    values.forEach((value) => {
-      const criterion = FILTER_BY_ID.get(criterionId);
-      const formattedValue = formatLabel(value);
-      const label = criterion
-        ? `${criterion.label}: ${formattedValue}`
-        : formattedValue;
-      chips.push(renderCollectionChip(label, value));
-    });
-  });
-
-  return chips.length ? chips : [renderCollectionChip("Sem filtros ativos")];
 }
 
 function applyFilters() {
@@ -730,55 +346,35 @@ function renderGrid() {
   if (!state.projects.length) return;
 
   elements.grid.innerHTML = "";
-  const visibleProjects = getVisibleProjects();
 
-  if (!visibleProjects.length) {
+  if (!state.filtered.length) {
     renderGridState("Nenhum projeto encontrado", "Os filtros atuais não retornaram resultados. Limpe os filtros para voltar ao acervo completo.");
     return;
   }
 
-  visibleProjects.forEach((project, index) => {
+  state.filtered.forEach((project, index) => {
     const card = document.createElement("button");
     card.type = "button";
     card.className = "grid-card";
     card.dataset.projectIndex = String(index);
     card.setAttribute("role", "listitem");
     card.setAttribute("aria-label", `Abrir projeto ${project.titulo}`);
-    const kicker = [project.cliente, project.ano].filter(Boolean).join(" • ");
-    const subtitle = project.subtitulo || (project.tipo ? formatLabel(project.tipo) : "");
-    const badge = project.isFeatured ? '<span class="grid-card-badge">Destaque</span>' : "";
 
     if (project.thumb) {
-      card.innerHTML = `
-        <span class="grid-card-frame">
-          ${badge}
-          <img
-            class="grid-card-media"
-            src="${escapeAttribute(project.thumb)}"
-            alt="${escapeAttribute(project.titulo)}"
-            loading="lazy"
-          >
-        </span>
-        <span class="grid-card-caption">
-          ${kicker ? `<span class="grid-card-kicker">${escapeHtml(kicker)}</span>` : ""}
-          <strong class="grid-card-title">${escapeHtml(project.titulo)}</strong>
-          ${subtitle ? `<span class="grid-card-subtitle">${escapeHtml(subtitle)}</span>` : ""}
-        </span>
-      `;
+      const image = document.createElement("img");
+      image.src = project.thumb;
+      image.alt = project.titulo;
+      image.loading = "lazy";
+      card.appendChild(image);
     } else {
-      card.innerHTML = `
-        <span class="grid-card-frame">
-          ${badge}
-          <span class="grid-thumb-placeholder">
-            <span class="grid-thumb-title">${escapeHtml(project.titulo || "Projeto sem imagem")}</span>
-          </span>
-        </span>
-        <span class="grid-card-caption">
-          ${kicker ? `<span class="grid-card-kicker">${escapeHtml(kicker)}</span>` : ""}
-          <strong class="grid-card-title">${escapeHtml(project.titulo)}</strong>
-          ${subtitle ? `<span class="grid-card-subtitle">${escapeHtml(subtitle)}</span>` : ""}
-        </span>
-      `;
+      const placeholder = document.createElement("div");
+      placeholder.className = "grid-thumb-placeholder";
+
+      const title = document.createElement("span");
+      title.className = "grid-thumb-title";
+      title.textContent = project.titulo || "Projeto sem imagem";
+      placeholder.appendChild(title);
+      card.appendChild(placeholder);
     }
 
     elements.grid.appendChild(card);
@@ -798,7 +394,7 @@ function renderGridState(title, message, tone = "neutral") {
 }
 
 function openProject(index) {
-  const project = getVisibleProjects()[index];
+  const project = state.filtered[index];
   if (!project) return;
 
   state.currentProject = project;
@@ -815,8 +411,7 @@ function closeViewer() {
 }
 
 function openProjectBySlug(slug) {
-  const visibleProjects = getVisibleProjects();
-  const projectIndex = visibleProjects.findIndex((project) => project.slug === slug);
+  const projectIndex = state.filtered.findIndex((project) => project.slug === slug);
 
   if (projectIndex >= 0) {
     openProject(projectIndex);
@@ -830,6 +425,15 @@ function openProjectBySlug(slug) {
   state.currentImageIndex = 0;
   renderViewer();
   renderPanel();
+}
+
+function togglePairList(button) {
+  const wrapper = button.closest(".project-pairs");
+  const list = wrapper?.querySelector(".project-pairs-list");
+  if (!list) return;
+
+  const nextHidden = !list.hidden;
+  list.hidden = nextHidden;
 }
 
 function renderViewer() {
@@ -1000,8 +604,6 @@ function zoomMove(event) {
 }
 
 function renderPanel() {
-  renderCollectionIntro();
-
   if (state.currentProject) {
     renderProjectPanel();
     return;
@@ -1022,19 +624,16 @@ function renderPanel() {
 }
 
 function renderStaticPanel(page) {
-  const markup = SITE_PANEL_OVERRIDES[page.id] || PANEL_CACHE.get(page.content);
+  state.panelRequestId += 1;
+
+  const markup = PANEL_CACHE.get(page.content);
 
   if (!markup) {
-    renderPanelState("Conteúdo indisponível", "Não foi possível carregar o conteúdo desta seção nem do Supabase nem dos arquivos locais.", "error");
+    renderPanelState("Conteúdo indisponível", "Não foi possível carregar o texto desta seção. Verifique a pasta textos/ e o servidor local.", "error");
     return;
   }
 
-  elements.panel.innerHTML = `
-    <div class="panel-page-shell">
-      <p class="panel-page-index">${escapeHtml(page.label)}</p>
-      ${markup}
-    </div>
-  `;
+  elements.panel.innerHTML = markup;
 
   if (page.id === CONFIG.portfolioPageId && state.portfolioMode === "intro") {
     injectPortfolioButtons();
@@ -1058,165 +657,36 @@ async function loadPanelMarkup(fileName) {
 
 function injectPortfolioButtons() {
   const container = elements.panel.querySelector("[data-portfolio-buttons]");
-  const overview = elements.panel.querySelector("[data-portfolio-overview]");
-  if (!container || !overview) return;
+  if (!container) return;
 
   container.innerHTML = "";
-  overview.innerHTML = renderPortfolioOverview();
 
   FILTERS.forEach((criterion) => {
-    const stats = getCriterionCardStats(criterion);
     const button = document.createElement("button");
     button.type = "button";
     button.className = "portfolio-botao";
     button.dataset.action = "enter-criterion";
     button.dataset.criterionId = criterion.id;
-    button.innerHTML = `
-      <span class="portfolio-botao-eyebrow">${escapeHtml(criterion.summary || "Exploração")}</span>
-      <strong>${escapeHtml(criterion.label)}</strong>
-      <span>${escapeHtml(criterion.description || "Abra esta trilha para navegar pelo acervo.")}</span>
-      <small>${escapeHtml(stats)}</small>
-    `;
+    button.textContent = criterion.label;
     container.appendChild(button);
   });
 }
 
-function renderPortfolioOverview() {
-  const activeFilters = hasActiveFilters();
-  const selectedCount = Object.values(state.filters).reduce((total, values) => total + values.length, 0);
-
-  return `
-    <div class="portfolio-overview-card">
-      <div>
-        <span class="panel-summary-label">${activeFilters ? "Navegação em andamento" : "Acervo publicado"}</span>
-        <strong>${escapeHtml(formatProjectCount(state.filtered.length, state.projects.length))}</strong>
-      </div>
-      <div class="portfolio-overview-actions">
-        ${activeFilters ? `<span class="small-note">${escapeHtml(selectedCount === 1 ? "1 filtro ativo" : `${selectedCount} filtros ativos`)}</span>` : '<span class="small-note">Escolha uma trilha abaixo para começar.</span>'}
-        ${activeFilters ? '<button type="button" class="panel-button panel-button-secondary" data-action="clear-filters">Zerar navegação</button>' : ""}
-      </div>
-    </div>
-  `;
-}
-
-function getCriterionCardStats(criterion) {
-  if (!criterion) return "";
-
-  if (Array.isArray(criterion.fixedOptions) && criterion.fixedOptions.length === 1) {
-    const [fixedValue] = criterion.fixedOptions;
-    const count = state.projects.filter((project) => matchesCriterion(project, criterion, fixedValue)).length;
-    return count === 1 ? "1 projeto publicado" : `${count} projetos publicados`;
-  }
-
-  const optionCount = getCriterionOptions(criterion)
-    .filter((option) => !option.disabled)
-    .length;
-
-  if (criterion.mode === "list") {
-    return optionCount === 1 ? "1 entrada disponível" : `${optionCount} entradas disponíveis`;
-  }
-
-  return optionCount === 1 ? "1 recorte disponível" : `${optionCount} recortes disponíveis`;
-}
-
 function renderProjectPanel() {
+  state.panelRequestId += 1;
   const project = state.currentProject;
   const description = project.descricao || "Sem texto descritivo por enquanto.";
-  const featuredBadge = project.isFeatured
-    ? '<p class="project-badge">Destaque</p>'
-    : "";
   const subtitle = project.subtitulo
     ? `<h2 class="titulo-secundario">${escapeHtml(project.subtitulo)}</h2>`
     : "";
-  const meta = renderProjectMeta(project);
-  const taxonomy = renderProjectTaxonomy(project);
   const pairs = renderProjectPairs(project.pares);
-  const navigationActions = state.currentPage === CONFIG.portfolioPageId
-    ? `
-      <div class="panel-actions">
-        <button type="button" class="panel-button panel-button-secondary" data-action="close-viewer">Fechar projeto</button>
-        <button type="button" class="panel-button" data-action="show-portfolio-intro">Voltar às trilhas</button>
-      </div>
-    `
-    : `
-      <div class="panel-actions">
-        <button type="button" class="panel-button panel-button-secondary" data-action="close-viewer">Fechar projeto</button>
-        <button type="button" class="panel-button" data-action="open-page" data-page-id="${escapeAttribute(CONFIG.portfolioPageId)}">Abrir no portfólio</button>
-      </div>
-    `;
 
   elements.panel.innerHTML = `
-    <div class="panel-inner panel-inner-project">
-      <p class="panel-kicker">Projeto</p>
-      ${featuredBadge}
+    <div class="panel-inner" style="display:block; min-height:auto;">
       <h1 class="titulo-principal">${escapeHtml(project.titulo)}</h1>
       ${subtitle}
-      ${meta}
       <p>${escapeHtml(description)}</p>
-      ${taxonomy}
       ${pairs}
-      ${navigationActions}
-    </div>
-  `;
-}
-
-function renderProjectMeta(project) {
-  const items = [
-    project.cliente,
-    project.tipo ? formatLabel(project.tipo) : "",
-    project.ano
-  ].filter(Boolean);
-  if (!items.length) {
-    return "";
-  }
-
-  return `
-    <div class="project-meta" aria-label="Metadados do projeto">
-      ${items.map((item) => `<span class="project-meta-item">${escapeHtml(item)}</span>`).join("")}
-    </div>
-  `;
-}
-
-function renderProjectTaxonomy(project) {
-  const colorSet = getConfigSet("colorTags");
-  const colorTags = project.tags.filter((tag) => colorSet?.has(tag));
-  const themeTags = project.tags.filter((tag) => !colorSet?.has(tag));
-  const sections = [];
-
-  if (colorTags.length) {
-    sections.push(`
-      <div class="project-taxonomy-block">
-        <p class="project-taxonomy-title">Cores</p>
-        <div class="project-tag-list">
-          ${colorTags.map((tag) => `
-            <span class="project-tag project-tag-color">
-              ${renderColorSwatch(tag, "project-tag-swatch")}
-              ${escapeHtml(formatLabel(tag))}
-            </span>
-          `).join("")}
-        </div>
-      </div>
-    `);
-  }
-
-  if (themeTags.length) {
-    sections.push(`
-      <div class="project-taxonomy-block">
-        <p class="project-taxonomy-title">Temas</p>
-        <div class="project-tag-list">
-          ${themeTags.map((tag) => `<span class="project-tag">${escapeHtml(formatLabel(tag))}</span>`).join("")}
-        </div>
-      </div>
-    `);
-  }
-
-  if (!sections.length) {
-    return "";
-  }
-
-  return `
-    <div class="project-taxonomy">
-      ${sections.join("")}
     </div>
   `;
 }
@@ -1226,33 +696,20 @@ function renderProjectPairs(pairs) {
     return "";
   }
 
+  const label = pairs.length === 1 ? "Veja seu par" : "Veja seus pares";
+
   return `
     <div class="project-pairs">
-      <div class="project-pairs-head">
-        <h3 class="project-pairs-title">${pairs.length === 1 ? "Projeto relacionado" : "Projetos relacionados"}</h3>
-        <p class="small-note">Continue navegando por afinidade entre projetos.</p>
-      </div>
-      <div class="project-pairs-grid">
+      <button type="button" class="panel-button" data-action="show-project-pairs">${escapeHtml(label)}</button>
+      <div class="project-pairs-list" hidden>
         ${pairs.map((pair) => `
           <button
             type="button"
-            class="project-pair-card"
+            class="filtro-item"
             data-action="open-project-by-slug"
             data-project-slug="${escapeAttribute(pair.slug)}"
           >
-            ${pair.thumb ? `
-              <img
-                class="project-pair-thumb"
-                src="${escapeAttribute(pair.thumb)}"
-                alt="${escapeAttribute(pair.titulo)}"
-                loading="lazy"
-              >
-            ` : `<span class="project-pair-placeholder" aria-hidden="true">${escapeHtml(pair.titulo.charAt(0) || "?")}</span>`}
-            <span class="project-pair-body">
-              <strong>${escapeHtml(pair.titulo)}</strong>
-              ${pair.subtitulo ? `<span>${escapeHtml(pair.subtitulo)}</span>` : ""}
-              <small>${escapeHtml([pair.cliente, pair.tipo ? formatLabel(pair.tipo) : "", pair.ano].filter(Boolean).join(" • "))}</small>
-            </span>
+            ${escapeHtml(pair.titulo)}
           </button>
         `).join("")}
       </div>
@@ -1261,38 +718,41 @@ function renderProjectPairs(pairs) {
 }
 
 function renderFilterPanel() {
+  state.panelRequestId += 1;
   const criterion = FILTER_BY_ID.get(state.currentCriterionId) || FILTERS[0];
   const options = criterion ? getCriterionOptions(criterion) : [];
 
   elements.panel.innerHTML = `
-    <div class="panel-inner panel-inner-filter">
-      <div class="panel-heading-stack">
-        <p class="panel-kicker">Explorar</p>
+    <div class="panel-inner">
+      <div class="criterio">
         <div class="criterio-nav">
           <button type="button" class="criterio-arrow" data-action="criterion-previous" aria-label="Critério anterior">◀</button>
           <div class="criterio-titulo">${escapeHtml(criterion?.label || "Critério")}</div>
           <button type="button" class="criterio-arrow" data-action="criterion-next" aria-label="Próximo critério">▶</button>
         </div>
-        <p class="small-note">${escapeHtml(criterion?.description || "Combine filtros sem perder o contexto do acervo.")}</p>
       </div>
 
-      <div class="panel-summary-card">
-        <div class="panel-summary-head">
-          <span class="panel-summary-label">Recorte atual</span>
-          <strong class="contador-resultados">${formatProjectCount(state.filtered.length, state.projects.length)}</strong>
-        </div>
+      <div class="ativos">
         <div class="filtros-ativos">
           ${renderActiveFilters()}
         </div>
       </div>
 
-      <div class="lista-filtros panel-option-grid">
-        ${options.map((option) => renderFilterOption(criterion.id, option)).join("")}
+      <div class="opcoes">
+        <div class="lista-filtros">
+          ${options.map((option) => renderFilterOption(criterion.id, option)).join("")}
+        </div>
       </div>
 
-      <div class="panel-actions panel-actions-spread">
-        <button type="button" class="panel-button panel-button-secondary" data-action="show-portfolio-intro">Trocar de trilha</button>
-        <button type="button" class="panel-button" data-action="clear-filters">Limpar filtros</button>
+      <div class="acoes">
+        <div class="acoes-filtros">
+          <button type="button" class="acao-icone limpar" data-action="clear-filters" aria-label="Limpar filtros">✖</button>
+          <button type="button" class="acao-icone voltar" data-action="show-portfolio-intro" aria-label="Voltar à introdução do portfólio">❖</button>
+        </div>
+      </div>
+
+      <div class="contador">
+        <div class="contador-resultados">${state.filtered.length} projeto(s)</div>
       </div>
     </div>
   `;
@@ -1303,17 +763,6 @@ function renderActiveFilters() {
 
   Object.entries(state.filters).forEach(([criterionId, values]) => {
     values.forEach((value) => {
-      const criterion = FILTER_BY_ID.get(criterionId);
-      const formattedValue = formatLabel(value);
-      const scopedLabel = criterion
-        ? (
-          Array.isArray(criterion.fixedOptions) &&
-          criterion.fixedOptions.length === 1 &&
-          formatLabel(criterion.fixedOptions[0]) === formattedValue
-            ? criterion.label
-            : `${criterion.label}: ${formattedValue}`
-        )
-        : formattedValue;
       chips.push(`
         <button
           type="button"
@@ -1322,33 +771,22 @@ function renderActiveFilters() {
           data-criterion-id="${escapeAttribute(criterionId)}"
           data-value="${escapeAttribute(value)}"
         >
-          ${renderColorSwatch(value, "filter-swatch")}
-          ${escapeHtml(scopedLabel)} ×
+          ${escapeHtml(formatLabel(value))} ×
         </button>
       `);
     });
   });
 
   if (!chips.length) {
-    return '<span class="small-note">Sem filtros ativos. Você está vendo o acervo completo.</span>';
+    return '<span class="small-note">Nenhum filtro ativo.</span>';
   }
 
   return chips.join("");
 }
 
-function renderFilterOption(criterionId, option) {
-  const value = typeof option === "string" ? option : option?.value;
-  const count = typeof option === "string" ? null : option?.count;
+function renderFilterOption(criterionId, value) {
   const selected = state.filters[criterionId]?.includes(value);
-  const isDisabled = !selected && Boolean(option?.disabled);
-  const className = [
-    "filtro-item",
-    selected ? "is-selected" : "",
-    isDisabled ? "is-disabled" : ""
-  ].filter(Boolean).join(" ");
-  const countMarkup = typeof count === "number"
-    ? `<span class="filtro-item-count">${count}</span>`
-    : "";
+  const className = selected ? "filtro-item inativo" : "filtro-item";
 
   return `
     <button
@@ -1357,87 +795,41 @@ function renderFilterOption(criterionId, option) {
       data-action="toggle-filter"
       data-criterion-id="${escapeAttribute(criterionId)}"
       data-value="${escapeAttribute(value)}"
-      ${isDisabled ? "disabled" : ""}
     >
-      <span class="filtro-item-content">
-        ${renderColorSwatch(isColorCriterion(criterionId, value) ? value : "", "filter-swatch")}
-        <span class="filtro-item-label">${escapeHtml(formatLabel(value))}</span>
-      </span>
-      ${countMarkup}
+      ${escapeHtml(formatLabel(value))}
     </button>
   `;
 }
 
 function getCriterionOptions(criterion) {
+  if (Array.isArray(criterion.fixedOptions) && criterion.fixedOptions.length) {
+    return [...criterion.fixedOptions];
+  }
+
+  const options = new Set();
   const includeSet = getConfigSet(criterion.includeSet);
   const excludeSet = getConfigSet(criterion.excludeSet);
-  const selectedValues = new Set(state.filters[criterion.id] || []);
-  const counts = new Map();
 
-  getProjectsMatchingOtherCriteria(criterion.id).forEach((project) => {
-    collectCriterionValues(project, criterion, includeSet, excludeSet).forEach((value) => {
-      counts.set(value, (counts.get(value) || 0) + 1);
-    });
-  });
+  state.projects.forEach((project) => {
+    const sourceValue = project[criterion.source];
 
-  const values = Array.isArray(criterion.fixedOptions) && criterion.fixedOptions.length
-    ? criterion.fixedOptions.map((value) => cleanString(value)).filter(Boolean)
-    : collectCriterionCatalog(criterion, includeSet, excludeSet);
+    if (criterion.mode === "list") {
+      if (!Array.isArray(sourceValue)) return;
 
-  selectedValues.forEach((value) => {
-    if (!values.includes(value)) {
-      values.push(value);
+      sourceValue.forEach((value) => {
+        if (includeSet && !includeSet.has(value)) return;
+        if (excludeSet && excludeSet.has(value)) return;
+        options.add(value);
+      });
+      return;
+    }
+
+    if (sourceValue) {
+      options.add(sourceValue);
     }
   });
 
-  return values.map((value) => ({
-    value,
-    count: counts.get(value) || 0,
-    disabled: (counts.get(value) || 0) === 0
-  }));
-}
-
-function collectCriterionCatalog(criterion, includeSet, excludeSet) {
-  const options = new Set();
-
-  state.projects.forEach((project) => {
-    collectCriterionValues(project, criterion, includeSet, excludeSet).forEach((value) => options.add(value));
-  });
-
-  return [...options].sort((a, b) => formatLabel(a).localeCompare(formatLabel(b), "pt-BR"));
-}
-
-function collectCriterionValues(project, criterion, includeSet, excludeSet) {
-  const sourceValue = project[criterion.source];
-
-  if (criterion.mode === "list") {
-    if (!Array.isArray(sourceValue)) return [];
-
-    return sourceValue.filter((value) => {
-      if (includeSet && !includeSet.has(value)) return false;
-      if (excludeSet && excludeSet.has(value)) return false;
-      return Boolean(value);
-    });
-  }
-
-  if (!sourceValue) {
-    return [];
-  }
-
-  return [sourceValue];
-}
-
-function getProjectsMatchingOtherCriteria(criterionId) {
-  return state.projects.filter((project) => {
-    return FILTERS.every((criterion) => {
-      if (criterion.id === criterionId) return true;
-
-      const selectedValues = state.filters[criterion.id] || [];
-      if (!selectedValues.length) return true;
-
-      return selectedValues.every((selectedValue) => matchesCriterion(project, criterion, selectedValue));
-    });
-  });
+  return [...options].sort((a, b) => a.localeCompare(b, "pt-BR"));
 }
 
 function getConfigSet(setName) {
@@ -1446,39 +838,11 @@ function getConfigSet(setName) {
   return Array.isArray(values) ? new Set(values) : null;
 }
 
-function isColorCriterion(criterionId, value) {
-  const criterion = FILTER_BY_ID.get(criterionId);
-  const includeSet = criterion?.includeSet ? getConfigSet(criterion.includeSet) : null;
-  if (includeSet?.has(value)) return true;
-  return Boolean(COLOR_SWATCHES[value]);
-}
-
-function renderColorSwatch(value, className) {
-  const swatch = COLOR_SWATCHES[cleanString(value)];
-  if (!swatch) return "";
-  return `<span class="${escapeAttribute(className)}" style="background:${escapeAttribute(swatch)}"></span>`;
-}
-
 function enterCriterion(criterionId) {
   if (!FILTER_BY_ID.has(criterionId)) return;
 
   state.currentCriterionId = criterionId;
   state.portfolioMode = "criterio";
-  renderPanel();
-}
-
-function openCriterionPage(criterionId) {
-  if (!FILTER_BY_ID.has(criterionId)) return;
-
-  state.currentPage = CONFIG.portfolioPageId;
-  state.currentCriterionId = criterionId;
-  state.currentProject = null;
-  state.currentImageIndex = 0;
-  state.portfolioMode = "criterio";
-  updateMenu();
-  applyFilters();
-  renderViewer();
-  renderGrid();
   renderPanel();
 }
 
@@ -1529,15 +893,8 @@ function clearFilters() {
   renderPanel();
 }
 
-function formatProjectCount(filteredCount, totalCount) {
-  if (filteredCount === totalCount) {
-    return `${filteredCount} projetos publicados`;
-  }
-
-  return `${filteredCount} de ${totalCount} projetos`;
-}
-
 function renderPanelState(title, message, tone = "neutral") {
+  state.panelRequestId += 1;
   elements.panel.innerHTML = `
     <div class="panel-state" data-tone="${escapeHtml(tone)}">
       <h1>${escapeHtml(title)}</h1>
