@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GIZ Admin</title>
+  <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
+  <link rel="stylesheet" href="admin.css?v=20260316ac">
+</head>
+<body class="admin-page">
+  <main class="admin-shell">
+    <section class="admin-auth" id="auth-screen">
+      <div class="admin-card">
+        <p class="admin-kicker">GIZ</p>
+        <h1>Painel editorial</h1>
+        <p class="admin-copy">
+          Entre com e-mail e senha para gerenciar o portfólio. Se precisar, você pode redefinir a senha por e-mail.
+        </p>
+        <form id="auth-form" class="admin-form" novalidate onsubmit="return false;">
+          <label class="admin-label" for="email">E-mail</label>
+          <input class="admin-input" id="email" name="email" type="email" required>
+          <label class="admin-label" for="password">Senha</label>
+          <input class="admin-input" id="password" name="password" type="password" autocomplete="current-password" required>
+          <div class="admin-inline-actions">
+            <button class="admin-button" id="auth-submit-button" type="button">Entrar</button>
+            <button class="admin-secondary-button" id="auth-recovery-button" type="button">Definir ou recuperar senha</button>
+            <button class="admin-secondary-button" id="auth-magic-link-button" type="button">Enviar link mágico</button>
+          </div>
+        </form>
+        <p class="admin-feedback" id="auth-feedback" aria-live="polite"></p>
+      </div>
+    </section>
+
+    <section class="admin-app" id="admin-app" hidden>
+      <header class="admin-topbar">
+        <div>
+          <p class="admin-kicker">GIZ</p>
+          <h1>Painel editorial</h1>
+          <p class="admin-copy">Projetos, taxonomia e conteúdo do site em uma estrutura mais clara.</p>
+        </div>
+        <div class="admin-topbar-actions">
+          <span class="admin-user" id="session-email"></span>
+          <a class="admin-secondary-button admin-link-button" href="index.html" target="_blank" rel="noreferrer">Ir para o site</a>
+          <button class="admin-secondary-button" id="logout-button" type="button">Sair</button>
+        </div>
+      </header>
+
+      <nav class="admin-workspace-nav" aria-label="Áreas do painel">
+        <button class="admin-workspace-tab is-active" type="button" data-workspace-tab="projects">Projetos</button>
+        <button class="admin-workspace-tab" type="button" data-workspace-tab="content">Conteúdo do site</button>
+      </nav>
+
+      <section class="admin-workspace is-active" data-workspace-section="projects">
+        <section class="admin-layout">
+        <aside class="admin-projects">
+          <details class="admin-card admin-collapsible admin-project-browser admin-project-browser-shell" open>
+            <summary class="admin-collapsible-summary">
+              <div>
+                <h2>Acervo</h2>
+                <p class="admin-copy">Encontre um projeto, abra a ficha e edite com contexto.</p>
+              </div>
+              <div class="admin-panel-meta">
+                <span class="admin-status-pill" id="project-count">0 projetos</span>
+              </div>
+            </summary>
+
+            <section class="admin-toolbar admin-toolbar-embedded">
+              <label class="admin-search">
+                <span class="admin-label">Buscar</span>
+                <input class="admin-input" id="project-search" type="search" placeholder="Título, editora ou tipo">
+              </label>
+              <label class="admin-search">
+                <span class="admin-label">Status</span>
+                <select class="admin-input" id="status-filter">
+                  <option value="">Todos</option>
+                  <option value="draft">Rascunho</option>
+                  <option value="review">Em revisão</option>
+                  <option value="published">Publicado</option>
+                  <option value="archived">Arquivado</option>
+                </select>
+              </label>
+              <div class="admin-toolbar-actions">
+                <button class="admin-secondary-button" id="clear-filters-button" type="button">Limpar filtros</button>
+              </div>
+            </section>
+
+            <div class="admin-subsection-heading admin-subsection-heading-compact">
+              <div>
+                <h3>Projetos</h3>
+                <p class="admin-copy">Busca rápida, alfabeto e seleção.</p>
+              </div>
+            </div>
+            <div class="admin-alpha-bar" id="project-alpha-bar" aria-label="Filtrar projetos por inicial"></div>
+            <div class="admin-list" id="project-list"></div>
+          </details>
+
+          <details class="admin-card admin-collapsible admin-operations-panel" open>
+            <summary class="admin-collapsible-summary">
+              <div>
+                <h2>Ferramentas do acervo</h2>
+                <p class="admin-copy">Operações globais ficam aqui, separadas da edição de um projeto.</p>
+              </div>
+            </summary>
+            <div class="admin-operations-grid">
+              <details class="admin-collapsible admin-collapsible-highlight admin-intake-panel" open>
+                <summary class="admin-collapsible-summary">
+                  <div>
+                    <h3>Importação inicial</h3>
+                    <p class="admin-copy">Primeira etapa do fluxo: entrada de um novo conjunto de arquivos.</p>
+                  </div>
+                </summary>
+
+                <form class="admin-inline-form admin-intake-form" id="new-project-form">
+                  <label class="admin-field">
+                    <span class="admin-label">Arquivos</span>
+                    <input class="admin-input" id="intake-files" type="file" accept="image/*" multiple>
+                  </label>
+                  <label class="admin-toggle">
+                    <input id="intake-overwrite" type="checkbox">
+                    <span>Atualizar imagens já existentes</span>
+                  </label>
+                  <div class="admin-inline-actions">
+                    <button class="admin-button" type="submit">Enviar arquivos</button>
+                  </div>
+                  <p class="admin-feedback" id="bulk-import-feedback" aria-live="polite"></p>
+                  <div class="admin-intake-report" id="intake-report" hidden></div>
+                </form>
+              </details>
+
+              <details class="admin-collapsible admin-batch-panel" id="batch-panel">
+                <summary class="admin-collapsible-summary">
+                  <div>
+                    <h3>Edição em lote</h3>
+                    <p class="admin-copy">Monte uma seleção e aplique ações em sequência.</p>
+                  </div>
+                  <span class="admin-status-pill" id="batch-selection-count">0 selecionados</span>
+                </summary>
+
+                <div class="admin-batch-step">
+                  <div class="admin-batch-step-head">
+                    <span class="admin-step-kicker">1</span>
+                    <div>
+                      <h3>Seleção</h3>
+                      <p class="admin-copy">Marque projetos no acervo ou selecione todos os visíveis.</p>
+                    </div>
+                  </div>
+                  <div class="admin-inline-actions">
+                    <button class="admin-secondary-button" id="batch-select-visible-button" type="button">Selecionar visíveis</button>
+                    <button class="admin-secondary-button" id="batch-clear-selection-button" type="button">Limpar seleção</button>
+                  </div>
+                  <div class="admin-selection-preview" id="batch-selection-preview"></div>
+                </div>
+
+                <div class="admin-batch-step">
+                  <div class="admin-batch-step-head">
+                    <span class="admin-step-kicker">2</span>
+                    <div>
+                      <h3>Tags</h3>
+                      <p class="admin-copy">Busque uma tag e clique para aplicar ou remover.</p>
+                    </div>
+                  </div>
+                  <label class="admin-field">
+                    <span class="admin-label">Buscar tag</span>
+                    <input class="admin-input" id="batch-tag-search" type="search" placeholder="lettering, amarelo, fantasia">
+                  </label>
+                  <div class="admin-tag-picker" id="batch-tag-results"></div>
+                </div>
+
+                <div class="admin-batch-step">
+                  <div class="admin-batch-step-head">
+                    <span class="admin-step-kicker">3</span>
+                    <div>
+                      <h3>Editora</h3>
+                      <p class="admin-copy">Aplique uma editora existente ou defina uma nova para o grupo.</p>
+                    </div>
+                  </div>
+                  <div class="admin-tag-picker" id="batch-publisher-results"></div>
+
+                  <div class="admin-inline-form admin-tag-create-inline">
+                    <label class="admin-field">
+                      <span class="admin-label">Outra editora</span>
+                      <input class="admin-input" id="batch-publisher-custom" type="text" placeholder="Digite a editora">
+                    </label>
+                    <div class="admin-inline-actions">
+                      <button class="admin-secondary-button" id="batch-apply-publisher-button" type="button">Aplicar editora</button>
+                      <button class="admin-secondary-button" id="batch-clear-publisher-button" type="button">Limpar editora</button>
+                    </div>
+                  </div>
+                </div>
+
+                <p class="admin-feedback" id="batch-feedback" aria-live="polite"></p>
+              </details>
+            </div>
+          </details>
+        </aside>
+
+        <section class="admin-editor">
+          <form class="admin-card admin-editor-form" id="editor-form" hidden>
+            <div class="admin-editor-hero">
+              <div class="admin-panel-heading">
+                <div>
+                  <h2 id="editor-title">Projeto</h2>
+                  <p class="admin-copy">Ficha editorial, imagens, taxonomia e pares em um só lugar.</p>
+                </div>
+                <div class="admin-editor-meta">
+                  <span class="admin-status-pill" id="publication-pill">Rascunho</span>
+                  <span class="admin-save-state" id="save-state">Pronto</span>
+                </div>
+              </div>
+
+              <div class="admin-editor-overview">
+                <div class="admin-summary-card">
+                  <span class="admin-label">Status atual</span>
+                  <strong id="publication-state">Rascunho</strong>
+                </div>
+                <div class="admin-summary-card">
+                  <span class="admin-label">Ano de publicação</span>
+                  <strong id="publication-date">Não definido</strong>
+                </div>
+                <label class="admin-flag-toggle admin-flag-toggle-site admin-summary-card-toggle">
+                  <input id="field-featured" type="checkbox">
+                  <span>
+                    <strong>Destaque no site</strong>
+                    <small>Leva o projeto para a trilha de destaques no portfólio público.</small>
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <nav class="admin-editor-nav" aria-label="Seções do projeto">
+              <button class="admin-editor-tab is-active" type="button" data-editor-tab="details">Cadastro</button>
+              <button class="admin-editor-tab" type="button" data-editor-tab="media">Imagens</button>
+              <button class="admin-editor-tab" type="button" data-editor-tab="tags">Tags</button>
+              <button class="admin-editor-tab" type="button" data-editor-tab="pairs">Pares</button>
+            </nav>
+
+            <section class="admin-editor-section is-active" data-editor-section="details">
+              <div class="admin-grid">
+                <label class="admin-field">
+                  <span class="admin-label">Título</span>
+                  <input class="admin-input" id="field-title" type="text" required>
+                </label>
+
+                <label class="admin-field">
+                  <span class="admin-label">Subtítulo</span>
+                  <input class="admin-input" id="field-subtitle" type="text">
+                </label>
+
+                <label class="admin-field">
+                  <span class="admin-label">Editora</span>
+                  <select class="admin-input" id="field-client-select">
+                    <option value="">Selecione</option>
+                    <option value="__custom__">Outra editora</option>
+                  </select>
+                  <input class="admin-input" id="field-client-custom" type="text" placeholder="Digite a editora" hidden>
+                </label>
+
+                <label class="admin-field">
+                  <span class="admin-label">Tipo</span>
+                  <select class="admin-input" id="field-type-select">
+                    <option value="">Selecione</option>
+                    <option value="livro">Livro</option>
+                    <option value="hq">HQ</option>
+                    <option value="revista">Revista</option>
+                    <option value="especial">Projeto especial</option>
+                    <option value="outros">Outros</option>
+                    <option value="__custom__">Outro tipo</option>
+                  </select>
+                  <input class="admin-input" id="field-type-custom" type="text" placeholder="Digite o tipo" hidden>
+                </label>
+
+                <label class="admin-field">
+                  <span class="admin-label">Status</span>
+                  <select class="admin-input" id="field-status">
+                    <option value="draft">Rascunho</option>
+                    <option value="review">Em revisão</option>
+                    <option value="published">Publicado</option>
+                    <option value="archived">Arquivado</option>
+                  </select>
+                </label>
+
+                <label class="admin-field">
+                  <span class="admin-label">Ano de publicação</span>
+                  <input class="admin-input" id="field-sort-year" type="text" inputmode="numeric" maxlength="4" placeholder="AAAA">
+                </label>
+              </div>
+
+              <label class="admin-field">
+                <span class="admin-label">Descrição</span>
+                <textarea class="admin-input admin-textarea" id="field-description"></textarea>
+              </label>
+
+              <div class="admin-details-grid admin-subsection">
+                <details class="admin-checklist-panel admin-section-card admin-collapsible" open>
+                  <summary class="admin-collapsible-summary">
+                    <div>
+                      <h3>Checklist de publicação</h3>
+                      <p class="admin-copy">Acompanhe o que ainda falta antes de publicar.</p>
+                    </div>
+                    <div class="admin-flag-summary" id="checklist-summary"></div>
+                  </summary>
+
+                  <div class="admin-checklist-list" id="checklist-list"></div>
+                </details>
+
+                <details class="admin-flag-panel admin-section-card admin-collapsible" open>
+                  <summary class="admin-collapsible-summary">
+                    <div>
+                      <h3>Flags editoriais</h3>
+                      <p class="admin-copy">Sinalizações internas de revisão e curadoria.</p>
+                    </div>
+                    <div class="admin-flag-summary" id="flag-summary"></div>
+                  </summary>
+
+                  <div class="admin-flag-grid">
+                    <label class="admin-flag-toggle admin-flag-toggle-review">
+                      <input id="flag-review-text" type="checkbox">
+                      <span>
+                        <strong>Revisar texto</strong>
+                        <small>Usa marca quente enquanto o texto ainda não está aprovado.</small>
+                      </span>
+                    </label>
+
+                    <label class="admin-flag-toggle admin-flag-toggle-feature">
+                      <input id="flag-future-feature" type="checkbox">
+                      <span>
+                        <strong>Destaque futuro</strong>
+                        <small>Reserva o projeto para alguma ação ou curadoria futura.</small>
+                      </span>
+                    </label>
+                  </div>
+                </details>
+              </div>
+            </section>
+
+            <section class="admin-subsection admin-editor-section" data-editor-section="media">
+              <div class="admin-subsection-heading">
+                <h3>Imagens</h3>
+                <p class="admin-copy">Envie thumb e galeria. A ordem segue o nome do arquivo.</p>
+              </div>
+
+              <div class="admin-media-upload" id="media-upload-form">
+                <input class="admin-input" id="media-files" type="file" accept="image/*" multiple>
+                <button class="admin-secondary-button" id="media-upload-button" type="button">Adicionar imagens</button>
+              </div>
+
+              <div class="admin-media-list" id="media-list"></div>
+            </section>
+
+            <section class="admin-subsection admin-editor-section" data-editor-section="tags">
+              <div class="admin-subsection-heading">
+                <div>
+                  <h3>Tags do projeto</h3>
+                  <p class="admin-copy">Clique para marcar ou remover na ficha atual. A manutenção global fica em Ferramentas do acervo.</p>
+                </div>
+              </div>
+
+              <label class="admin-field">
+                <span class="admin-label">Buscar tag</span>
+                <input class="admin-input" id="tag-search" type="search" placeholder="amarelo, vermelho, fantasia...">
+              </label>
+
+              <div class="admin-tag-picker" id="tag-results"></div>
+            </section>
+
+            <section class="admin-subsection admin-editor-section" data-editor-section="pairs">
+              <div class="admin-workflow-grid admin-workflow-grid-pairs">
+                <div class="admin-workflow-main">
+                  <div class="admin-subsection-heading">
+                    <div>
+                      <h3>Pares</h3>
+                      <p class="admin-copy">Busque, selecione vários e conecte de uma vez.</p>
+                    </div>
+                  </div>
+
+                  <div class="admin-pair-controls admin-section-card">
+                    <label class="admin-field">
+                      <span class="admin-label">Buscar projeto</span>
+                      <input class="admin-input" id="pair-search" type="search" placeholder="Título, editora ou tipo">
+                    </label>
+                    <div class="admin-inline-actions">
+                      <button class="admin-secondary-button" id="pair-connect-button" type="button">Conectar selecionados</button>
+                    </div>
+                    <div class="admin-pair-results" id="pair-results"></div>
+                  </div>
+                </div>
+
+                <aside class="admin-workflow-aside">
+                  <div class="admin-pair-sidepanel">
+                    <details class="admin-section-card admin-collapsible" open>
+                      <summary class="admin-collapsible-summary">
+                        <div>
+                          <h3>Seleção atual</h3>
+                          <p class="admin-copy">Veja rapidamente o grupo que será conectado.</p>
+                        </div>
+                      </summary>
+                      <div class="admin-pair-selection" id="pair-selection-preview"></div>
+                    </details>
+
+                    <details class="admin-section-card admin-collapsible" open>
+                      <summary class="admin-collapsible-summary">
+                        <div>
+                          <h3>Projetos conectados</h3>
+                          <p class="admin-copy">Relações já salvas para o projeto atual.</p>
+                        </div>
+                      </summary>
+                      <div class="admin-pair-list" id="pair-list"></div>
+                    </details>
+                  </div>
+                </aside>
+              </div>
+            </section>
+
+            <div class="admin-form-actions">
+              <button class="admin-button" id="save-project-button" type="button">Salvar alterações</button>
+              <button class="admin-danger-button" id="delete-project-button" type="button">Excluir projeto</button>
+            </div>
+          </form>
+        </section>
+        </section>
+      </section>
+
+      <section class="admin-workspace" data-workspace-section="content" hidden>
+        <section class="admin-content-layout">
+          <aside class="admin-content-sidebar">
+            <details class="admin-card admin-collapsible admin-content-intro" open>
+              <summary class="admin-collapsible-summary">
+                <div>
+                  <h2>Conteúdo do site</h2>
+                  <p class="admin-copy">Edite a estrutura pública do site fora do fluxo de cadastro de projetos.</p>
+                </div>
+              </summary>
+              <p class="admin-copy">Nesta etapa, o painel edita os itens já existentes. Inclusão de novas páginas e novas trilhas pode entrar depois, quando fecharmos a arquitetura definitiva do front.</p>
+            </details>
+
+            <details class="admin-card admin-collapsible" open>
+              <summary class="admin-collapsible-summary">
+                <div>
+                  <h2>Taxonomia</h2>
+                  <p class="admin-copy">Crie, renomeie ou exclua tags em um espaço próprio.</p>
+                </div>
+              </summary>
+
+              <div class="admin-inline-form admin-tag-create-inline admin-section-card" id="new-tag-form">
+                <label class="admin-field">
+                  <span class="admin-label">Criar nova tag</span>
+                  <input class="admin-input" id="new-tag-label" type="text" placeholder="Fantasia sombria">
+                </label>
+                <div class="admin-inline-actions">
+                  <button class="admin-secondary-button" id="new-tag-button" type="button">Criar tag</button>
+                </div>
+                <p class="admin-feedback" id="new-tag-feedback" aria-live="polite"></p>
+              </div>
+
+              <div class="admin-tag-manager admin-section-card" id="tag-manager">
+                <div class="admin-subsection-heading">
+                  <div>
+                    <h3>Gerenciar tags</h3>
+                    <p class="admin-copy">Edite a tag globalmente, antes ou depois de usá-la nos projetos.</p>
+                  </div>
+                </div>
+                <label class="admin-field">
+                  <span class="admin-label">Tag selecionada</span>
+                  <select class="admin-input" id="tag-manager-select">
+                    <option value="">Selecione uma tag</option>
+                  </select>
+                </label>
+                <label class="admin-field">
+                  <span class="admin-label">Nome da tag</span>
+                  <input class="admin-input" id="tag-manager-label" type="text" placeholder="Dourado">
+                </label>
+                <div class="admin-inline-actions">
+                  <button class="admin-secondary-button" id="tag-manager-save-button" type="button">Salvar tag</button>
+                  <button class="admin-danger-button" id="tag-manager-delete-button" type="button">Excluir tag</button>
+                </div>
+                  <p class="admin-feedback" id="tag-manager-feedback" aria-live="polite"></p>
+                </div>
+            </details>
+          </aside>
+
+          <section class="admin-content-main">
+            <details class="admin-card admin-collapsible admin-site-content-panel" open>
+              <summary class="admin-collapsible-summary">
+                <div>
+                  <h2>Estrutura pública</h2>
+                  <p class="admin-copy">Menus, textos fixos e trilhas do portfólio em um espaço largo e previsível.</p>
+                </div>
+              </summary>
+
+              <form class="admin-site-config" id="site-config-form">
+                <details class="admin-section-card admin-collapsible" open>
+                  <summary class="admin-collapsible-summary">
+                    <div>
+                      <h3>Menu principal</h3>
+                      <p class="admin-copy">Ajuste os rótulos das páginas visíveis no site.</p>
+                    </div>
+                  </summary>
+                  <div class="admin-site-grid" id="site-navigation-fields"></div>
+                </details>
+
+                <details class="admin-section-card admin-collapsible" open>
+                  <summary class="admin-collapsible-summary">
+                    <div>
+                      <h3>Textos das páginas</h3>
+                      <p class="admin-copy">Edite o HTML exibido no painel lateral do site.</p>
+                    </div>
+                  </summary>
+                  <div class="admin-site-page-tabs" id="site-page-tabs"></div>
+                  <div class="admin-site-page-meta" id="site-page-meta"></div>
+                  <label class="admin-field">
+                    <span class="admin-label">Conteúdo HTML</span>
+                    <textarea class="admin-input admin-textarea admin-site-textarea" id="site-page-content"></textarea>
+                  </label>
+                </details>
+
+                <details class="admin-section-card admin-collapsible" open>
+                  <summary class="admin-collapsible-summary">
+                    <div>
+                      <h3>Trilhas do portfólio</h3>
+                      <p class="admin-copy">Edite nome, resumo e descrição das entradas de navegação pública.</p>
+                    </div>
+                  </summary>
+                  <div class="admin-site-filter-list" id="site-filter-fields"></div>
+                </details>
+
+                <div class="admin-inline-actions">
+                  <button class="admin-button" id="site-config-save-button" type="button">Salvar conteúdo do site</button>
+                </div>
+                <p class="admin-feedback" id="site-config-feedback" aria-live="polite"></p>
+              </form>
+            </details>
+          </section>
+        </section>
+      </section>
+    </section>
+  </main>
+
+  <script src="backend.config.js?v=20260316ac"></script>
+  <script src="admin.js?v=20260316ac"></script>
+</body>
+</html>

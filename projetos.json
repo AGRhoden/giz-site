@@ -1,0 +1,732 @@
+[
+  {
+    "slug": "deuses3",
+    "titulo": "Deuses americanos",
+    "subtitulo": "Vol. 3",
+    "descricao": "Terceiro volume da série ",
+    "tipo": "hq",
+    "cliente": "intrinseca",
+    "tags": [
+      "branco"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/hq/deuses3/deuses3_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/hq/deuses3/deuses3_01.jpg"
+    ]
+  },
+  {
+    "slug": "sorria",
+    "titulo": "Sorria",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "hq",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/hq/sorria/sorria_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/hq/sorria/sorria_01.jpg"
+    ]
+  },
+  {
+    "slug": "alchimised",
+    "titulo": "Alchemised",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/alchimised/alchimised_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/alchimised/alchimised_01.jpg"
+    ]
+  },
+  {
+    "slug": "alfabetoperigoso",
+    "titulo": "Alfabeto perigoso",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/alfabetoperigoso/alfabetoperigoso_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/alfabetoperigoso/alfabetoperigoso_01.jpg"
+    ]
+  },
+  {
+    "slug": "algumdia",
+    "titulo": "Algumdia",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/algumdia/algumdia_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/algumdia/algumdia_01.jpg"
+    ]
+  },
+  {
+    "slug": "anatomia",
+    "titulo": "Anatomia",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/anatomia/anatomia_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/anatomia/anatomia_01.jpg",
+      "assets/projetos/intrinseca/livro/anatomia/anatomia_02.jpg"
+    ]
+  },
+  {
+    "slug": "bluebarry",
+    "titulo": "Bluebarry",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/bluebarry/bluebarry_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/bluebarry/bluebarry_01.jpg"
+    ]
+  },
+  {
+    "slug": "cabelodoido",
+    "titulo": "Cabelo doido",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/cabelodoido/cabelodoido_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/cabelodoido/cabelodoido_01.jpg"
+    ]
+  },
+  {
+    "slug": "casasestranhas1",
+    "titulo": "Casas estranhas",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/casasestranhas1/casasestranhas1_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/casasestranhas1/casasestranhas1_01.jpg"
+    ]
+  },
+  {
+    "slug": "casasestranhas2",
+    "titulo": "Casas estranhas 2",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/casasestranhas2/casasestranhas2_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/casasestranhas2/casasestranhas2_01.jpg"
+    ]
+  },
+  {
+    "slug": "cinnamon",
+    "titulo": "Kanela",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/cinnamon/cinnamon_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/cinnamon/cinnamon_01.jpg"
+    ]
+  },
+  {
+    "slug": "coisasfrageis",
+    "titulo": "Coisas frágeis",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/coisasfrageis/coisasfrageis_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/coisasfrageis/coisasfrageis_01.jpg"
+    ]
+  },
+  {
+    "slug": "elephant",
+    "titulo": "Elephant",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/elephant/elephant_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/elephant/elephant_01.jpg"
+    ]
+  },
+  {
+    "slug": "feitico",
+    "titulo": "À espera de um feitiço",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/feitico/feitico_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/feitico/feitico_01.jpg"
+    ]
+  },
+  {
+    "slug": "kamala",
+    "titulo": "Kamala",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/kamala/kamala_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/kamala/kamala_01.jpg"
+    ]
+  },
+  {
+    "slug": "katabasis",
+    "titulo": "Katábasis",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [
+      "verde"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/katabasis/katabasis_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/katabasis/katabasis_01.jpg"
+    ]
+  },
+  {
+    "slug": "killjoy",
+    "titulo": "Killjoy",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/killjoy/killjoy_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/killjoy/killjoy_01.jpg"
+    ]
+  },
+  {
+    "slug": "medusa",
+    "titulo": "Eu, Medusa",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/medusa/medusa_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/medusa/medusa_01.jpg"
+    ]
+  },
+  {
+    "slug": "oceano",
+    "titulo": "O oceano no fim do caminho",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/oceano/oceano_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/oceano/oceano_01.jpg"
+    ]
+  },
+  {
+    "slug": "origemdasespecies",
+    "titulo": "A origem das espécies",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/origemdasespecies/origemdasespecies_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/origemdasespecies/origemdasespecies_01.jpg"
+    ]
+  },
+  {
+    "slug": "rachelprize",
+    "titulo": "Rachelprize",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/rachelprize/rachelprize_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/rachelprize/rachelprize_01.jpg"
+    ]
+  },
+  {
+    "slug": "todomundonaminhafamilia",
+    "titulo": "Todomundonaminhafamilia",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/todomundonaminhafamilia/todomundonaminhafamilia_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/todomundonaminhafamilia/todomundonaminhafamilia_01.jpg"
+    ]
+  },
+  {
+    "slug": "ultimodemonio",
+    "titulo": "Ultimodemonio",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [
+      "roxo"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/ultimodemonio/ultimodemonio_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/ultimodemonio/ultimodemonio_01.jpg"
+    ]
+  },
+  {
+    "slug": "visaonoturna",
+    "titulo": "Visão noturna",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "intrinseca",
+    "tags": [
+      "vermelho"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/intrinseca/livro/visaonoturna/visaonoturna_thumb.jpg",
+    "imagens": [
+      "assets/projetos/intrinseca/livro/visaonoturna/visaonoturna_01.jpg"
+    ]
+  },
+  {
+    "slug": "cadernos01",
+    "titulo": "Cadernos Permanência 01",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "vermelho"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/cadernos01/cadernos01_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/cadernos01/cadernos01_01.jpg"
+    ]
+  },
+  {
+    "slug": "cadernos02",
+    "titulo": "Cadernos Permanência 02",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "vermelho"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/cadernos02/cadernos02_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/cadernos02/cadernos02_01.jpg"
+    ]
+  },
+  {
+    "slug": "cadernos03",
+    "titulo": "Cadernos Permanência 03",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "verde"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/cadernos03/cadernos03_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/cadernos03/cadernos03_01.jpg"
+    ]
+  },
+  {
+    "slug": "cadernos04",
+    "titulo": "Cadernos Permanência 04",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "vermelho"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/cadernos04/cadernos04_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/cadernos04/cadernos04_01.jpg"
+    ]
+  },
+  {
+    "slug": "crisedefe",
+    "titulo": "Crisedefe",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "preto"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/crisedefe/crisedefe_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/crisedefe/crisedefe_01.jpg"
+    ]
+  },
+  {
+    "slug": "deevaamaria",
+    "titulo": "Deevaamaria",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "marrom"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/deevaamaria/deevaamaria_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/deevaamaria/deevaamaria_01.jpg"
+    ]
+  },
+  {
+    "slug": "filosofiatomista",
+    "titulo": "Filosofiatomista",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "verde"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/filosofiatomista/filosofiatomista_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/filosofiatomista/filosofiatomista_01.jpg"
+    ]
+  },
+  {
+    "slug": "fimdostempos",
+    "titulo": "Fimdostempos",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "preto"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/fimdostempos/fimdostempos_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/fimdostempos/fimdostempos_01.jpg",
+      "assets/projetos/permanencia/livro/fimdostempos/fimdostempos_02.jpg"
+    ]
+  },
+  {
+    "slug": "itinerariomistico",
+    "titulo": "Itinerariomistico",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "amarelo"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/itinerariomistico/itinerariomistico_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/itinerariomistico/itinerariomistico_01.jpg"
+    ]
+  },
+  {
+    "slug": "manualdocatolico",
+    "titulo": "Manualdocatolico",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "marrom"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/manualdocatolico/manualdocatolico_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/manualdocatolico/manualdocatolico_01.jpg"
+    ]
+  },
+  {
+    "slug": "mesdesaojose",
+    "titulo": "Mesdesaojose",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "amarelo"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/mesdesaojose/mesdesaojose_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/mesdesaojose/mesdesaojose_01.jpg"
+    ]
+  },
+  {
+    "slug": "mesdorosario",
+    "titulo": "Mesdorosario",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "preto"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/mesdorosario/mesdorosario_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/mesdorosario/mesdorosario_01.jpg",
+      "assets/projetos/permanencia/livro/mesdorosario/mesdorosario_02.jpg"
+    ]
+  },
+  {
+    "slug": "missaeamorte",
+    "titulo": "Missaeamorte",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "marrom"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/missaeamorte/missaeamorte_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/missaeamorte/missaeamorte_01.jpg"
+    ]
+  },
+  {
+    "slug": "misteriodasantissima",
+    "titulo": "Misteriodasantissima",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "marrom"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/misteriodasantissima/misteriodasantissima_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/misteriodasantissima/misteriodasantissima_01.jpg",
+      "assets/projetos/permanencia/livro/misteriodasantissima/misteriodasantissima_02.jpg"
+    ]
+  },
+  {
+    "slug": "ordemnatural",
+    "titulo": "Ordemnatural",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "preto"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/ordemnatural/ordemnatural_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/ordemnatural/ordemnatural_01.jpg",
+      "assets/projetos/permanencia/livro/ordemnatural/ordemnatural_02.jpg"
+    ]
+  },
+  {
+    "slug": "paidefamilia",
+    "titulo": "Paidefamilia",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "bege"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/paidefamilia/paidefamilia_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/paidefamilia/paidefamilia_01.jpg"
+    ]
+  },
+  {
+    "slug": "palacios",
+    "titulo": "Palacios",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "vermelho"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/palacios/palacios_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/palacios/palacios_01.jpg"
+    ]
+  },
+  {
+    "slug": "rosahu",
+    "titulo": "Jesus nas prisões da China",
+    "subtitulo": "A vida de Rosa Hu",
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "vermelho"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/rosahu/rosahu_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/rosahu/rosahu_01.jpg"
+    ]
+  },
+  {
+    "slug": "santaigreja",
+    "titulo": "Santaigreja",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "marrom"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/santaigreja/santaigreja_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/santaigreja/santaigreja_01.jpg"
+    ]
+  },
+  {
+    "slug": "sudario",
+    "titulo": "Sudario",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "bege"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/sudario/sudario_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/sudario/sudario_01.jpg"
+    ]
+  },
+  {
+    "slug": "ultimato",
+    "titulo": "Ultimato",
+    "subtitulo": null,
+    "descricao": null,
+    "tipo": "livro",
+    "cliente": "permanencia",
+    "tags": [
+      "preto"
+    ],
+    "ano": null,
+    "ordem": null,
+    "thumb": "assets/projetos/permanencia/livro/ultimato/ultimato_thumb.jpg",
+    "imagens": [
+      "assets/projetos/permanencia/livro/ultimato/ultimato_01.jpg"
+    ]
+  }
+]

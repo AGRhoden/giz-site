@@ -1,0 +1,13 @@
+# Configuração local com credenciais reais
+backend.config.js
+
+# Sistema
+.DS_Store
+.wrangler/
+
+# Backups locais
+backups/
+recovery/
+
+# Claude
+.claude/settings.local.json

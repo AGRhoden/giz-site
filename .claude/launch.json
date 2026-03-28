@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "giz-site",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /Users/arte_antonio/Documents/giz-site && ruby -run -e httpd . -p ${PORT:-3000}"],
+      "port": 3000
+    }
+  ]
+}

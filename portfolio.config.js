@@ -1,0 +1,117 @@
+window.GIZ_PORTFOLIO_CONFIG = {
+  defaultPageId: "inicio",
+  portfolioPageId: "portfolio",
+  pages: [
+    { id: "inicio", label: "Início", content: "inicio.html" },
+    { id: "portfolio", label: "Portfólio", content: "portfolio.html" },
+    { id: "quem", label: "Quem somos", content: "quem-somos.html" },
+    { id: "contato", label: "Contato", content: "contato.html" }
+  ],
+  filters: [
+    {
+      id: "destaques",
+      label: "Destaques",
+      source: "destaque",
+      mode: "value",
+      fixedOptions: ["destaque"],
+      summary: "Seleção curada",
+      description: "Comece pelos projetos que sintetizam melhor a linguagem do estúdio."
+    },
+    {
+      id: "editoras",
+      label: "Editoras",
+      source: "cliente",
+      mode: "value",
+      selectionOperator: "or",
+      summary: "Navegação por catálogo",
+      description: "Percorra o acervo pelas casas editoriais e seus conjuntos."
+    },
+    {
+      id: "temas",
+      label: "Temas",
+      source: "tags",
+      mode: "list",
+      excludeSet: "colorTags",
+      summary: "Assuntos e linguagens",
+      description: "Cruze temas, técnicas e atmosferas sem perder o contexto."
+    },
+    {
+      id: "cores",
+      label: "Cores",
+      source: "tags",
+      mode: "list",
+      includeSet: "colorTags",
+      summary: "Percurso cromático",
+      description: "Uma entrada mais lúdica e visual para descobrir relações no acervo."
+    },
+    {
+      id: "tipos",
+      label: "Tipos",
+      source: "tipo",
+      mode: "value",
+      selectionOperator: "or",
+      fixedOptions: ["livro", "hq", "revista", "especial", "outros"],
+      summary: "Formatos editoriais",
+      description: "Percorra o acervo por formato: livros, HQs, revistas e outras frentes."
+    },
+  ],
+  tagSets: {
+    colorTags: [
+      "preto",
+      "branco",
+      "cinza",
+      "grafite",
+      "verde",
+      "azul",
+      "turquesa",
+      "vermelho",
+      "vinho",
+      "amarelo",
+      "ocre",
+      "laranja",
+      "rosa",
+      "roxo",
+      "marrom",
+      "bege",
+      "creme",
+      "dourado",
+      "prata"
+    ]
+  },
+  labels: {
+    ilustracoes: "Ilustrações",
+    "projeto-grafico": "Projeto gráfico",
+    infantil: "Infantil",
+    ilustrado: "Ilustrado",
+    lettering: "Lettering",
+    mitologia: "Mitologia",
+    gaiman: "Gaiman",
+    preto: "Preto",
+    branco: "Branco",
+    cinza: "Cinza",
+    grafite: "Grafite",
+    verde: "Verde",
+    azul: "Azul",
+    turquesa: "Turquesa",
+    vermelho: "Vermelho",
+    vinho: "Vinho",
+    amarelo: "Amarelo",
+    ocre: "Ocre",
+    laranja: "Laranja",
+    rosa: "Rosa",
+    roxo: "Roxo",
+    marrom: "Marrom",
+    bege: "Bege",
+    creme: "Creme",
+    dourado: "Dourado",
+    prata: "Prata",
+    destaque: "Destaques",
+    livro: "Livros",
+    hq: "HQ",
+    revista: "Revistas",
+    especial: "Projetos especiais",
+    outros: "Outros",
+    intrinseca: "Intrínseca",
+    permanencia: "Permanência"
+  }
+};

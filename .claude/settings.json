@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions",
+    "allow": [
+      "Bash(git:*)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(curl:*)",
+      "Bash(ruby:*)",
+      "Bash(wc:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(kill:*)",
+      "Bash(sleep:*)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(cp:*)",
+      "Bash(touch:*)",
+      "Edit(/Users/arte_antonio/Documents/giz-site/**)",
+      "Write(/Users/arte_antonio/Documents/giz-site/**)"
+    ]
+  }
+}
