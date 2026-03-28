@@ -5,10 +5,37 @@ const FILTERS = Array.isArray(CONFIG.filters) ? CONFIG.filters : [];
 const PAGE_BY_ID = new Map(PAGES.map((page) => [page.id, page]));
 const FILTER_BY_ID = new Map(FILTERS.map((filter) => [filter.id, filter]));
 const PANEL_CACHE = new Map();
+const SITE_PANEL_OVERRIDES = {};
 const FALLBACK_PROJECT_MESSAGE = "Imagem do projeto indisponível no momento.";
 const ENABLE_HOVER_ZOOM = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+const LABEL_OVERRIDES = {
+  permanencia: "Permanência",
+  intrinseca: "Intrínseca"
+};
+const COLOR_SWATCHES = {
+  preto: "#17110f",
+  branco: "#f6f1e8",
+  cinza: "#9b948d",
+  grafite: "#47413d",
+  verde: "#2f8c66",
+  azul: "#3f6ea8",
+  turquesa: "#4eb5b7",
+  vermelho: "#b14a42",
+  vinho: "#74394d",
+  amarelo: "#d7b645",
+  ocre: "#b78435",
+  laranja: "#d86f36",
+  rosa: "#cf8aa0",
+  roxo: "#7c5ea7",
+  marrom: "#7a5a42",
+  bege: "#cab28b",
+  creme: "#ede1c8",
+  dourado: "#c4a24b",
+  prata: "#b7bcc4"
+};
 
 const elements = {
+  left: document.getElementById("left"),
   grid: document.getElementById("grid"),
   gridView: document.getElementById("grid-view"),
   viewerShell: document.getElementById("viewer-shell"),
@@ -27,11 +54,11 @@ const state = {
   filters: createEmptyFilters(),
   currentProject: null,
   currentImageIndex: 0,
-  panelRequestId: 0
+  pairFocusSlugs: null,
+  leftMode: "grid"
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  renderMenu();
   bindEvents();
   initialize();
 });
@@ -43,7 +70,135 @@ function createEmptyFilters() {
   }, {});
 }
 
+function buildDefaultSiteSettings() {
+  return {
+    navigation: PAGES.map((page) => ({
+      id: page.id,
+      label: page.label
+    })),
+    filters: FILTERS.map((filter) => ({
+      id: filter.id,
+      label: filter.label,
+      summary: filter.summary || "",
+      description: filter.description || ""
+    })),
+    labels: Object.assign({}, CONFIG.labels || {}),
+    pageContent: {}
+  };
+}
+
+async function loadSiteSettings() {
+  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) {
+    return;
+  }
+
+  try {
+    const response = await fetch(new URL("/rest/v1/site_config?select=navigation,filters,labels,page_content&key=eq.main&limit=1", BACKEND_CONFIG.url).toString(), {
+      headers: {
+        apikey: BACKEND_CONFIG.anonKey,
+        Authorization: `Bearer ${BACKEND_CONFIG.anonKey}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Falha ao carregar conteúdo do site (${response.status})`);
+    }
+
+    const payload = await response.json();
+    applySiteSettings(payload?.[0]);
+  } catch (error) {
+    console.warn("Nao foi possivel carregar configuracoes do site:", error);
+  }
+}
+
+function applySiteSettings(payload) {
+  const defaults = buildDefaultSiteSettings();
+  const navigation = normalizeSiteNavigation(payload?.navigation, defaults.navigation);
+  const filters = normalizeSiteFilters(payload?.filters, defaults.filters);
+  const labels = payload?.labels && typeof payload.labels === "object"
+    ? Object.assign({}, defaults.labels, payload.labels)
+    : defaults.labels;
+  const pageContent = payload?.page_content && typeof payload.page_content === "object"
+    ? payload.page_content
+    : {};
+
+  replaceArrayContents(PAGES, navigation.map((item) => {
+    const page = CONFIG.pages?.find((candidate) => candidate.id === item.id) || {};
+    return Object.assign({}, page, { id: item.id, label: item.label || item.id });
+  }));
+
+  replaceArrayContents(FILTERS, filters.map((item) => {
+    const filter = CONFIG.filters?.find((candidate) => candidate.id === item.id) || {};
+    return Object.assign({}, filter, {
+      id: item.id,
+      label: item.label || filter.label || item.id,
+      summary: item.summary || "",
+      description: item.description || ""
+    });
+  }));
+
+  PAGE_BY_ID.clear();
+  PAGES.forEach((page) => PAGE_BY_ID.set(page.id, page));
+
+  FILTER_BY_ID.clear();
+  FILTERS.forEach((filter) => FILTER_BY_ID.set(filter.id, filter));
+
+  Object.keys(SITE_PANEL_OVERRIDES).forEach((key) => delete SITE_PANEL_OVERRIDES[key]);
+  Object.keys(pageContent).forEach((pageId) => {
+    SITE_PANEL_OVERRIDES[pageId] = String(pageContent[pageId] || "");
+  });
+
+  CONFIG.labels = labels;
+  state.currentCriterionId = FILTERS[0]?.id || null;
+  state.filters = createEmptyFilters();
+}
+
+function normalizeSiteNavigation(items, defaults) {
+  const byId = new Map();
+
+  if (Array.isArray(items)) {
+    items.forEach((item) => {
+      if (!item?.id) return;
+      byId.set(item.id, {
+        id: item.id,
+        label: String(item.label || "").trim() || item.id
+      });
+    });
+  }
+
+  return defaults
+    .filter((item) => byId.has(item.id) || item.id)
+    .map((item) => byId.get(item.id) || item);
+}
+
+function normalizeSiteFilters(items, defaults) {
+  const byId = new Map();
+
+  if (Array.isArray(items)) {
+    items.forEach((item) => {
+      if (!item?.id) return;
+      byId.set(item.id, {
+        id: item.id,
+        label: String(item.label || "").trim(),
+        summary: String(item.summary || "").trim(),
+        description: String(item.description || "").trim()
+      });
+    });
+  }
+
+  return defaults
+    .filter((item) => byId.has(item.id) || item.id)
+    .map((item) => Object.assign({}, item, byId.get(item.id) || {}));
+}
+
+function replaceArrayContents(target, nextItems) {
+  target.length = 0;
+  nextItems.forEach((item) => target.push(item));
+}
+
 async function initialize() {
+  await loadSiteSettings();
+  renderMenu();
   updateMenu();
   await Promise.all([loadProjects(), preloadStaticPanels()]);
   if (state.loadFailed) return;
@@ -57,6 +212,7 @@ function bindEvents() {
   elements.grid.addEventListener("click", handleGridClick);
   elements.panel.addEventListener("click", handlePanelClick);
   elements.viewerShell.addEventListener("click", handleViewerClick);
+  elements.left.addEventListener("click", handleLeftClick);
 }
 
 function handleMenuClick(event) {
@@ -83,6 +239,16 @@ function handlePanelClick(event) {
 
   if (action === "enter-criterion") {
     enterCriterion(actionElement.dataset.criterionId);
+    return;
+  }
+
+  if (action === "open-page") {
+    openPage(actionElement.dataset.pageId);
+    return;
+  }
+
+  if (action === "open-criterion-page") {
+    openCriterionPage(actionElement.dataset.criterionId);
     return;
   }
 
@@ -114,12 +280,16 @@ function handlePanelClick(event) {
   if (action === "show-portfolio-intro") {
     state.portfolioMode = "intro";
     state.currentProject = null;
+    state.pairFocusSlugs = null;
+    state.leftMode = "grid";
+    renderGrid();
+    renderViewer();
     renderPanel();
     return;
   }
 
-  if (action === "show-project-pairs") {
-    togglePairList(actionElement);
+  if (action === "close-viewer") {
+    closeViewer();
     return;
   }
 
@@ -146,6 +316,22 @@ function handleViewerClick(event) {
 
   if (action === "viewer-next") {
     goToNextImage();
+    return;
+  }
+
+  if (action === "show-pair-grid") {
+    showPairGrid();
+  }
+}
+
+function handleLeftClick(event) {
+  const actionElement = event.target.closest("[data-action]");
+  if (!actionElement) return;
+
+  const { action } = actionElement.dataset;
+
+  if (action === "clear-pair-focus") {
+    clearPairFocus();
   }
 }
 
@@ -222,7 +408,11 @@ function normalizeProject(item) {
       titulo: cleanString(pair?.title ?? pair?.titulo) || formatLabel(cleanString(pair?.slug)),
       subtitulo: cleanString(pair?.subtitle ?? pair?.subtitulo),
       label: cleanString(pair?.label ?? pair?.label_override),
-      pairType: cleanString(pair?.pair_type)
+      pairType: cleanString(pair?.pair_type),
+      thumb: resolveProjectMediaUrl(cleanString(pair?.thumb_path)),
+      cliente: cleanString(pair?.client ?? pair?.cliente),
+      tipo: normalizeProjectType(pair?.project_type ?? pair?.tipo),
+      ano: normalizeProjectYear(pair?.sort_year ?? pair?.ano)
     })).filter((pair) => pair.slug)
     : [];
   const tagSource = item?.tags ?? item?.tag_slugs;
@@ -235,8 +425,12 @@ function normalizeProject(item) {
     titulo: cleanString(item?.titulo ?? item?.title) || formatLabel(cleanString(item?.slug)),
     subtitulo: cleanString(item?.subtitulo ?? item?.subtitle),
     descricao: cleanString(item?.descricao ?? item?.description),
-    tipo: cleanString(item?.tipo ?? item?.project_type),
+    servico: cleanString(item?.servico ?? item?.servico_principal ?? item?.service),
+    tipo: normalizeProjectType(item?.tipo ?? item?.project_type),
     cliente: cleanString(item?.cliente ?? item?.client),
+    ano: normalizeProjectYear(item?.ano ?? item?.sort_year),
+    destaque: item?.is_featured ? "destaque" : "",
+    isFeatured: Boolean(item?.is_featured),
     tags,
     thumb,
     imagens: images,
@@ -246,6 +440,26 @@ function normalizeProject(item) {
 
 function cleanString(value) {
   return typeof value === "string" ? value.trim() : "";
+}
+
+function normalizeProjectType(value) {
+  const normalized = cleanString(value);
+  const folded = normalized.toLowerCase();
+
+  if (!folded) return "";
+  if (folded === "hq") return "hq";
+  if (folded === "livro" || folded === "livros") return "livro";
+  if (folded === "revista" || folded === "revistas") return "revista";
+  if (folded === "especial" || folded === "projeto especial" || folded === "projetos especiais") return "especial";
+  if (folded === "outro" || folded === "outros") return "outros";
+
+  return normalized;
+}
+
+function normalizeProjectYear(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 1000) return "";
+  return String(Math.trunc(numeric));
 }
 
 function resolveProjectMediaUrl(value) {
@@ -277,9 +491,16 @@ function shuffle(array) {
 function openPage(pageId) {
   if (!PAGE_BY_ID.has(pageId)) return;
 
+  const leavingPortfolio = state.currentPage === CONFIG.portfolioPageId && pageId !== CONFIG.portfolioPageId;
+  if (leavingPortfolio) {
+    resetPortfolioNavigation();
+  }
+
   state.currentPage = pageId;
   state.currentProject = null;
   state.currentImageIndex = 0;
+  state.pairFocusSlugs = null;
+  state.leftMode = "grid";
 
   if (pageId === CONFIG.portfolioPageId) {
     state.portfolioMode = "intro";
@@ -290,6 +511,20 @@ function openPage(pageId) {
   applyFilters();
   renderGrid();
   renderPanel();
+}
+
+function resetPortfolioNavigation() {
+  state.filters = createEmptyFilters();
+  state.currentCriterionId = FILTERS[0]?.id || null;
+  state.portfolioMode = "intro";
+  state.currentProject = null;
+  state.currentImageIndex = 0;
+  state.pairFocusSlugs = null;
+  state.leftMode = "grid";
+}
+
+function hasActiveFilters() {
+  return Object.values(state.filters).some((values) => values.length > 0);
 }
 
 function updateMenu() {
@@ -327,7 +562,7 @@ function applyFilters() {
       const selectedValues = state.filters[criterion.id] || [];
       if (!selectedValues.length) return true;
 
-      return selectedValues.every((selectedValue) => matchesCriterion(project, criterion, selectedValue));
+      return matchesSelectedValues(project, criterion, selectedValues);
     });
   });
 }
@@ -342,17 +577,31 @@ function matchesCriterion(project, criterion, selectedValue) {
   return projectValue === selectedValue;
 }
 
+function matchesSelectedValues(project, criterion, selectedValues) {
+  if (!Array.isArray(selectedValues) || !selectedValues.length) {
+    return true;
+  }
+
+  if (criterion.selectionOperator === "or") {
+    return selectedValues.some((selectedValue) => matchesCriterion(project, criterion, selectedValue));
+  }
+
+  return selectedValues.every((selectedValue) => matchesCriterion(project, criterion, selectedValue));
+}
+
 function renderGrid() {
   if (!state.projects.length) return;
 
+  const visibleProjects = getVisibleProjects();
+  renderGridFocusNote(visibleProjects);
   elements.grid.innerHTML = "";
 
-  if (!state.filtered.length) {
+  if (!visibleProjects.length) {
     renderGridState("Nenhum projeto encontrado", "Os filtros atuais não retornaram resultados. Limpe os filtros para voltar ao acervo completo.");
     return;
   }
 
-  state.filtered.forEach((project, index) => {
+  visibleProjects.forEach((project, index) => {
     const card = document.createElement("button");
     card.type = "button";
     card.className = "grid-card";
@@ -384,6 +633,7 @@ function renderGrid() {
 }
 
 function renderGridState(title, message, tone = "neutral") {
+  renderGridFocusNote([]);
   elements.grid.innerHTML = `
     <div class="panel-state" data-tone="${escapeHtml(tone)}">
       <h1>${escapeHtml(title)}</h1>
@@ -393,12 +643,36 @@ function renderGridState(title, message, tone = "neutral") {
   elements.gridView.hidden = false;
 }
 
+function renderGridFocusNote(visibleProjects) {
+  const existing = elements.gridView.querySelector(".grid-focus-note");
+  if (existing) {
+    existing.remove();
+  }
+
+  if (!Array.isArray(state.pairFocusSlugs) || !state.pairFocusSlugs.length || !state.currentProject) {
+    return;
+  }
+
+  const note = document.createElement("div");
+  note.className = "grid-focus-note";
+  note.innerHTML = `
+    <button type="button" class="grid-focus-button" data-action="clear-pair-focus" aria-label="Voltar ao portfólio">
+      ${renderGridIcon()}
+    </button>
+  `;
+  elements.gridView.insertBefore(note, elements.grid);
+}
+
 function openProject(index) {
-  const project = state.filtered[index];
+  const project = getVisibleProjects()[index];
   if (!project) return;
 
   state.currentProject = project;
   state.currentImageIndex = 0;
+  state.leftMode = "viewer";
+  if (state.pairFocusSlugs) {
+    state.pairFocusSlugs = createPairFocusSlugs(project);
+  }
   renderViewer();
   renderPanel();
 }
@@ -406,12 +680,27 @@ function openProject(index) {
 function closeViewer() {
   state.currentProject = null;
   state.currentImageIndex = 0;
+  state.leftMode = "grid";
   renderViewer();
   renderPanel();
 }
 
 function openProjectBySlug(slug) {
-  const projectIndex = state.filtered.findIndex((project) => project.slug === slug);
+  if (state.currentProject && hasPairWithSlug(state.currentProject, slug)) {
+    const targetProject = state.projects.find((project) => project.slug === slug);
+    if (!targetProject) return;
+
+    state.currentProject = targetProject;
+    state.currentImageIndex = 0;
+    state.pairFocusSlugs = createPairFocusSlugs(targetProject);
+    state.leftMode = "grid";
+    renderViewer();
+    renderGrid();
+    renderPanel();
+    return;
+  }
+
+  const projectIndex = getVisibleProjects().findIndex((project) => project.slug === slug);
 
   if (projectIndex >= 0) {
     openProject(projectIndex);
@@ -423,21 +712,39 @@ function openProjectBySlug(slug) {
 
   state.currentProject = project;
   state.currentImageIndex = 0;
+  state.leftMode = "viewer";
   renderViewer();
   renderPanel();
 }
 
-function togglePairList(button) {
-  const wrapper = button.closest(".project-pairs");
-  const list = wrapper?.querySelector(".project-pairs-list");
-  if (!list) return;
+function getVisibleProjects() {
+  if (!Array.isArray(state.pairFocusSlugs) || !state.pairFocusSlugs.length) {
+    return state.filtered;
+  }
 
-  const nextHidden = !list.hidden;
-  list.hidden = nextHidden;
+  return state.pairFocusSlugs
+    .map((slug) => state.projects.find((project) => project.slug === slug))
+    .filter(Boolean);
+}
+
+function hasPairWithSlug(project, slug) {
+  return Array.isArray(project?.pares) && project.pares.some((pair) => pair.slug === slug);
+}
+
+function createPairFocusSlugs(project) {
+  const relatedProjects = [...new Set([
+    project.slug,
+    ...(Array.isArray(project.pares) ? project.pares.map((pair) => pair.slug) : [])
+  ].filter(Boolean))]
+    .map((slug) => state.projects.find((item) => item.slug === slug) || (slug === project.slug ? project : null))
+    .filter(Boolean)
+    .sort((leftProject, rightProject) => leftProject.titulo.localeCompare(rightProject.titulo, "pt-BR"));
+
+  return relatedProjects.map((item) => item.slug);
 }
 
 function renderViewer() {
-  if (!state.currentProject) {
+  if (!state.currentProject || state.leftMode === "grid") {
     elements.viewerShell.hidden = true;
     elements.viewerShell.innerHTML = "";
     elements.gridView.hidden = false;
@@ -480,13 +787,13 @@ function renderViewer() {
         ${renderViewerNavigation(imageCount)}
       </div>
 
-      <button type="button" class="grid-button" data-action="close-viewer" aria-label="Voltar ao grid">
-        <svg viewBox="0 0 100 100" aria-hidden="true">
-          <rect x="5" y="5" width="40" height="40" fill="#444"></rect>
-          <rect x="55" y="5" width="40" height="40" fill="#444"></rect>
-          <rect x="5" y="55" width="40" height="40" fill="#444"></rect>
-          <rect x="55" y="55" width="40" height="40" fill="#444"></rect>
-        </svg>
+      <button
+        type="button"
+        class="grid-button${state.pairFocusSlugs ? " grid-button-reverse" : ""}"
+        data-action="${state.pairFocusSlugs ? "show-pair-grid" : "close-viewer"}"
+        aria-label="${state.pairFocusSlugs ? "Voltar ao agrupamento" : "Voltar ao grid"}"
+      >
+        ${renderGridIcon()}
       </button>
     </div>
   `;
@@ -582,7 +889,7 @@ function zoomMove(event) {
   const x = event.clientX - imageRect.left;
   const y = event.clientY - imageRect.top;
 
-  if (x <= 0 || y <= 0 || x >= imageRect.width || y >= imageRect.height) {
+  if (x < 0 || y < 0 || x > imageRect.width || y > imageRect.height) {
     zoomEnd();
     return;
   }
@@ -591,16 +898,15 @@ function zoomMove(event) {
 
   const lensWidth = lens.offsetWidth;
   const lensHeight = lens.offsetHeight;
+  const lensInnerWidth = lens.clientWidth;
+  const lensInnerHeight = lens.clientHeight;
   const zoomFactor = 2.2;
-
-  const maxBackgroundX = image.clientWidth * zoomFactor - lensWidth;
-  const maxBackgroundY = image.clientHeight * zoomFactor - lensHeight;
-  const backgroundX = Math.max(0, Math.min(x * zoomFactor - lensWidth / 2, maxBackgroundX));
-  const backgroundY = Math.max(0, Math.min(y * zoomFactor - lensHeight / 2, maxBackgroundY));
+  const backgroundX = x * zoomFactor - lensInnerWidth / 2;
+  const backgroundY = y * zoomFactor - lensInnerHeight / 2;
 
   lens.style.left = `${event.clientX}px`;
   lens.style.top = `${event.clientY}px`;
-  lens.style.backgroundPosition = `-${backgroundX}px -${backgroundY}px`;
+  lens.style.backgroundPosition = `${-backgroundX}px ${-backgroundY}px`;
 }
 
 function renderPanel() {
@@ -623,13 +929,20 @@ function renderPanel() {
   renderStaticPanel(page);
 }
 
-function renderStaticPanel(page) {
-  state.panelRequestId += 1;
+function setPanelMode(mode) {
+  elements.panel.classList.remove("panel-content-static", "panel-content-project", "panel-content-filter", "panel-content-state");
 
-  const markup = PANEL_CACHE.get(page.content);
+  if (mode) {
+    elements.panel.classList.add(`panel-content-${mode}`);
+  }
+}
+
+function renderStaticPanel(page) {
+  setPanelMode("static");
+  const markup = SITE_PANEL_OVERRIDES[page.id] || PANEL_CACHE.get(page.content);
 
   if (!markup) {
-    renderPanelState("Conteúdo indisponível", "Não foi possível carregar o texto desta seção. Verifique a pasta textos/ e o servidor local.", "error");
+    renderPanelState("Conteúdo indisponível", "Não foi possível carregar o conteúdo desta seção nem do Supabase nem dos arquivos locais.", "error");
     return;
   }
 
@@ -637,7 +950,10 @@ function renderStaticPanel(page) {
 
   if (page.id === CONFIG.portfolioPageId && state.portfolioMode === "intro") {
     injectPortfolioButtons();
+    return;
   }
+
+  normalizeSimpleStaticPanel(page.id);
 }
 
 async function loadPanelMarkup(fileName) {
@@ -656,10 +972,17 @@ async function loadPanelMarkup(fileName) {
 }
 
 function injectPortfolioButtons() {
+  normalizePortfolioIntroPanel();
+
   const container = elements.panel.querySelector("[data-portfolio-buttons]");
+  const overview = elements.panel.querySelector("[data-portfolio-overview]");
   if (!container) return;
 
   container.innerHTML = "";
+
+  if (overview) {
+    overview.innerHTML = "";
+  }
 
   FILTERS.forEach((criterion) => {
     const button = document.createElement("button");
@@ -670,25 +993,157 @@ function injectPortfolioButtons() {
     button.textContent = criterion.label;
     container.appendChild(button);
   });
+
+  if (overview) {
+    overview.innerHTML = renderPortfolioOverview();
+  }
+}
+
+function normalizePortfolioIntroPanel() {
+  const panelInner = elements.panel.querySelector(".panel-inner");
+  if (!panelInner) return;
+
+  panelInner.classList.add("panel-inner-static", "panel-inner-static-shell", "panel-inner-portfolio-intro");
+
+  const legacyLabel = panelInner.querySelector(".portfolio-intro-label");
+  const legacyKicker = panelInner.querySelector(".panel-kicker");
+  let introTitle = panelInner.querySelector(".portfolio-intro-title");
+  const overview = panelInner.querySelector("[data-portfolio-overview]");
+  const buttons = panelInner.querySelector("[data-portfolio-buttons]");
+  const mainHeading = panelInner.querySelector("h1");
+  const notes = [...panelInner.querySelectorAll(":scope > .small-note")];
+
+  if (!introTitle) {
+    introTitle = document.createElement("h1");
+    introTitle.className = "static-page-title portfolio-intro-title";
+    introTitle.textContent = "Portfólio";
+    panelInner.insertBefore(introTitle, panelInner.firstChild);
+  } else {
+    introTitle.classList.add("static-page-title", "portfolio-intro-title");
+    introTitle.textContent = "Portfólio";
+  }
+
+  if (mainHeading && mainHeading !== introTitle) {
+    mainHeading.remove();
+  }
+
+  [...panelInner.querySelectorAll(".portfolio-intro-subtitle")].forEach((subtitle) => {
+    subtitle.remove();
+  });
+
+  if (notes[0]) {
+    notes[0].classList.add("static-page-intro");
+    introTitle.insertAdjacentElement("afterend", notes[0]);
+  }
+
+  if (legacyLabel) {
+    legacyLabel.remove();
+  }
+
+  if (legacyKicker) {
+    legacyKicker.remove();
+  }
+
+  [...panelInner.querySelectorAll(":scope > p")].forEach((paragraph) => {
+    if (paragraph.classList.contains("small-note")) return;
+    if (cleanString(paragraph.textContent).toLowerCase() === "portfólio") {
+      paragraph.remove();
+    }
+  });
+
+  if (buttons && overview) {
+    buttons.insertAdjacentElement("afterend", overview);
+  }
+
+  if (notes.length > 1) {
+    notes.slice(1).forEach((note) => note.remove());
+  }
+}
+
+function normalizeSimpleStaticPanel(pageId) {
+  const panelInner = elements.panel.querySelector(".panel-inner");
+  if (!panelInner) return;
+
+  panelInner.classList.add("panel-inner-static", "panel-inner-static-shell");
+
+  const title = panelInner.querySelector("h1");
+  const notes = [...panelInner.querySelectorAll(":scope > .small-note")];
+  const actions = panelInner.querySelector(".panel-actions");
+
+  if (title) {
+    title.classList.add("static-page-title");
+  }
+
+  if (notes[0]) {
+    notes[0].classList.add("static-page-subtitle");
+  }
+
+  if (pageId === "contato" && notes[1]) {
+    notes[1].classList.add("static-page-meta");
+  } else if (notes[1]) {
+    notes[1].classList.add("static-page-intro");
+  }
+
+  if (actions) {
+    actions.classList.add("static-page-actions");
+  }
+
+  if (pageId === "inicio" && actions) {
+    actions.remove();
+  }
+}
+
+function renderPortfolioOverview() {
+  const activeFilters = hasActiveFilters();
+  const selectedCount = Object.values(state.filters).reduce((total, values) => total + values.length, 0);
+
+  return `
+    <div class="portfolio-overview-card">
+      <p class="small-note">${escapeHtml(formatProjectCount(state.filtered.length, state.projects.length))}</p>
+      ${activeFilters ? `<div class="portfolio-overview-actions"><span class="small-note">${escapeHtml(selectedCount === 1 ? "1 filtro ativo" : `${selectedCount} filtros ativos`)}</span><button type="button" class="panel-button" data-action="clear-filters">Zerar navegação</button></div>` : ""}
+    </div>
+  `;
 }
 
 function renderProjectPanel() {
-  state.panelRequestId += 1;
+  setPanelMode("project");
   const project = state.currentProject;
-  const description = project.descricao || "Sem texto descritivo por enquanto.";
+  const description = project.descricao || "Texto em construção.";
+  const descriptionClass = project.descricao
+    ? "project-description"
+    : "project-description project-description-empty";
+  const featuredBadge = project.isFeatured ? '<p class="project-badge">Destaque</p>' : "";
   const subtitle = project.subtitulo
-    ? `<h2 class="titulo-secundario">${escapeHtml(project.subtitulo)}</h2>`
+    ? `<p class="project-subtitle-display">${escapeHtml(project.subtitulo)}</p>`
     : "";
+  const context = renderProjectContextLine(project);
   const pairs = renderProjectPairs(project.pares);
 
   elements.panel.innerHTML = `
-    <div class="panel-inner" style="display:block; min-height:auto;">
+    <div class="panel-inner panel-inner-project">
+      ${featuredBadge}
       <h1 class="titulo-principal">${escapeHtml(project.titulo)}</h1>
       ${subtitle}
-      <p>${escapeHtml(description)}</p>
+      ${context}
+      <p class="${descriptionClass}">${escapeHtml(description)}</p>
       ${pairs}
     </div>
   `;
+}
+
+function renderProjectContextLine(project) {
+  const items = [
+    project.cliente ? formatLabel(project.cliente) : "",
+    project.ano,
+    project.servico ? formatLabel(project.servico) : "",
+    project.tipo && project.tipo !== "livro" ? formatLabel(project.tipo) : "",
+  ].filter(Boolean);
+
+  if (!items.length) {
+    return "";
+  }
+
+  return `<p class="project-context-line">${escapeHtml(items.join(" • "))}</p>`;
 }
 
 function renderProjectPairs(pairs) {
@@ -696,20 +1151,22 @@ function renderProjectPairs(pairs) {
     return "";
   }
 
-  const label = pairs.length === 1 ? "Veja seu par" : "Veja seus pares";
-
   return `
     <div class="project-pairs">
-      <button type="button" class="panel-button" data-action="show-project-pairs">${escapeHtml(label)}</button>
-      <div class="project-pairs-list" hidden>
+      <div class="project-pairs-head">
+        <h3 class="project-pairs-title">Vistos juntos</h3>
+      </div>
+      <div class="project-pairs-grid">
         ${pairs.map((pair) => `
           <button
             type="button"
-            class="filtro-item"
+            class="project-pair-card"
             data-action="open-project-by-slug"
             data-project-slug="${escapeAttribute(pair.slug)}"
           >
-            ${escapeHtml(pair.titulo)}
+            <span class="project-pair-body">
+              <strong>${escapeHtml(pair.titulo)}</strong>
+            </span>
           </button>
         `).join("")}
       </div>
@@ -718,7 +1175,7 @@ function renderProjectPairs(pairs) {
 }
 
 function renderFilterPanel() {
-  state.panelRequestId += 1;
+  setPanelMode("filter");
   const criterion = FILTER_BY_ID.get(state.currentCriterionId) || FILTERS[0];
   const options = criterion ? getCriterionOptions(criterion) : [];
 
@@ -752,7 +1209,7 @@ function renderFilterPanel() {
       </div>
 
       <div class="contador">
-        <div class="contador-resultados">${state.filtered.length} projeto(s)</div>
+        <div class="contador-resultados">${escapeHtml(formatProjectCount(state.filtered.length, state.projects.length))}</div>
       </div>
     </div>
   `;
@@ -763,6 +1220,8 @@ function renderActiveFilters() {
 
   Object.entries(state.filters).forEach(([criterionId, values]) => {
     values.forEach((value) => {
+      const formattedValue = formatLabel(value);
+
       chips.push(`
         <button
           type="button"
@@ -771,7 +1230,7 @@ function renderActiveFilters() {
           data-criterion-id="${escapeAttribute(criterionId)}"
           data-value="${escapeAttribute(value)}"
         >
-          ${escapeHtml(formatLabel(value))} ×
+          ${escapeHtml(formattedValue)} ×
         </button>
       `);
     });
@@ -784,52 +1243,133 @@ function renderActiveFilters() {
   return chips.join("");
 }
 
-function renderFilterOption(criterionId, value) {
+function renderFilterOption(criterionId, option) {
+  const value = typeof option === "string" ? option : option?.value;
+  const count = typeof option === "string" ? null : option?.count;
   const selected = state.filters[criterionId]?.includes(value);
-  const className = selected ? "filtro-item inativo" : "filtro-item";
+  const isDisabled = !selected && Boolean(option?.disabled);
+  const className = [
+    "filtro-item",
+    !isDisabled ? "is-available" : "",
+    selected ? "is-selected" : "",
+    isDisabled ? "is-disabled" : ""
+  ].filter(Boolean).join(" ");
+  const countMarkup = typeof count === "number"
+    ? `<span class="filtro-item-count">${count}</span>`
+    : "";
+  const actionAttribute = selected ? "" : 'data-action="toggle-filter"';
 
   return `
     <button
       type="button"
       class="${className}"
-      data-action="toggle-filter"
+      ${actionAttribute}
       data-criterion-id="${escapeAttribute(criterionId)}"
       data-value="${escapeAttribute(value)}"
+      ${isDisabled ? "disabled" : ""}
     >
       ${escapeHtml(formatLabel(value))}
+      ${countMarkup}
     </button>
   `;
 }
 
 function getCriterionOptions(criterion) {
-  if (Array.isArray(criterion.fixedOptions) && criterion.fixedOptions.length) {
-    return [...criterion.fixedOptions];
-  }
-
-  const options = new Set();
   const includeSet = getConfigSet(criterion.includeSet);
   const excludeSet = getConfigSet(criterion.excludeSet);
+  const selectedValues = new Set(state.filters[criterion.id] || []);
+  const baseProjects = getProjectsMatchingOtherCriteria(criterion.id);
 
-  state.projects.forEach((project) => {
-    const sourceValue = project[criterion.source];
+  const values = Array.isArray(criterion.fixedOptions) && criterion.fixedOptions.length
+    ? criterion.fixedOptions.map((value) => cleanString(value)).filter(Boolean)
+    : collectCriterionCatalog(criterion, includeSet, excludeSet);
 
-    if (criterion.mode === "list") {
-      if (!Array.isArray(sourceValue)) return;
-
-      sourceValue.forEach((value) => {
-        if (includeSet && !includeSet.has(value)) return;
-        if (excludeSet && excludeSet.has(value)) return;
-        options.add(value);
-      });
-      return;
-    }
-
-    if (sourceValue) {
-      options.add(sourceValue);
+  selectedValues.forEach((value) => {
+    if (!values.includes(value)) {
+      values.push(value);
     }
   });
 
-  return [...options].sort((a, b) => a.localeCompare(b, "pt-BR"));
+  return values.map((value) => {
+    const count = countProjectsForOption(baseProjects, criterion, selectedValues, value);
+
+    return {
+      value,
+      count,
+      disabled: count === 0
+    };
+  });
+}
+
+function countProjectsForOption(baseProjects, criterion, selectedValues, candidateValue) {
+  if (criterion.selectionOperator === "or") {
+    let count = 0;
+
+    baseProjects.forEach((project) => {
+      if (matchesCriterion(project, criterion, candidateValue)) {
+        count += 1;
+      }
+    });
+
+    return count;
+  }
+
+  const nextSelections = new Set(selectedValues);
+  nextSelections.add(candidateValue);
+
+  let count = 0;
+
+  baseProjects.forEach((project) => {
+    const matches = matchesSelectedValues(project, criterion, [...nextSelections]);
+    if (matches) {
+      count += 1;
+    }
+  });
+
+  return count;
+}
+
+function collectCriterionCatalog(criterion, includeSet, excludeSet) {
+  const options = new Set();
+
+  state.projects.forEach((project) => {
+    collectCriterionValues(project, criterion, includeSet, excludeSet).forEach((value) => options.add(value));
+  });
+
+  return [...options].sort((a, b) => formatLabel(a).localeCompare(formatLabel(b), "pt-BR"));
+}
+
+function collectCriterionValues(project, criterion, includeSet, excludeSet) {
+  const sourceValue = project[criterion.source];
+
+  if (criterion.mode === "list") {
+    if (!Array.isArray(sourceValue)) return [];
+
+    return sourceValue.filter((value) => {
+      if (includeSet && !includeSet.has(value)) return false;
+      if (excludeSet && excludeSet.has(value)) return false;
+      return Boolean(value);
+    });
+  }
+
+  if (!sourceValue) {
+    return [];
+  }
+
+  return [sourceValue];
+}
+
+function getProjectsMatchingOtherCriteria(criterionId) {
+  return state.projects.filter((project) => {
+    return FILTERS.every((criterion) => {
+      if (criterion.id === criterionId) return true;
+
+      const selectedValues = state.filters[criterion.id] || [];
+      if (!selectedValues.length) return true;
+
+      return matchesSelectedValues(project, criterion, selectedValues);
+    });
+  });
 }
 
 function getConfigSet(setName) {
@@ -838,11 +1378,36 @@ function getConfigSet(setName) {
   return Array.isArray(values) ? new Set(values) : null;
 }
 
+function renderColorSwatch(value) {
+  const swatch = COLOR_SWATCHES[cleanString(value)];
+  if (!swatch) return "";
+  return `<span class="project-tag-swatch" style="background:${escapeAttribute(swatch)}"></span>`;
+}
+
 function enterCriterion(criterionId) {
   if (!FILTER_BY_ID.has(criterionId)) return;
 
+  state.pairFocusSlugs = null;
+  state.leftMode = state.currentProject ? "viewer" : "grid";
   state.currentCriterionId = criterionId;
   state.portfolioMode = "criterio";
+  renderPanel();
+}
+
+function openCriterionPage(criterionId) {
+  if (!FILTER_BY_ID.has(criterionId)) return;
+
+  state.currentPage = CONFIG.portfolioPageId;
+  state.currentCriterionId = criterionId;
+  state.currentProject = null;
+  state.currentImageIndex = 0;
+  state.pairFocusSlugs = null;
+  state.leftMode = "grid";
+  state.portfolioMode = "criterio";
+  updateMenu();
+  applyFilters();
+  renderViewer();
+  renderGrid();
   renderPanel();
 }
 
@@ -869,6 +1434,8 @@ function toggleFilter(criterionId, value) {
     values.push(value);
   }
 
+  state.pairFocusSlugs = null;
+  state.leftMode = state.currentProject ? "viewer" : "grid";
   applyFilters();
   renderGrid();
   renderPanel();
@@ -881,6 +1448,8 @@ function removeFilter(criterionId, value) {
   if (!Array.isArray(values)) return;
 
   state.filters[criterionId] = values.filter((currentValue) => currentValue !== value);
+  state.pairFocusSlugs = null;
+  state.leftMode = state.currentProject ? "viewer" : "grid";
   applyFilters();
   renderGrid();
   renderPanel();
@@ -888,13 +1457,57 @@ function removeFilter(criterionId, value) {
 
 function clearFilters() {
   state.filters = createEmptyFilters();
+  state.pairFocusSlugs = null;
+  state.leftMode = state.currentProject ? "viewer" : "grid";
   applyFilters();
   renderGrid();
   renderPanel();
 }
 
+function clearPairFocus() {
+  state.currentPage = CONFIG.portfolioPageId;
+  state.portfolioMode = "intro";
+  state.currentProject = null;
+  state.currentImageIndex = 0;
+  state.pairFocusSlugs = null;
+  state.leftMode = "grid";
+  updateMenu();
+  applyFilters();
+  renderViewer();
+  renderGrid();
+  renderPanel();
+}
+
+function showPairGrid() {
+  if (!state.pairFocusSlugs) return;
+
+  state.leftMode = "grid";
+  renderViewer();
+  renderGrid();
+  renderPanel();
+}
+
+function renderGridIcon() {
+  return `
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <rect x="5" y="5" width="40" height="40" fill="#444"></rect>
+      <rect x="55" y="5" width="40" height="40" fill="#444"></rect>
+      <rect x="5" y="55" width="40" height="40" fill="#444"></rect>
+      <rect x="55" y="55" width="40" height="40" fill="#444"></rect>
+    </svg>
+  `;
+}
+
+function formatProjectCount(filteredCount, totalCount) {
+  if (filteredCount === totalCount) {
+    return `${filteredCount} projetos publicados`;
+  }
+
+  return `${filteredCount} de ${totalCount} projetos`;
+}
+
 function renderPanelState(title, message, tone = "neutral") {
-  state.panelRequestId += 1;
+  setPanelMode("state");
   elements.panel.innerHTML = `
     <div class="panel-state" data-tone="${escapeHtml(tone)}">
       <h1>${escapeHtml(title)}</h1>
@@ -906,6 +1519,10 @@ function renderPanelState(title, message, tone = "neutral") {
 function formatLabel(value) {
   const normalized = cleanString(value);
   if (!normalized) return "";
+
+  if (LABEL_OVERRIDES[normalized]) {
+    return LABEL_OVERRIDES[normalized];
+  }
 
   if (CONFIG.labels?.[normalized]) {
     return CONFIG.labels[normalized];
