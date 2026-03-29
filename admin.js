@@ -88,6 +88,7 @@
   var siteFilterFields = document.getElementById("site-filter-fields");
   var siteConfigSaveButton = document.getElementById("site-config-save-button");
   var siteConfigFeedback = document.getElementById("site-config-feedback");
+  var dossieEntryBuilder = document.getElementById("dossie-entry-builder");
 
   var state = {
     token: null,
@@ -197,6 +198,11 @@
   siteConfigForm.addEventListener("click", handleSiteConfigClick);
   siteConfigForm.addEventListener("input", handleSiteConfigInput);
   siteConfigSaveButton.addEventListener("click", handleSiteConfigSave);
+
+  var dossieInsertButton = document.getElementById("dossie-insert-button");
+  if (dossieInsertButton) {
+    dossieInsertButton.addEventListener("click", handleDossieInsert);
+  }
 
   boot();
 
@@ -1847,6 +1853,10 @@
     sitePageMeta.textContent = getSitePageMeta(activePage);
     sitePageContent.value = pageContent;
 
+    if (dossieEntryBuilder) {
+      dossieEntryBuilder.hidden = activePage.id !== "dossie";
+    }
+
     siteFilterFields.innerHTML = siteConfig.filters.map(function (item) {
       return '' +
         '<article class="admin-site-filter-card">' +
@@ -1941,6 +1951,10 @@
       return baseLabel + " Se quiser botões de navegação, use data-action=\"open-page\" com o data-page-id desejado.";
     }
 
+    if (activePage.id === "dossie") {
+      return baseLabel + " Use o construtor abaixo para inserir entradas formatadas, ou edite o HTML diretamente.";
+    }
+
     return baseLabel;
   }
 
@@ -2003,6 +2017,56 @@
       .finally(function () {
         siteConfigSaveButton.disabled = false;
       });
+  }
+
+  function handleDossieInsert() {
+    var typeEl = document.getElementById("dossie-type");
+    var titleEl = document.getElementById("dossie-title");
+    var bodyEl = document.getElementById("dossie-body");
+    var mediaEl = document.getElementById("dossie-media");
+
+    var type = typeEl ? String(typeEl.value || "nota") : "nota";
+    var title = titleEl ? String(titleEl.value || "").trim() : "";
+    var body = bodyEl ? String(bodyEl.value || "").trim() : "";
+    var media = mediaEl ? String(mediaEl.value || "").trim() : "";
+
+    if (!title && !body) {
+      alert("Preencha ao menos um título ou texto.");
+      return;
+    }
+
+    var html = buildDossieEntryHtml(type, title, body, media);
+    var current = sitePageContent ? String(sitePageContent.value || "") : "";
+    if (sitePageContent) {
+      sitePageContent.value = current + (current ? "\n\n" : "") + html;
+      if (!state.siteConfig.page_content) {
+        state.siteConfig.page_content = {};
+      }
+      state.siteConfig.page_content["dossie"] = String(sitePageContent.value);
+    }
+
+    if (titleEl) titleEl.value = "";
+    if (bodyEl) bodyEl.value = "";
+    if (mediaEl) mediaEl.value = "";
+  }
+
+  function buildDossieEntryHtml(type, title, body, media) {
+    var parts = ['<article class="dossie-entry dossie-entry-' + escapeHtml(type) + '">'];
+    if (title) {
+      parts.push('  <h2 class="dossie-title">' + escapeHtml(title) + '</h2>');
+    }
+    if (media) {
+      if (type === "clip") {
+        parts.push('  <div class="dossie-media"><iframe src="' + escapeHtml(media) + '" allowfullscreen loading="lazy"></iframe></div>');
+      } else {
+        parts.push('  <figure class="dossie-media"><img src="' + escapeHtml(media) + '" alt="' + escapeHtml(title) + '" loading="lazy"></figure>');
+      }
+    }
+    if (body) {
+      parts.push('  <p class="dossie-body">' + escapeHtml(body) + '</p>');
+    }
+    parts.push('</article>');
+    return parts.join("\n");
   }
 
   function serializeSiteConfigForSave() {

@@ -511,6 +511,34 @@
                     <span class="admin-label">Conteúdo HTML</span>
                     <textarea class="admin-input admin-textarea admin-site-textarea" id="site-page-content"></textarea>
                   </label>
+                  <div id="dossie-entry-builder" hidden>
+                    <div class="admin-dossie-builder">
+                      <h4 class="admin-copy" style="margin:16px 0 12px;font-weight:600;">+ Nova entrada no Dossiê</h4>
+                      <div class="admin-site-grid">
+                        <label class="admin-field">
+                          <span class="admin-label">Tipo</span>
+                          <select class="admin-input" id="dossie-type">
+                            <option value="nota">Nota</option>
+                            <option value="still">Foto / Still</option>
+                            <option value="clip">Vídeo</option>
+                          </select>
+                        </label>
+                        <label class="admin-field">
+                          <span class="admin-label">Título</span>
+                          <input class="admin-input" type="text" id="dossie-title" placeholder="Título da entrada">
+                        </label>
+                      </div>
+                      <label class="admin-field">
+                        <span class="admin-label">Texto ou legenda</span>
+                        <textarea class="admin-input admin-textarea" id="dossie-body" rows="4" placeholder="Texto, legenda ou descrição..."></textarea>
+                      </label>
+                      <label class="admin-field">
+                        <span class="admin-label">URL da imagem ou vídeo (opcional)</span>
+                        <input class="admin-input" type="url" id="dossie-media" placeholder="https://...">
+                      </label>
+                      <button type="button" class="admin-button" id="dossie-insert-button">Inserir entrada no HTML</button>
+                    </div>
+                  </div>
                 </details>
 
                 <details class="admin-section-card admin-collapsible" open>

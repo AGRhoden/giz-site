@@ -1075,3 +1075,229 @@ button {
     padding-right: 16px;
   }
 }
+
+/* ── Breadcrumb no painel de filtro ── */
+
+.criterio-nav {
+  height: auto;
+  padding: 4px 0;
+}
+
+.panel-inner {
+  grid-template-rows: auto auto auto 40px 28px;
+}
+
+.criterio-titulo-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.criterio-breadcrumb {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-size: 11px;
+  color: var(--color-muted);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.criterio-breadcrumb::after {
+  content: " →";
+}
+
+.criterio-breadcrumb:hover {
+  color: var(--color-text);
+}
+
+/* ── Lista de filtros: estilo índice editorial ── */
+
+.lista-filtros {
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.lista-filtros .filtro-item::before,
+.lista-filtros .filtro-item:last-child::after {
+  content: none;
+}
+
+.lista-filtros .filtro-item {
+  line-height: 2;
+}
+
+/* ── Filtro de cores: swatches ── */
+
+.lista-filtros-cores {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 8px;
+  justify-items: center;
+  width: 100%;
+  padding: 4px 0;
+}
+
+.filtro-swatch-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 4px;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.filtro-swatch-btn.is-disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.filtro-swatch-btn.is-selected .filtro-swatch-circle {
+  outline: 2px solid var(--color-text);
+  outline-offset: 2px;
+}
+
+.filtro-swatch-btn.is-selected .filtro-swatch-label {
+  font-weight: var(--weight-medium);
+  color: var(--color-text);
+}
+
+.filtro-swatch-circle {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: block;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.filtro-swatch-btn.is-available:hover .filtro-swatch-circle {
+  transform: scale(1.2);
+}
+
+.filtro-swatch-label {
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--color-muted);
+  text-align: center;
+  max-width: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Navegação prev/next no viewer de projeto ── */
+
+.project-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 0 28px 0;
+  width: 100%;
+}
+
+.project-nav-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.project-nav-btn:hover {
+  color: var(--color-text);
+}
+
+.project-nav-btn.inativo {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
+.project-nav-count {
+  font-size: 11px;
+  color: var(--color-muted-strong);
+  letter-spacing: 0.04em;
+}
+
+/* ── Tags clicáveis no viewer de projeto ── */
+
+button.project-tag-link {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  color: inherit;
+}
+
+button.project-tag-link:hover {
+  color: var(--color-accent);
+}
+
+.project-tag.project-tag-color::before {
+  content: none;
+}
+
+/* ── Projetos relacionados ── */
+
+.project-related {
+  margin-top: 32px;
+  text-align: left;
+}
+
+.project-related-section {
+  margin-top: 20px;
+}
+
+.project-related-section + .project-related-section {
+  margin-top: 16px;
+}
+
+.project-related-title {
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  font-weight: var(--weight-regular);
+  text-align: center;
+}
+
+.project-related-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.project-related-item {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 2px 0;
+  margin: 0;
+  cursor: pointer;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+.project-related-item:hover {
+  color: var(--color-text);
+}

@@ -5,7 +5,8 @@ window.GIZ_PORTFOLIO_CONFIG = {
     { id: "inicio", label: "Início", content: "inicio.html" },
     { id: "portfolio", label: "Portfólio", content: "portfolio.html" },
     { id: "quem", label: "Quem somos", content: "quem-somos.html" },
-    { id: "contato", label: "Contato", content: "contato.html" }
+    { id: "contato", label: "Contato", content: "contato.html" },
+    { id: "dossie", label: "Dossiê", content: "dossie.html" }
   ],
   filters: [
     {

@@ -295,6 +295,21 @@ function handlePanelClick(event) {
 
   if (action === "open-project-by-slug") {
     openProjectBySlug(actionElement.dataset.projectSlug);
+    return;
+  }
+
+  if (action === "project-previous") {
+    navigateProject(-1);
+    return;
+  }
+
+  if (action === "project-next") {
+    navigateProject(1);
+    return;
+  }
+
+  if (action === "filter-by-tag") {
+    filterByTag(actionElement.dataset.criterionId, actionElement.dataset.value);
   }
 }
 
@@ -1117,16 +1132,22 @@ function renderProjectPanel() {
     ? `<p class="project-subtitle-display">${escapeHtml(project.subtitulo)}</p>`
     : "";
   const context = renderProjectContextLine(project);
+  const navigation = renderProjectNavigation(project);
+  const tags = renderClickableTags(project);
   const pairs = renderProjectPairs(project.pares);
+  const related = renderRelatedProjects(project);
 
   elements.panel.innerHTML = `
     <div class="panel-inner panel-inner-project">
+      ${navigation}
       ${featuredBadge}
       <h1 class="titulo-principal">${escapeHtml(project.titulo)}</h1>
       ${subtitle}
       ${context}
       <p class="${descriptionClass}">${escapeHtml(description)}</p>
+      ${tags}
       ${pairs}
+      ${related}
     </div>
   `;
 }
@@ -1178,13 +1199,20 @@ function renderFilterPanel() {
   setPanelMode("filter");
   const criterion = FILTER_BY_ID.get(state.currentCriterionId) || FILTERS[0];
   const options = criterion ? getCriterionOptions(criterion) : [];
+  const isColorFilter = criterion?.id === "cores";
+  const optionsHtml = isColorFilter
+    ? `<div class="lista-filtros lista-filtros-cores">${options.map((option) => renderColorFilterOption(criterion.id, option)).join("")}</div>`
+    : `<div class="lista-filtros">${options.map((option) => renderFilterOption(criterion.id, option)).join("")}</div>`;
 
   elements.panel.innerHTML = `
     <div class="panel-inner">
       <div class="criterio">
         <div class="criterio-nav">
           <button type="button" class="criterio-arrow" data-action="criterion-previous" aria-label="Critério anterior">◀</button>
-          <div class="criterio-titulo">${escapeHtml(criterion?.label || "Critério")}</div>
+          <div class="criterio-titulo-block">
+            <button type="button" class="criterio-breadcrumb" data-action="show-portfolio-intro">Portfólio</button>
+            <div class="criterio-titulo">${escapeHtml(criterion?.label || "Critério")}</div>
+          </div>
           <button type="button" class="criterio-arrow" data-action="criterion-next" aria-label="Próximo critério">▶</button>
         </div>
       </div>
@@ -1196,9 +1224,7 @@ function renderFilterPanel() {
       </div>
 
       <div class="opcoes">
-        <div class="lista-filtros">
-          ${options.map((option) => renderFilterOption(criterion.id, option)).join("")}
-        </div>
+        ${optionsHtml}
       </div>
 
       <div class="acoes">
@@ -1485,6 +1511,202 @@ function showPairGrid() {
   renderViewer();
   renderGrid();
   renderPanel();
+}
+
+function navigateProject(direction) {
+  if (!state.currentProject) return;
+
+  const visible = getVisibleProjects();
+  const currentIndex = visible.findIndex((p) => p.slug === state.currentProject.slug);
+  if (currentIndex < 0) return;
+
+  const nextIndex = currentIndex + direction;
+  if (nextIndex < 0 || nextIndex >= visible.length) return;
+
+  state.currentProject = visible[nextIndex];
+  state.currentImageIndex = 0;
+  if (state.pairFocusSlugs) {
+    state.pairFocusSlugs = createPairFocusSlugs(state.currentProject);
+  }
+  renderViewer();
+  renderPanel();
+}
+
+function filterByTag(criterionId, value) {
+  if (!criterionId || !value) return;
+  if (!FILTER_BY_ID.has(criterionId)) return;
+
+  state.currentPage = CONFIG.portfolioPageId;
+  state.currentCriterionId = criterionId;
+  state.currentProject = null;
+  state.currentImageIndex = 0;
+  state.pairFocusSlugs = null;
+  state.leftMode = "grid";
+  state.portfolioMode = "criterio";
+  state.filters = createEmptyFilters();
+  state.filters[criterionId] = [value];
+  updateMenu();
+  applyFilters();
+  renderViewer();
+  renderGrid();
+  renderPanel();
+}
+
+function renderProjectNavigation(project) {
+  const visible = getVisibleProjects();
+  const currentIndex = visible.findIndex((p) => p.slug === project.slug);
+  if (currentIndex < 0 || visible.length <= 1) return "";
+
+  const hasPrevious = currentIndex > 0;
+  const hasNext = currentIndex < visible.length - 1;
+
+  return `
+    <nav class="project-navigation" aria-label="Navegação entre projetos">
+      <button
+        type="button"
+        class="project-nav-btn${hasPrevious ? "" : " inativo"}"
+        data-action="project-previous"
+        aria-label="Projeto anterior"
+        ${hasPrevious ? "" : "disabled"}
+      >← anterior</button>
+      <span class="project-nav-count">${currentIndex + 1} / ${visible.length}</span>
+      <button
+        type="button"
+        class="project-nav-btn${hasNext ? "" : " inativo"}"
+        data-action="project-next"
+        aria-label="Próximo projeto"
+        ${hasNext ? "" : "disabled"}
+      >próximo →</button>
+    </nav>
+  `;
+}
+
+function renderClickableTags(project) {
+  if (!Array.isArray(project.tags) || !project.tags.length) return "";
+
+  const colorTagSet = getConfigSet("colorTags");
+  const colorTags = colorTagSet ? project.tags.filter((t) => colorTagSet.has(t)) : [];
+  const themeTags = project.tags.filter((t) => !colorTagSet || !colorTagSet.has(t));
+
+  if (!colorTags.length && !themeTags.length) return "";
+
+  const tagButtons = [
+    ...colorTags.map((tag) => {
+      const swatchColor = COLOR_SWATCHES[tag];
+      const swatch = swatchColor
+        ? `<span class="project-tag-swatch" style="background:${escapeAttribute(swatchColor)}"></span>`
+        : "";
+      return `<button type="button" class="project-tag project-tag-link project-tag-color" data-action="filter-by-tag" data-criterion-id="cores" data-value="${escapeAttribute(tag)}">${swatch}${escapeHtml(formatLabel(tag))}</button>`;
+    }),
+    ...themeTags.map((tag) => `<button type="button" class="project-tag project-tag-link" data-action="filter-by-tag" data-criterion-id="temas" data-value="${escapeAttribute(tag)}">${escapeHtml(formatLabel(tag))}</button>`)
+  ];
+
+  return `
+    <div class="project-taxonomy">
+      <div class="project-tag-list">
+        ${tagButtons.join("")}
+      </div>
+    </div>
+  `;
+}
+
+function renderRelatedProjects(project) {
+  const byPalette = findRelatedByPalette(project, 3);
+  const byCatalog = findRelatedByCatalog(project, 3);
+
+  if (!byPalette.length && !byCatalog.length) return "";
+
+  const sections = [];
+
+  if (byPalette.length) {
+    sections.push(`
+      <div class="project-related-section">
+        <h3 class="project-related-title">Na mesma paleta</h3>
+        <div class="project-related-list">
+          ${byPalette.map((p) => `
+            <button type="button" class="project-related-item" data-action="open-project-by-slug" data-project-slug="${escapeAttribute(p.slug)}">
+              ${escapeHtml(p.titulo)}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `);
+  }
+
+  if (byCatalog.length) {
+    sections.push(`
+      <div class="project-related-section">
+        <h3 class="project-related-title">Do mesmo catálogo</h3>
+        <div class="project-related-list">
+          ${byCatalog.map((p) => `
+            <button type="button" class="project-related-item" data-action="open-project-by-slug" data-project-slug="${escapeAttribute(p.slug)}">
+              ${escapeHtml(p.titulo)}
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `);
+  }
+
+  return `<div class="project-related">${sections.join("")}</div>`;
+}
+
+function findRelatedByPalette(project, limit) {
+  const colorTagSet = getConfigSet("colorTags");
+  if (!colorTagSet) return [];
+
+  const projectColorTags = project.tags.filter((t) => colorTagSet.has(t));
+  if (!projectColorTags.length) return [];
+
+  const pairSlugs = new Set((project.pares || []).map((p) => p.slug));
+
+  return state.projects
+    .filter((p) => p.slug !== project.slug && !pairSlugs.has(p.slug))
+    .filter((p) => p.tags.some((t) => projectColorTags.includes(t)))
+    .slice(0, limit);
+}
+
+function findRelatedByCatalog(project, limit) {
+  if (!project.cliente) return [];
+
+  const pairSlugs = new Set((project.pares || []).map((p) => p.slug));
+
+  return state.projects
+    .filter((p) => p.slug !== project.slug && p.cliente === project.cliente && !pairSlugs.has(p.slug))
+    .slice(0, limit);
+}
+
+function renderColorFilterOption(criterionId, option) {
+  const value = typeof option === "string" ? option : option?.value;
+  const count = typeof option === "string" ? null : option?.count;
+  const selected = state.filters[criterionId]?.includes(value);
+  const isDisabled = !selected && Boolean(option?.disabled);
+  const swatchColor = COLOR_SWATCHES[cleanString(value)] || "#ccc";
+
+  const className = [
+    "filtro-swatch-btn",
+    !isDisabled ? "is-available" : "",
+    selected ? "is-selected" : "",
+    isDisabled ? "is-disabled" : ""
+  ].filter(Boolean).join(" ");
+
+  const actionAttribute = selected ? "" : 'data-action="toggle-filter"';
+  const ariaLabel = `${formatLabel(value)}${typeof count === "number" ? ` (${count})` : ""}`;
+
+  return `
+    <button
+      type="button"
+      class="${className}"
+      ${actionAttribute}
+      data-criterion-id="${escapeAttribute(criterionId)}"
+      data-value="${escapeAttribute(value)}"
+      aria-label="${escapeAttribute(ariaLabel)}"
+      ${isDisabled ? "disabled" : ""}
+    >
+      <span class="filtro-swatch-circle" style="background:${escapeAttribute(swatchColor)}"></span>
+      <span class="filtro-swatch-label">${escapeHtml(formatLabel(value))}</span>
+    </button>
+  `;
 }
 
 function renderGridIcon() {
