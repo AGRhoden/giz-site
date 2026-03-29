@@ -957,6 +957,13 @@ function renderStaticPanel(page) {
   const markup = SITE_PANEL_OVERRIDES[page.id] || PANEL_CACHE.get(page.content);
 
   if (!markup) {
+    if (page.content) {
+      renderPanelState("Carregando…", "", "neutral");
+      loadPanelMarkup(page.content)
+        .then(() => { if (state.currentPage === page.id && !state.currentProject) renderStaticPanel(page); })
+        .catch(() => renderPanelState("Conteúdo indisponível", "Não foi possível carregar o conteúdo desta seção.", "error"));
+      return;
+    }
     renderPanelState("Conteúdo indisponível", "Não foi possível carregar o conteúdo desta seção nem do Supabase nem dos arquivos locais.", "error");
     return;
   }
@@ -1135,7 +1142,6 @@ function renderProjectPanel() {
   const navigation = renderProjectNavigation(project);
   const tags = renderClickableTags(project);
   const pairs = renderProjectPairs(project.pares);
-  const related = renderRelatedProjects(project);
 
   elements.panel.innerHTML = `
     <div class="panel-inner panel-inner-project">
@@ -1147,7 +1153,6 @@ function renderProjectPanel() {
       <p class="${descriptionClass}">${escapeHtml(description)}</p>
       ${tags}
       ${pairs}
-      ${related}
     </div>
   `;
 }
@@ -1185,9 +1190,10 @@ function renderProjectPairs(pairs) {
             data-action="open-project-by-slug"
             data-project-slug="${escapeAttribute(pair.slug)}"
           >
-            <span class="project-pair-body">
-              <strong>${escapeHtml(pair.titulo)}</strong>
-            </span>
+            ${pair.thumb
+              ? `<img class="project-pair-thumb" src="${escapeAttribute(pair.thumb)}" alt="${escapeAttribute(pair.titulo)}" loading="lazy">`
+              : `<span class="project-pair-placeholder">${escapeHtml(pair.titulo)}</span>`
+            }
           </button>
         `).join("")}
       </div>
@@ -1209,10 +1215,7 @@ function renderFilterPanel() {
       <div class="criterio">
         <div class="criterio-nav">
           <button type="button" class="criterio-arrow" data-action="criterion-previous" aria-label="Critério anterior">◀</button>
-          <div class="criterio-titulo-block">
-            <button type="button" class="criterio-breadcrumb" data-action="show-portfolio-intro">Portfólio</button>
-            <div class="criterio-titulo">${escapeHtml(criterion?.label || "Critério")}</div>
-          </div>
+          <div class="criterio-titulo">${escapeHtml(criterion?.label || "Critério")}</div>
           <button type="button" class="criterio-arrow" data-action="criterion-next" aria-label="Próximo critério">▶</button>
         </div>
       </div>
@@ -1610,71 +1613,6 @@ function renderClickableTags(project) {
   `;
 }
 
-function renderRelatedProjects(project) {
-  const byPalette = findRelatedByPalette(project, 3);
-  const byCatalog = findRelatedByCatalog(project, 3);
-
-  if (!byPalette.length && !byCatalog.length) return "";
-
-  const sections = [];
-
-  if (byPalette.length) {
-    sections.push(`
-      <div class="project-related-section">
-        <h3 class="project-related-title">Na mesma paleta</h3>
-        <div class="project-related-list">
-          ${byPalette.map((p) => `
-            <button type="button" class="project-related-item" data-action="open-project-by-slug" data-project-slug="${escapeAttribute(p.slug)}">
-              ${escapeHtml(p.titulo)}
-            </button>
-          `).join("")}
-        </div>
-      </div>
-    `);
-  }
-
-  if (byCatalog.length) {
-    sections.push(`
-      <div class="project-related-section">
-        <h3 class="project-related-title">Do mesmo catálogo</h3>
-        <div class="project-related-list">
-          ${byCatalog.map((p) => `
-            <button type="button" class="project-related-item" data-action="open-project-by-slug" data-project-slug="${escapeAttribute(p.slug)}">
-              ${escapeHtml(p.titulo)}
-            </button>
-          `).join("")}
-        </div>
-      </div>
-    `);
-  }
-
-  return `<div class="project-related">${sections.join("")}</div>`;
-}
-
-function findRelatedByPalette(project, limit) {
-  const colorTagSet = getConfigSet("colorTags");
-  if (!colorTagSet) return [];
-
-  const projectColorTags = project.tags.filter((t) => colorTagSet.has(t));
-  if (!projectColorTags.length) return [];
-
-  const pairSlugs = new Set((project.pares || []).map((p) => p.slug));
-
-  return state.projects
-    .filter((p) => p.slug !== project.slug && !pairSlugs.has(p.slug))
-    .filter((p) => p.tags.some((t) => projectColorTags.includes(t)))
-    .slice(0, limit);
-}
-
-function findRelatedByCatalog(project, limit) {
-  if (!project.cliente) return [];
-
-  const pairSlugs = new Set((project.pares || []).map((p) => p.slug));
-
-  return state.projects
-    .filter((p) => p.slug !== project.slug && p.cliente === project.cliente && !pairSlugs.has(p.slug))
-    .slice(0, limit);
-}
 
 function renderColorFilterOption(criterionId, option) {
   const value = typeof option === "string" ? option : option?.value;
