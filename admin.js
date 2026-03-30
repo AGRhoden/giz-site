@@ -215,6 +215,83 @@
     });
   }
 
+  // Dossiê workspace (aba dedicada)
+  var dossieWsType = document.getElementById("dossie-type-ws");
+  var dossieWsGalleryFields = document.getElementById("dossie-gallery-fields-ws");
+  var dossieWsMediaField = document.getElementById("dossie-media-field-ws");
+  var dossieWsInsert = document.getElementById("dossie-insert-button-ws");
+  var dossieWsContent = document.getElementById("dossie-ws-content");
+  var dossieWsSave = document.getElementById("dossie-ws-save-button");
+  var dossieWsFeedback = document.getElementById("dossie-ws-feedback");
+
+  if (dossieWsType && dossieWsGalleryFields) {
+    dossieWsType.addEventListener("change", function() {
+      var isGallery = dossieWsType.value === "galeria";
+      dossieWsGalleryFields.hidden = !isGallery;
+      if (dossieWsMediaField) dossieWsMediaField.hidden = isGallery;
+    });
+  }
+
+  if (dossieWsInsert) {
+    dossieWsInsert.addEventListener("click", function() {
+      var type = dossieWsType ? String(dossieWsType.value || "nota") : "nota";
+      var title = String((document.getElementById("dossie-title-ws") || {}).value || "").trim();
+      var body = String((document.getElementById("dossie-body-ws") || {}).value || "").trim();
+      var media = String((document.getElementById("dossie-media-ws") || {}).value || "").trim();
+      var galleryRaw = String((document.getElementById("dossie-gallery-urls-ws") || {}).value || "");
+      var galleryUrls = galleryRaw.split("\n").map(function(u) { return u.trim(); }).filter(Boolean);
+
+      if (type === "galeria") {
+        if (!galleryUrls.length) { alert("Adicione ao menos uma URL de imagem."); return; }
+      } else if (!title && !body) {
+        alert("Preencha ao menos um título ou texto."); return;
+      }
+
+      var html = buildDossieEntryHtml(type, title, body, media, galleryUrls);
+      if (dossieWsContent) {
+        var current = String(dossieWsContent.value || "");
+        dossieWsContent.value = current + (current ? "\n\n" : "") + html;
+      }
+      if (document.getElementById("dossie-title-ws")) document.getElementById("dossie-title-ws").value = "";
+      if (document.getElementById("dossie-body-ws")) document.getElementById("dossie-body-ws").value = "";
+      if (document.getElementById("dossie-media-ws")) document.getElementById("dossie-media-ws").value = "";
+      if (document.getElementById("dossie-gallery-urls-ws")) document.getElementById("dossie-gallery-urls-ws").value = "";
+    });
+  }
+
+  if (dossieWsSave) {
+    dossieWsSave.addEventListener("click", function() {
+      if (!state.token) { if (dossieWsFeedback) dossieWsFeedback.textContent = "Não autenticado."; return; }
+      var content = dossieWsContent ? String(dossieWsContent.value || "") : "";
+      if (!state.siteConfig.page_content) state.siteConfig.page_content = {};
+      state.siteConfig.page_content["dossie"] = content;
+      if (dossieWsFeedback) dossieWsFeedback.textContent = "Salvando…";
+      dossieWsSave.disabled = true;
+      fetch(backend.url + "/rest/v1/site_config", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Prefer: "resolution=merge-duplicates,return=representation",
+          apikey: backend.anonKey,
+          Authorization: "Bearer " + state.token
+        },
+        body: JSON.stringify([serializeSiteConfigForSave()])
+      })
+        .then(function(r) {
+          if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "erro"); });
+          return r.json();
+        })
+        .then(function(items) {
+          if (items && items[0]) state.siteConfig = normalizeSiteConfig(items[0]);
+          if (dossieWsFeedback) dossieWsFeedback.textContent = "Dossiê salvo.";
+        })
+        .catch(function(err) {
+          if (dossieWsFeedback) dossieWsFeedback.textContent = "Erro: " + err.message;
+        })
+        .finally(function() { dossieWsSave.disabled = false; });
+    });
+  }
+
   boot();
 
   function boot() {
@@ -326,6 +403,17 @@
       section.classList.toggle("is-active", isActive);
       setHidden(section, !isActive);
     });
+
+    if (state.workspace === "dossie") {
+      renderDossieWorkspace();
+    }
+  }
+
+  function renderDossieWorkspace() {
+    var textarea = document.getElementById("dossie-ws-content");
+    if (textarea && state.siteConfig && state.siteConfig.page_content) {
+      textarea.value = String(state.siteConfig.page_content["dossie"] || "");
+    }
   }
 
   function submitPasswordLogin() {

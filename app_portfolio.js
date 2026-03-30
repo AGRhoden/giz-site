@@ -1207,7 +1207,7 @@ function renderProjectPairs(pairs) {
   return `
     <div class="project-pairs">
       <div class="project-pairs-head">
-        <h3 class="project-pairs-title">Vistos juntos</h3>
+        <h3 class="project-pairs-title">Trabalhos relacionados</h3>
       </div>
       <div class="project-pairs-grid">
         ${pairs.map((pair) => `
@@ -1231,17 +1231,6 @@ function renderProjectPairs(pairs) {
 function renderRelatedProjects(project) {
   const pairSlugs = new Set((project.pares || []).map((p) => p.slug));
 
-  const byPalette = (() => {
-    const colorTagSet = getConfigSet("colorTags");
-    if (!colorTagSet) return [];
-    const projectColorTags = project.tags.filter((t) => colorTagSet.has(t));
-    if (!projectColorTags.length) return [];
-    return state.projects
-      .filter((p) => p.slug !== project.slug && !pairSlugs.has(p.slug))
-      .filter((p) => p.tags.some((t) => projectColorTags.includes(t)))
-      .slice(0, 4);
-  })();
-
   const byCatalog = (() => {
     if (!project.cliente) return [];
     return state.projects
@@ -1249,7 +1238,7 @@ function renderRelatedProjects(project) {
       .slice(0, 4);
   })();
 
-  if (!byPalette.length && !byCatalog.length) return "";
+  if (!byCatalog.length) return "";
 
   const renderThumbGrid = (items) => `
     <div class="project-pairs-grid">
@@ -1265,7 +1254,6 @@ function renderRelatedProjects(project) {
   `;
 
   const sections = [];
-  if (byPalette.length) sections.push(`<div class="project-related-section"><h3 class="project-pairs-title">Na mesma paleta</h3>${renderThumbGrid(byPalette)}</div>`);
   if (byCatalog.length) sections.push(`<div class="project-related-section"><h3 class="project-pairs-title">Do mesmo catálogo</h3>${renderThumbGrid(byCatalog)}</div>`);
 
   return `<div class="project-related">${sections.join("")}</div>`;

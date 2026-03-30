@@ -48,6 +48,7 @@
       <nav class="admin-workspace-nav" aria-label="Áreas do painel">
         <button class="admin-workspace-tab is-active" type="button" data-workspace-tab="projects">Projetos</button>
         <button class="admin-workspace-tab" type="button" data-workspace-tab="content">Conteúdo do site</button>
+        <button class="admin-workspace-tab" type="button" data-workspace-tab="dossie">Dossiê</button>
       </nav>
 
       <section class="admin-workspace is-active" data-workspace-section="projects">
@@ -563,6 +564,65 @@
                 </div>
                 <p class="admin-feedback" id="site-config-feedback" aria-live="polite"></p>
               </form>
+            </details>
+          </section>
+        </section>
+      </section>
+
+      <section class="admin-workspace" data-workspace-section="dossie">
+        <section class="admin-layout admin-layout-single">
+          <section class="admin-content-main">
+            <details class="admin-card admin-collapsible" open>
+              <summary class="admin-collapsible-summary">
+                <div>
+                  <h2>Dossiê</h2>
+                  <p class="admin-copy">Bastidores, processo e histórias por trás dos projetos.</p>
+                </div>
+              </summary>
+
+              <div class="admin-dossie-builder">
+                <h4 class="admin-copy" style="margin:0 0 12px;font-weight:600;">+ Nova entrada</h4>
+                <div class="admin-site-grid">
+                  <label class="admin-field">
+                    <span class="admin-label">Tipo</span>
+                    <select class="admin-input" id="dossie-type-ws">
+                      <option value="nota">Nota</option>
+                      <option value="still">Foto / Still</option>
+                      <option value="galeria">Galeria / Stills</option>
+                      <option value="clip">Vídeo</option>
+                    </select>
+                  </label>
+                  <label class="admin-field">
+                    <span class="admin-label">Título</span>
+                    <input class="admin-input" type="text" id="dossie-title-ws" placeholder="Título da entrada">
+                  </label>
+                </div>
+                <label class="admin-field">
+                  <span class="admin-label">Texto ou legenda</span>
+                  <textarea class="admin-input admin-textarea" id="dossie-body-ws" rows="4" placeholder="Texto, legenda ou descrição..."></textarea>
+                </label>
+                <label class="admin-field" id="dossie-media-field-ws">
+                  <span class="admin-label">URL da imagem ou vídeo (opcional)</span>
+                  <input class="admin-input" type="url" id="dossie-media-ws" placeholder="https://...">
+                </label>
+                <div id="dossie-gallery-fields-ws" hidden>
+                  <label class="admin-field">
+                    <span class="admin-label">URLs das imagens da galeria (uma por linha)</span>
+                    <textarea class="admin-input admin-textarea" id="dossie-gallery-urls-ws" rows="5" placeholder="https://…&#10;https://…&#10;https://…"></textarea>
+                  </label>
+                </div>
+                <button type="button" class="admin-button" id="dossie-insert-button-ws">Inserir no conteúdo</button>
+              </div>
+
+              <label class="admin-field" style="margin-top:24px;">
+                <span class="admin-label">Conteúdo HTML do Dossiê</span>
+                <textarea class="admin-input admin-textarea admin-site-textarea" id="dossie-ws-content" rows="16" placeholder="HTML gerado pelo construtor acima..."></textarea>
+              </label>
+
+              <div class="admin-inline-actions">
+                <button class="admin-button" id="dossie-ws-save-button" type="button">Salvar Dossiê</button>
+              </div>
+              <p class="admin-feedback" id="dossie-ws-feedback" aria-live="polite"></p>
             </details>
           </section>
         </section>
