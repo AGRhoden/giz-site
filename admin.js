@@ -204,6 +204,17 @@
     dossieInsertButton.addEventListener("click", handleDossieInsert);
   }
 
+  var dossieTypeEl = document.getElementById("dossie-type");
+  var dossieGalleryFields = document.getElementById("dossie-gallery-fields");
+  var dossieMediaField = document.getElementById("dossie-media") && document.getElementById("dossie-media").closest(".admin-field");
+  if (dossieTypeEl && dossieGalleryFields) {
+    dossieTypeEl.addEventListener("change", function() {
+      var isGallery = dossieTypeEl.value === "galeria";
+      dossieGalleryFields.hidden = !isGallery;
+      if (dossieMediaField) dossieMediaField.hidden = isGallery;
+    });
+  }
+
   boot();
 
   function boot() {
@@ -2024,18 +2035,27 @@
     var titleEl = document.getElementById("dossie-title");
     var bodyEl = document.getElementById("dossie-body");
     var mediaEl = document.getElementById("dossie-media");
+    var galleryUrlsEl = document.getElementById("dossie-gallery-urls");
 
     var type = typeEl ? String(typeEl.value || "nota") : "nota";
     var title = titleEl ? String(titleEl.value || "").trim() : "";
     var body = bodyEl ? String(bodyEl.value || "").trim() : "";
     var media = mediaEl ? String(mediaEl.value || "").trim() : "";
+    var galleryUrls = galleryUrlsEl
+      ? String(galleryUrlsEl.value || "").split("\n").map(function(u) { return u.trim(); }).filter(Boolean)
+      : [];
 
-    if (!title && !body) {
+    if (type === "galeria") {
+      if (!galleryUrls.length) {
+        alert("Adicione ao menos uma URL de imagem para a galeria.");
+        return;
+      }
+    } else if (!title && !body) {
       alert("Preencha ao menos um título ou texto.");
       return;
     }
 
-    var html = buildDossieEntryHtml(type, title, body, media);
+    var html = buildDossieEntryHtml(type, title, body, media, galleryUrls);
     var current = sitePageContent ? String(sitePageContent.value || "") : "";
     if (sitePageContent) {
       sitePageContent.value = current + (current ? "\n\n" : "") + html;
@@ -2048,9 +2068,24 @@
     if (titleEl) titleEl.value = "";
     if (bodyEl) bodyEl.value = "";
     if (mediaEl) mediaEl.value = "";
+    if (galleryUrlsEl) galleryUrlsEl.value = "";
   }
 
-  function buildDossieEntryHtml(type, title, body, media) {
+  function buildDossieEntryHtml(type, title, body, media, galleryUrls) {
+    if (type === "galeria") {
+      var slides = (galleryUrls || []).map(function(url) {
+        return '  <figure class="dossie-slide"><img src="' + escapeHtml(url) + '" alt="' + escapeHtml(title) + '" loading="lazy"></figure>';
+      });
+      var parts = ['<div class="dossie-entry dossie-entry-galeria">'];
+      if (title) parts.push('  <h2 class="dossie-title">' + escapeHtml(title) + '</h2>');
+      parts.push('  <div class="dossie-gallery">');
+      parts = parts.concat(slides);
+      parts.push('  </div>');
+      if (body) parts.push('  <p class="dossie-body">' + escapeHtml(body) + '</p>');
+      parts.push('</div>');
+      return parts.join("\n");
+    }
+
     var parts = ['<article class="dossie-entry dossie-entry-' + escapeHtml(type) + '">'];
     if (title) {
       parts.push('  <h2 class="dossie-title">' + escapeHtml(title) + '</h2>');

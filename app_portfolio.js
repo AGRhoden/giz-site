@@ -624,22 +624,47 @@ function renderGrid() {
     card.setAttribute("role", "listitem");
     card.setAttribute("aria-label", `Abrir projeto ${project.titulo}`);
 
+    const inner = document.createElement("div");
+    inner.className = "grid-card-inner";
+
+    const front = document.createElement("div");
+    front.className = "grid-card-front";
+
     if (project.thumb) {
       const image = document.createElement("img");
       image.src = project.thumb;
       image.alt = project.titulo;
       image.loading = "lazy";
-      card.appendChild(image);
+      front.appendChild(image);
     } else {
       const placeholder = document.createElement("div");
       placeholder.className = "grid-thumb-placeholder";
-
       const title = document.createElement("span");
       title.className = "grid-thumb-title";
       title.textContent = project.titulo || "Projeto sem imagem";
       placeholder.appendChild(title);
-      card.appendChild(placeholder);
+      front.appendChild(placeholder);
     }
+
+    const back = document.createElement("div");
+    back.className = "grid-card-back";
+
+    const backTitle = document.createElement("strong");
+    backTitle.className = "grid-back-title";
+    backTitle.textContent = project.titulo;
+
+    back.appendChild(backTitle);
+
+    if (project.servico) {
+      const backService = document.createElement("span");
+      backService.className = "grid-back-service";
+      backService.textContent = formatLabel(project.servico);
+      back.appendChild(backService);
+    }
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
 
     elements.grid.appendChild(card);
   });
@@ -1142,6 +1167,7 @@ function renderProjectPanel() {
   const navigation = renderProjectNavigation(project);
   const tags = renderClickableTags(project);
   const pairs = renderProjectPairs(project.pares);
+  const related = renderRelatedProjects(project);
 
   elements.panel.innerHTML = `
     <div class="panel-inner panel-inner-project">
@@ -1153,6 +1179,7 @@ function renderProjectPanel() {
       <p class="${descriptionClass}">${escapeHtml(description)}</p>
       ${tags}
       ${pairs}
+      ${related}
     </div>
   `;
 }
@@ -1199,6 +1226,49 @@ function renderProjectPairs(pairs) {
       </div>
     </div>
   `;
+}
+
+function renderRelatedProjects(project) {
+  const pairSlugs = new Set((project.pares || []).map((p) => p.slug));
+
+  const byPalette = (() => {
+    const colorTagSet = getConfigSet("colorTags");
+    if (!colorTagSet) return [];
+    const projectColorTags = project.tags.filter((t) => colorTagSet.has(t));
+    if (!projectColorTags.length) return [];
+    return state.projects
+      .filter((p) => p.slug !== project.slug && !pairSlugs.has(p.slug))
+      .filter((p) => p.tags.some((t) => projectColorTags.includes(t)))
+      .slice(0, 4);
+  })();
+
+  const byCatalog = (() => {
+    if (!project.cliente) return [];
+    return state.projects
+      .filter((p) => p.slug !== project.slug && p.cliente === project.cliente && !pairSlugs.has(p.slug))
+      .slice(0, 4);
+  })();
+
+  if (!byPalette.length && !byCatalog.length) return "";
+
+  const renderThumbGrid = (items) => `
+    <div class="project-pairs-grid">
+      ${items.map((p) => `
+        <button type="button" class="project-pair-card" data-action="open-project-by-slug" data-project-slug="${escapeAttribute(p.slug)}">
+          ${p.thumb
+            ? `<img class="project-pair-thumb" src="${escapeAttribute(p.thumb)}" alt="${escapeAttribute(p.titulo)}" loading="lazy">`
+            : `<span class="project-pair-placeholder">${escapeHtml(p.titulo)}</span>`
+          }
+        </button>
+      `).join("")}
+    </div>
+  `;
+
+  const sections = [];
+  if (byPalette.length) sections.push(`<div class="project-related-section"><h3 class="project-pairs-title">Na mesma paleta</h3>${renderThumbGrid(byPalette)}</div>`);
+  if (byCatalog.length) sections.push(`<div class="project-related-section"><h3 class="project-pairs-title">Do mesmo catálogo</h3>${renderThumbGrid(byCatalog)}</div>`);
+
+  return `<div class="project-related">${sections.join("")}</div>`;
 }
 
 function renderFilterPanel() {

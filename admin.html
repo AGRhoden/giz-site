@@ -520,6 +520,7 @@
                           <select class="admin-input" id="dossie-type">
                             <option value="nota">Nota</option>
                             <option value="still">Foto / Still</option>
+                            <option value="galeria">Galeria / Stills</option>
                             <option value="clip">Vídeo</option>
                           </select>
                         </label>
@@ -536,6 +537,12 @@
                         <span class="admin-label">URL da imagem ou vídeo (opcional)</span>
                         <input class="admin-input" type="url" id="dossie-media" placeholder="https://...">
                       </label>
+                      <div id="dossie-gallery-fields" hidden>
+                        <label class="admin-field">
+                          <span class="admin-label">URLs das imagens da galeria (uma por linha)</span>
+                          <textarea class="admin-input admin-textarea" id="dossie-gallery-urls" rows="5" placeholder="https://…&#10;https://…&#10;https://…"></textarea>
+                        </label>
+                      </div>
                       <button type="button" class="admin-button" id="dossie-insert-button">Inserir entrada no HTML</button>
                     </div>
                   </div>
