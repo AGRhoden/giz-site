@@ -45,7 +45,7 @@
   var fieldTypeCustom = document.getElementById("field-type-custom");
   var fieldStatus = document.getElementById("field-status");
   var fieldSortYear = document.getElementById("field-sort-year");
-  var fieldDescription = document.getElementById("field-description");
+
   var fieldFeatured = document.getElementById("field-featured");
   var servicoChips = document.getElementById("servico-chips");
   var servicoEditButton = document.getElementById("servico-edit-button");
@@ -103,11 +103,11 @@
   var filterAddCancel = document.getElementById("filter-add-cancel");
 
   var QuillFont = Quill.import("attributors/class/font");
-  QuillFont.whitelist = ["laca", "laca-variable"];
+  QuillFont.whitelist = ["laca", "laca-light", "laca-variable"];
   Quill.register(QuillFont, true);
 
   var QUILL_TOOLBAR = [
-    [{ "font": ["laca", "laca-variable", false] }],
+    [{ "font": ["laca", "laca-light", "laca-variable", false] }],
     ["bold", "italic", "underline", "strike"],
     [{ "header": [1, 2, 3, false] }],
     [{ "size": ["small", false, "large", "huge"] }],
@@ -922,7 +922,7 @@
       filters: defaults.filters.map(function (item) {
         return Object.assign({}, item, filtersById[item.id] || {});
       }),
-      labels: payload && payload.labels && typeof payload.labels === "object" ? payload.labels : defaults.labels,
+      labels: Object.assign({}, defaults.labels, payload && payload.labels && typeof payload.labels === "object" ? payload.labels : {}),
       page_content: Object.assign({}, defaults.page_content, normalizedPageContent)
     };
   }
@@ -1227,7 +1227,6 @@
     syncProjectTypeField(project.project_type || "");
     fieldStatus.value = project.status || "draft";
     fieldSortYear.value = formatSortYearInput(project.sort_year);
-    fieldDescription.value = project.description || "";
     fieldFeatured.checked = Boolean(project.is_featured);
     quillDesc.root.innerHTML = project.description || "";
     renderServicoChips();

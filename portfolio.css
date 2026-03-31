@@ -1296,6 +1296,7 @@ button.project-tag-link:hover {
 .ql-align-right  { text-align: right; }
 .ql-align-justify { text-align: justify; }
 .ql-font-laca { font-family: "laca", sans-serif; }
+.ql-font-laca-light { font-family: "laca", sans-serif; font-weight: 300; }
 .ql-font-laca-variable { font-family: "laca-variable", sans-serif; }
 .ql-size-small { font-size: 0.8em; }
 .ql-size-large { font-size: 1.3em; }
