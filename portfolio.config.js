@@ -56,8 +56,8 @@ window.GIZ_PORTFOLIO_CONFIG = {
       description: "Percorra o acervo por formato: livros, HQs, revistas e outras frentes."
     },
     {
-      id: "servicos",
-      label: "Serviços",
+      id: "execucao",
+      label: "Execução",
       source: "servico",
       mode: "csv",
       selectionOperator: "or",

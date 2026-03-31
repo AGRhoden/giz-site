@@ -1391,3 +1391,11 @@ select {
   border-radius: 6px;
   margin-top: 8px;
 }
+
+/* ── Quill: fontes Typekit no picker ─────────────────────────────────────── */
+.ql-font-laca { font-family: "laca", sans-serif; }
+.ql-font-laca-variable { font-family: "laca-variable", sans-serif; }
+.ql-picker.ql-font .ql-picker-label[data-value="laca"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="laca"]::before { content: "Laca"; font-family: "laca", sans-serif; }
+.ql-picker.ql-font .ql-picker-label[data-value="laca-variable"]::before,
+.ql-picker.ql-font .ql-picker-item[data-value="laca-variable"]::before { content: "Laca Variable"; font-family: "laca-variable", sans-serif; }

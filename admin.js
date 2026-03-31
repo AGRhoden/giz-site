@@ -102,7 +102,12 @@
   var filterAddConfirm = document.getElementById("filter-add-confirm");
   var filterAddCancel = document.getElementById("filter-add-cancel");
 
+  var QuillFont = Quill.import("attributors/class/font");
+  QuillFont.whitelist = ["laca", "laca-variable"];
+  Quill.register(QuillFont, true);
+
   var QUILL_TOOLBAR = [
+    [{ "font": ["laca", "laca-variable", false] }],
     ["bold", "italic", "underline", "strike"],
     [{ "header": [1, 2, 3, false] }],
     [{ "size": ["small", false, "large", "huge"] }],

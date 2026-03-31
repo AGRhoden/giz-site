@@ -1290,3 +1290,15 @@ button.project-tag-link:hover {
   content: none;
 }
 
+
+/* ── Quill HTML: compatibilidade de renderização no front ───────────────── */
+.ql-align-center { text-align: center; }
+.ql-align-right  { text-align: right; }
+.ql-align-justify { text-align: justify; }
+.ql-font-laca { font-family: "laca", sans-serif; }
+.ql-font-laca-variable { font-family: "laca-variable", sans-serif; }
+.ql-size-small { font-size: 0.8em; }
+.ql-size-large { font-size: 1.3em; }
+.ql-size-huge  { font-size: 1.8em; }
+.ql-indent-1 { padding-left: 2em; }
+.ql-indent-2 { padding-left: 4em; }
