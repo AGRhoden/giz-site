@@ -96,6 +96,12 @@
   var sitePageContent = document.getElementById("site-page-content");
   var siteFilterFields = document.getElementById("site-filter-fields");
   var siteConfigSaveButton = document.getElementById("site-config-save-button");
+  var filterAddButton = document.getElementById("filter-add-button");
+  var filterAddForm = document.getElementById("filter-add-form");
+  var filterNewLabel = document.getElementById("filter-new-label");
+  var filterAddConfirm = document.getElementById("filter-add-confirm");
+  var filterAddCancel = document.getElementById("filter-add-cancel");
+  var htmlToolbar = document.getElementById("html-toolbar");
   var siteConfigFeedback = document.getElementById("site-config-feedback");
   var dossieEntryBuilder = document.getElementById("dossie-entry-builder");
 
@@ -226,7 +232,20 @@
   });
   siteConfigForm.addEventListener("click", handleSiteConfigClick);
   siteConfigForm.addEventListener("input", handleSiteConfigInput);
+  sitePageContent.addEventListener("input", handlePageContentInput);
   siteConfigSaveButton.addEventListener("click", handleSiteConfigSave);
+  htmlToolbar.addEventListener("click", handleToolbarClick);
+  filterAddButton.addEventListener("click", function() {
+    filterAddForm.hidden = false;
+    filterNewLabel.focus();
+  });
+  filterAddCancel.addEventListener("click", function() {
+    filterAddForm.hidden = true;
+    filterNewLabel.value = "";
+  });
+  filterAddConfirm.addEventListener("click", handleFilterAdd);
+  filterNewLabel.addEventListener("keydown", function(e) { if (e.key === "Enter") handleFilterAdd(); });
+  siteFilterFields.addEventListener("click", handleFilterDelete);
 
   var dossieInsertButton = document.getElementById("dossie-insert-button");
   if (dossieInsertButton) {
@@ -760,7 +779,8 @@
         { id: "inicio", label: "Início" },
         { id: "portfolio", label: "Portfólio" },
         { id: "quem", label: "Quem somos" },
-        { id: "contato", label: "Contato" }
+        { id: "contato", label: "Contato" },
+        { id: "dossie", label: "Dossiê" }
       ],
       filters: [
         {
@@ -2132,7 +2152,7 @@
     }).join("");
 
     sitePageMeta.textContent = getSitePageMeta(activePage);
-    sitePageContent.value = pageContent;
+    sitePageContent.innerHTML = pageContent;
 
     if (dossieEntryBuilder) {
       dossieEntryBuilder.hidden = activePage.id !== "dossie";
@@ -2142,25 +2162,12 @@
       return '' +
         '<article class="admin-site-filter-card">' +
           '<div class="admin-site-filter-head">' +
-            '<div>' +
-              '<h4>' + escapeHtml(item.label || item.id) + '</h4>' +
-              '<p>' + escapeHtml(item.description || "Sem descrição definida.") + '</p>' +
-            '</div>' +
-            '<span class="admin-site-filter-key">' + escapeHtml(item.id) + '</span>' +
-          '</div>' +
-          '<div class="admin-site-grid">' +
-            '<label class="admin-field">' +
-              '<span class="admin-label">Nome</span>' +
-              '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="label" value="' + escapeHtml(item.label || "") + '">' +
-            '</label>' +
-            '<label class="admin-field">' +
-              '<span class="admin-label">Resumo</span>' +
-              '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="summary" value="' + escapeHtml(item.summary || "") + '">' +
-            '</label>' +
+            '<h4>' + escapeHtml(item.label || item.id) + '</h4>' +
+            '<button type="button" class="admin-danger-button admin-filter-delete-btn" data-delete-filter-id="' + escapeHtml(item.id) + '" title="Excluir trilha">Excluir</button>' +
           '</div>' +
           '<label class="admin-field">' +
-            '<span class="admin-label">Descrição</span>' +
-            '<textarea class="admin-input admin-textarea" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="description">' + escapeHtml(item.description || "") + '</textarea>' +
+            '<span class="admin-label">Nome</span>' +
+            '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="label" value="' + escapeHtml(item.label || "") + '">' +
           '</label>' +
         '</article>';
     }).join("");
@@ -2195,12 +2202,11 @@
       return;
     }
 
-    if (target === sitePageContent) {
-      if (!state.siteConfig.page_content) {
-        state.siteConfig.page_content = {};
-      }
-      state.siteConfig.page_content[state.activeSitePageId] = String(sitePageContent.value || "");
-    }
+  }
+
+  function handlePageContentInput() {
+    if (!state.siteConfig.page_content) state.siteConfig.page_content = {};
+    state.siteConfig.page_content[state.activeSitePageId] = sitePageContent.innerHTML || "";
   }
 
   function updateSiteNavigationLabel(pageId, value) {
@@ -2260,6 +2266,47 @@
       if (filters[i].id === filterId) return filters[i];
     }
     return null;
+  }
+
+  function handleToolbarClick(event) {
+    var btn = event.target.closest("[data-cmd]");
+    if (!btn) return;
+    var cmd = btn.getAttribute("data-cmd");
+    sitePageContent.focus();
+    if (cmd === "createLink") {
+      var url = window.prompt("URL do link:");
+      if (url) document.execCommand("createLink", false, url);
+    } else if (cmd.indexOf("formatBlock:") === 0) {
+      document.execCommand("formatBlock", false, cmd.split(":")[1]);
+    } else {
+      document.execCommand(cmd, false, null);
+    }
+    handlePageContentInput();
+  }
+
+  function handleFilterAdd() {
+    var label = filterNewLabel.value.trim();
+    if (!label) return;
+    var id = label.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
+    var filters = state.siteConfig.filters || [];
+    if (filters.some(function(f) { return f.id === id; })) {
+      window.alert("Já existe uma trilha com esse nome.");
+      return;
+    }
+    filters.push({ id: id, label: label, summary: "", description: "" });
+    state.siteConfig.filters = filters;
+    filterAddForm.hidden = true;
+    filterNewLabel.value = "";
+    renderSiteConfigEditor();
+  }
+
+  function handleFilterDelete(event) {
+    var btn = event.target.closest("[data-delete-filter-id]");
+    if (!btn) return;
+    var id = btn.getAttribute("data-delete-filter-id");
+    if (!window.confirm('Excluir a trilha "' + id + '"? Esta ação não pode ser desfeita.')) return;
+    state.siteConfig.filters = (state.siteConfig.filters || []).filter(function(f) { return f.id !== id; });
+    renderSiteConfigEditor();
   }
 
   function handleSiteConfigSave(event) {

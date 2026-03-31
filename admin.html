@@ -482,52 +482,41 @@
 
       <section class="admin-workspace" data-workspace-section="content" hidden>
         <section class="admin-content-layout">
-          <aside class="admin-content-sidebar">
-            <details class="admin-card admin-collapsible admin-content-intro" open>
-              <summary class="admin-collapsible-summary">
-                <div>
-                  <h2>Conteúdo do site</h2>
-                  <p class="admin-copy">Edite a estrutura pública do site fora do fluxo de cadastro de projetos.</p>
-                </div>
-              </summary>
-              <p class="admin-copy">Nesta etapa, o painel edita os itens já existentes. Inclusão de novas páginas e novas trilhas pode entrar depois, quando fecharmos a arquitetura definitiva do front.</p>
-            </details>
-
-          </aside>
+          <aside class="admin-content-sidebar"></aside>
 
           <section class="admin-content-main">
             <details class="admin-card admin-collapsible admin-site-content-panel" open>
               <summary class="admin-collapsible-summary">
-                <div>
-                  <h2>Estrutura pública</h2>
-                  <p class="admin-copy">Menus, textos fixos e trilhas do portfólio em um espaço largo e previsível.</p>
-                </div>
+                <div><h2>Estrutura pública</h2></div>
               </summary>
 
               <form class="admin-site-config" id="site-config-form">
                 <details class="admin-section-card admin-collapsible" open>
                   <summary class="admin-collapsible-summary">
-                    <div>
-                      <h3>Menu principal</h3>
-                      <p class="admin-copy">Ajuste os rótulos das páginas visíveis no site.</p>
-                    </div>
+                    <div><h3>Menu principal</h3></div>
                   </summary>
                   <div class="admin-site-grid" id="site-navigation-fields"></div>
                 </details>
 
                 <details class="admin-section-card admin-collapsible" open>
                   <summary class="admin-collapsible-summary">
-                    <div>
-                      <h3>Textos das páginas</h3>
-                      <p class="admin-copy">Edite o HTML exibido no painel lateral do site.</p>
-                    </div>
+                    <div><h3>Textos das páginas</h3></div>
                   </summary>
                   <div class="admin-site-page-tabs" id="site-page-tabs"></div>
                   <div class="admin-site-page-meta" id="site-page-meta"></div>
-                  <label class="admin-field">
-                    <span class="admin-label">Conteúdo HTML</span>
-                    <textarea class="admin-input admin-textarea admin-site-textarea" id="site-page-content"></textarea>
-                  </label>
+                  <div class="admin-field">
+                    <div class="admin-html-toolbar" id="html-toolbar">
+                      <button type="button" class="admin-toolbar-btn" data-cmd="bold" title="Negrito"><b>B</b></button>
+                      <button type="button" class="admin-toolbar-btn" data-cmd="italic" title="Itálico"><i>I</i></button>
+                      <button type="button" class="admin-toolbar-btn" data-cmd="formatBlock:h2" title="Título">H2</button>
+                      <button type="button" class="admin-toolbar-btn" data-cmd="formatBlock:h3" title="Subtítulo">H3</button>
+                      <button type="button" class="admin-toolbar-btn" data-cmd="formatBlock:p" title="Parágrafo">¶</button>
+                      <button type="button" class="admin-toolbar-btn" data-cmd="insertUnorderedList" title="Lista">•</button>
+                      <button type="button" class="admin-toolbar-btn" data-cmd="createLink" title="Link">🔗</button>
+                      <button type="button" class="admin-toolbar-btn" data-cmd="removeFormat" title="Limpar formatação">✕</button>
+                    </div>
+                    <div class="admin-html-editor admin-site-textarea" id="site-page-content" contenteditable="true" spellcheck="false"></div>
+                  </div>
                   <div id="dossie-entry-builder" hidden>
                     <div class="admin-dossie-builder">
                       <h4 class="admin-copy" style="margin:16px 0 12px;font-weight:600;">+ Nova entrada no Dossiê</h4>
@@ -567,12 +556,19 @@
 
                 <details class="admin-section-card admin-collapsible" open>
                   <summary class="admin-collapsible-summary">
-                    <div>
-                      <h3>Trilhas do portfólio</h3>
-                      <p class="admin-copy">Edite nome, resumo e descrição das entradas de navegação pública.</p>
-                    </div>
+                    <div><h3>Trilhas do portfólio</h3></div>
                   </summary>
                   <div class="admin-site-filter-list" id="site-filter-fields"></div>
+                  <div class="admin-inline-form admin-filter-add-form" id="filter-add-form" hidden>
+                    <input class="admin-input" type="text" id="filter-new-label" placeholder="Nome da nova trilha...">
+                    <div class="admin-inline-actions">
+                      <button type="button" class="admin-secondary-button" id="filter-add-confirm">Adicionar trilha</button>
+                      <button type="button" class="admin-secondary-button" id="filter-add-cancel">Cancelar</button>
+                    </div>
+                  </div>
+                  <div class="admin-inline-actions" style="margin-top:12px;">
+                    <button type="button" class="admin-secondary-button" id="filter-add-button">+ Nova trilha</button>
+                  </div>
                 </details>
 
                 <div class="admin-inline-actions">
