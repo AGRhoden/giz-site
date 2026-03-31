@@ -48,7 +48,6 @@
   var fieldDescription = document.getElementById("field-description");
   var fieldFeatured = document.getElementById("field-featured");
   var servicoChips = document.getElementById("servico-chips");
-  var servicoNewButton = document.getElementById("servico-new-button");
   var servicoEditButton = document.getElementById("servico-edit-button");
   var servicoAddForm = document.getElementById("servico-add-form");
   var servicoNewInput = document.getElementById("servico-new-input");
@@ -206,13 +205,12 @@
   fieldClientCustom.addEventListener("input", syncCurrentPublicationChecklist);
   fieldSortYear.addEventListener("input", handleSortYearInput);
   servicoChips.addEventListener("click", handleServicoChipClick);
-  servicoNewButton.addEventListener("click", function() {
-    servicoAddForm.hidden = false;
-    servicoNewInput.focus();
-  });
   servicoAddCancel.addEventListener("click", function() {
+    servicoEditMode = false;
     servicoAddForm.hidden = true;
     servicoNewInput.value = "";
+    servicoEditButton.textContent = "Gerenciar lista";
+    renderServicoChips();
   });
   servicoAddConfirm.addEventListener("click", handleServicoAdd);
   servicoNewInput.addEventListener("keydown", function(e) {
@@ -220,7 +218,10 @@
   });
   servicoEditButton.addEventListener("click", function() {
     servicoEditMode = !servicoEditMode;
+    servicoAddForm.hidden = !servicoEditMode;
     servicoEditButton.textContent = servicoEditMode ? "Concluir" : "Gerenciar lista";
+    if (servicoEditMode) servicoNewInput.focus();
+    if (!servicoEditMode) servicoNewInput.value = "";
     renderServicoChips();
   });
   siteConfigForm.addEventListener("click", handleSiteConfigClick);
@@ -646,7 +647,7 @@
           loadSiteConfig().catch(function () {
             state.siteConfig = createDefaultSiteConfig();
           }),
-          loadDossiesForSelect().catch(function () { state.dossies = []; })
+          loadDossies().catch(function () { state.dossies = []; })
         ]);
       })
       .then(function () {
@@ -1585,16 +1586,15 @@
   }
 
   // ── Dossiê vinculado ──────────────────────────────────────────────────────
-  function loadDossiesForSelect() {
-    fetch(backend.url + "/rest/v1/dossies?select=id,titulo&order=titulo.asc", {
+  function loadDossies() {
+    return fetch(backend.url + "/rest/v1/dossies?select=id,titulo&order=titulo.asc", {
       headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
     })
     .then(function(r) { return r.json(); })
     .then(function(rows) {
       state.dossies = rows || [];
       rebuildDossieSelectOptions();
-    })
-    .catch(function() {});
+    });
   }
 
   function rebuildDossieSelectOptions() {
