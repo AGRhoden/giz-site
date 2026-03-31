@@ -297,18 +297,17 @@
 
               <div class="admin-field">
                 <span class="admin-label">Serviço executado</span>
-                <div class="admin-chip-group" id="servico-chips">
-                  <button type="button" class="admin-chip" data-servico="Projeto Gráfico">Projeto Gráfico</button>
-                  <button type="button" class="admin-chip" data-servico="Diagramação">Diagramação</button>
-                  <button type="button" class="admin-chip" data-servico="Capa">Capa</button>
-                  <button type="button" class="admin-chip" data-servico="Adaptação de capa">Adaptação de capa</button>
-                  <button type="button" class="admin-chip" data-servico="Tratamento de imagens">Tratamento de imagens</button>
-                  <button type="button" class="admin-chip" data-servico="Lettering">Lettering</button>
-                  <button type="button" class="admin-chip" data-servico="Ilustração">Ilustração</button>
+                <div class="admin-chip-group" id="servico-chips"></div>
+                <div class="admin-inline-form admin-servico-add-form" id="servico-add-form" hidden>
+                  <input class="admin-input" type="text" id="servico-new-input" placeholder="Nome do novo serviço...">
+                  <div class="admin-inline-actions">
+                    <button type="button" class="admin-secondary-button" id="servico-add-confirm">Adicionar</button>
+                    <button type="button" class="admin-secondary-button" id="servico-add-cancel">Cancelar</button>
+                  </div>
                 </div>
                 <div class="admin-inline-actions" style="margin-top:8px;">
-                  <button type="button" class="admin-secondary-button" id="servico-include-button">Incluir serviços</button>
-                  <button type="button" class="admin-secondary-button" id="servico-exclude-button">Excluir serviços</button>
+                  <button type="button" class="admin-secondary-button" id="servico-new-button">+ Novo serviço</button>
+                  <button type="button" class="admin-secondary-button" id="servico-edit-button">Gerenciar lista</button>
                 </div>
                 <p class="admin-feedback" id="servico-feedback" aria-live="polite"></p>
               </div>
