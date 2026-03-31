@@ -222,10 +222,14 @@
                   <input id="field-featured" type="checkbox">
                   <span>
                     <strong>Destaque no site</strong>
-                    <small>Leva o projeto para a trilha de destaques no portfólio público.</small>
                   </span>
                 </label>
               </div>
+            </div>
+
+            <div class="admin-form-actions admin-form-actions-top">
+              <button class="admin-button" id="save-project-button" type="button">Salvar alterações</button>
+              <button class="admin-danger-button" id="delete-project-button" type="button">Excluir projeto</button>
             </div>
 
             <nav class="admin-editor-nav" aria-label="Seções do projeto">
@@ -291,6 +295,31 @@
                 <textarea class="admin-input admin-textarea" id="field-description"></textarea>
               </label>
 
+              <div class="admin-field">
+                <span class="admin-label">Serviço executado</span>
+                <div class="admin-chip-group" id="servico-chips">
+                  <button type="button" class="admin-chip" data-servico="Projeto Gráfico">Projeto Gráfico</button>
+                  <button type="button" class="admin-chip" data-servico="Diagramação">Diagramação</button>
+                  <button type="button" class="admin-chip" data-servico="Capa">Capa</button>
+                  <button type="button" class="admin-chip" data-servico="Adaptação de capa">Adaptação de capa</button>
+                  <button type="button" class="admin-chip" data-servico="Tratamento de imagens">Tratamento de imagens</button>
+                  <button type="button" class="admin-chip" data-servico="Lettering">Lettering</button>
+                  <button type="button" class="admin-chip" data-servico="Ilustração">Ilustração</button>
+                </div>
+                <div class="admin-inline-actions" style="margin-top:8px;">
+                  <button type="button" class="admin-secondary-button" id="servico-include-button">Incluir serviços</button>
+                  <button type="button" class="admin-secondary-button" id="servico-exclude-button">Excluir serviços</button>
+                </div>
+                <p class="admin-feedback" id="servico-feedback" aria-live="polite"></p>
+              </div>
+
+              <div class="admin-field">
+                <span class="admin-label">Dossiê vinculado</span>
+                <select class="admin-input" id="field-dossie-select">
+                  <option value="">Nenhum</option>
+                </select>
+              </div>
+
               <div class="admin-details-grid admin-subsection">
                 <details class="admin-checklist-panel admin-section-card admin-collapsible" open>
                   <summary class="admin-collapsible-summary">
@@ -316,18 +345,12 @@
                   <div class="admin-flag-grid">
                     <label class="admin-flag-toggle admin-flag-toggle-review">
                       <input id="flag-review-text" type="checkbox">
-                      <span>
-                        <strong>Revisar texto</strong>
-                        <small>Usa marca quente enquanto o texto ainda não está aprovado.</small>
-                      </span>
+                      <span><strong>Revisar texto</strong></span>
                     </label>
 
                     <label class="admin-flag-toggle admin-flag-toggle-feature">
                       <input id="flag-future-feature" type="checkbox">
-                      <span>
-                        <strong>Destaque futuro</strong>
-                        <small>Reserva o projeto para alguma ação ou curadoria futura.</small>
-                      </span>
+                      <span><strong>Destaque futuro</strong></span>
                     </label>
                   </div>
                 </details>
@@ -352,7 +375,7 @@
               <div class="admin-subsection-heading">
                 <div>
                   <h3>Tags do projeto</h3>
-                  <p class="admin-copy">Clique para marcar ou remover na ficha atual. A manutenção global fica em Ferramentas do acervo.</p>
+                  <p class="admin-copy">Clique para marcar ou remover na ficha atual.</p>
                 </div>
               </div>
 
@@ -362,6 +385,48 @@
               </label>
 
               <div class="admin-tag-picker" id="tag-results"></div>
+
+              <div class="admin-subsection-heading" style="margin-top:24px;">
+                <div>
+                  <h3>Taxonomia</h3>
+                  <p class="admin-copy">Crie, renomeie ou exclua tags globalmente.</p>
+                </div>
+              </div>
+
+              <div class="admin-inline-form admin-tag-create-inline admin-section-card" id="new-tag-form">
+                <label class="admin-field">
+                  <span class="admin-label">Criar nova tag</span>
+                  <input class="admin-input" id="new-tag-label" type="text" placeholder="Fantasia sombria">
+                </label>
+                <div class="admin-inline-actions">
+                  <button class="admin-secondary-button" id="new-tag-button" type="button">Criar tag</button>
+                </div>
+                <p class="admin-feedback" id="new-tag-feedback" aria-live="polite"></p>
+              </div>
+
+              <div class="admin-tag-manager admin-section-card" id="tag-manager">
+                <div class="admin-subsection-heading">
+                  <div>
+                    <h3>Gerenciar tags</h3>
+                    <p class="admin-copy">Edite a tag globalmente, antes ou depois de usá-la nos projetos.</p>
+                  </div>
+                </div>
+                <label class="admin-field">
+                  <span class="admin-label">Tag selecionada</span>
+                  <select class="admin-input" id="tag-manager-select">
+                    <option value="">Selecione uma tag</option>
+                  </select>
+                </label>
+                <label class="admin-field">
+                  <span class="admin-label">Nome da tag</span>
+                  <input class="admin-input" id="tag-manager-label" type="text" placeholder="Dourado">
+                </label>
+                <div class="admin-inline-actions">
+                  <button class="admin-secondary-button" id="tag-manager-save-button" type="button">Salvar tag</button>
+                  <button class="admin-danger-button" id="tag-manager-delete-button" type="button">Excluir tag</button>
+                </div>
+                <p class="admin-feedback" id="tag-manager-feedback" aria-live="polite"></p>
+              </div>
             </section>
 
             <section class="admin-subsection admin-editor-section" data-editor-section="pairs">
@@ -412,10 +477,6 @@
               </div>
             </section>
 
-            <div class="admin-form-actions">
-              <button class="admin-button" id="save-project-button" type="button">Salvar alterações</button>
-              <button class="admin-danger-button" id="delete-project-button" type="button">Excluir projeto</button>
-            </div>
           </form>
         </section>
         </section>
@@ -434,49 +495,6 @@
               <p class="admin-copy">Nesta etapa, o painel edita os itens já existentes. Inclusão de novas páginas e novas trilhas pode entrar depois, quando fecharmos a arquitetura definitiva do front.</p>
             </details>
 
-            <details class="admin-card admin-collapsible" open>
-              <summary class="admin-collapsible-summary">
-                <div>
-                  <h2>Taxonomia</h2>
-                  <p class="admin-copy">Crie, renomeie ou exclua tags em um espaço próprio.</p>
-                </div>
-              </summary>
-
-              <div class="admin-inline-form admin-tag-create-inline admin-section-card" id="new-tag-form">
-                <label class="admin-field">
-                  <span class="admin-label">Criar nova tag</span>
-                  <input class="admin-input" id="new-tag-label" type="text" placeholder="Fantasia sombria">
-                </label>
-                <div class="admin-inline-actions">
-                  <button class="admin-secondary-button" id="new-tag-button" type="button">Criar tag</button>
-                </div>
-                <p class="admin-feedback" id="new-tag-feedback" aria-live="polite"></p>
-              </div>
-
-              <div class="admin-tag-manager admin-section-card" id="tag-manager">
-                <div class="admin-subsection-heading">
-                  <div>
-                    <h3>Gerenciar tags</h3>
-                    <p class="admin-copy">Edite a tag globalmente, antes ou depois de usá-la nos projetos.</p>
-                  </div>
-                </div>
-                <label class="admin-field">
-                  <span class="admin-label">Tag selecionada</span>
-                  <select class="admin-input" id="tag-manager-select">
-                    <option value="">Selecione uma tag</option>
-                  </select>
-                </label>
-                <label class="admin-field">
-                  <span class="admin-label">Nome da tag</span>
-                  <input class="admin-input" id="tag-manager-label" type="text" placeholder="Dourado">
-                </label>
-                <div class="admin-inline-actions">
-                  <button class="admin-secondary-button" id="tag-manager-save-button" type="button">Salvar tag</button>
-                  <button class="admin-danger-button" id="tag-manager-delete-button" type="button">Excluir tag</button>
-                </div>
-                  <p class="admin-feedback" id="tag-manager-feedback" aria-live="polite"></p>
-                </div>
-            </details>
           </aside>
 
           <section class="admin-content-main">

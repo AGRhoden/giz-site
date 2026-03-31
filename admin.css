@@ -1287,3 +1287,26 @@ select {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
+
+/* ── Chips de serviço e botões de ação no topo ────────────────────────────── */
+.admin-chip-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.admin-form-actions-top {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--admin-border, #e5e5e5);
+}
+
+.admin-check-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}

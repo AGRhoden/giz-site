@@ -47,6 +47,11 @@
   var fieldSortYear = document.getElementById("field-sort-year");
   var fieldDescription = document.getElementById("field-description");
   var fieldFeatured = document.getElementById("field-featured");
+  var servicoChips = document.getElementById("servico-chips");
+  var servicoIncludeButton = document.getElementById("servico-include-button");
+  var servicoExcludeButton = document.getElementById("servico-exclude-button");
+  var servicoFeedback = document.getElementById("servico-feedback");
+  var fieldDossieSelect = document.getElementById("field-dossie-select");
   var publicationPill = document.getElementById("publication-pill");
   var publicationState = document.getElementById("publication-state");
   var publicationDate = document.getElementById("publication-date");
@@ -195,6 +200,9 @@
   fieldClientSelect.addEventListener("change", handlePublisherSelectionChange);
   fieldClientCustom.addEventListener("input", syncCurrentPublicationChecklist);
   fieldSortYear.addEventListener("input", handleSortYearInput);
+  servicoChips.addEventListener("click", handleServicoChipClick);
+  servicoIncludeButton.addEventListener("click", handleServicoInclude);
+  servicoExcludeButton.addEventListener("click", handleServicoExclude);
   siteConfigForm.addEventListener("click", handleSiteConfigClick);
   siteConfigForm.addEventListener("input", handleSiteConfigInput);
   siteConfigSaveButton.addEventListener("click", handleSiteConfigSave);
@@ -617,7 +625,8 @@
           }),
           loadSiteConfig().catch(function () {
             state.siteConfig = createDefaultSiteConfig();
-          })
+          }),
+          loadDossiesForSelect().catch(function () { state.dossies = []; })
         ]);
       })
       .then(function () {
@@ -1159,6 +1168,8 @@
     fieldSortYear.value = formatSortYearInput(project.sort_year);
     fieldDescription.value = project.description || "";
     fieldFeatured.checked = Boolean(project.is_featured);
+    syncServicoChips(project.servico || "");
+    syncDossieSelect(project.dossie_id || "");
     state.pendingPairIds = [];
     updatePublicationPanel(project);
     syncEditorialFlagsPanel(project.id);
@@ -1433,6 +1444,99 @@
     };
   }
 
+  // ── Serviço executado ─────────────────────────────────────────────────────
+  function getServicoValue() {
+    var active = Array.prototype.slice.call(servicoChips.querySelectorAll(".admin-chip.is-active"));
+    return active.map(function(c) { return c.dataset.servico; }).join(",") || null;
+  }
+
+  function syncServicoChips(servico) {
+    var ativos = servico ? servico.split(",").map(function(s) { return s.trim(); }) : [];
+    Array.prototype.forEach.call(servicoChips.querySelectorAll(".admin-chip"), function(chip) {
+      chip.classList.toggle("is-active", ativos.indexOf(chip.dataset.servico) !== -1);
+    });
+  }
+
+  function handleServicoChipClick(event) {
+    var chip = event.target.closest(".admin-chip");
+    if (!chip) return;
+    chip.classList.toggle("is-active");
+  }
+
+  function handleServicoInclude() {
+    var project = getSelectedProject();
+    if (!project) return;
+    var existing = project.servico ? project.servico.split(",").map(function(s) { return s.trim(); }) : [];
+    var selecionados = Array.prototype.slice.call(servicoChips.querySelectorAll(".admin-chip.is-active"))
+      .map(function(c) { return c.dataset.servico; });
+    selecionados.forEach(function(s) {
+      if (existing.indexOf(s) === -1) existing.push(s);
+    });
+    var novoValor = existing.join(",");
+    patchServico(project, novoValor);
+  }
+
+  function handleServicoExclude() {
+    var project = getSelectedProject();
+    if (!project) return;
+    var existing = project.servico ? project.servico.split(",").map(function(s) { return s.trim(); }) : [];
+    var selecionados = Array.prototype.slice.call(servicoChips.querySelectorAll(".admin-chip.is-active"))
+      .map(function(c) { return c.dataset.servico; });
+    var novoValor = existing.filter(function(s) { return selecionados.indexOf(s) === -1; }).join(",");
+    patchServico(project, novoValor);
+  }
+
+  function patchServico(project, novoValor) {
+    servicoFeedback.textContent = "Salvando...";
+    fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(project.id), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify({ servico: novoValor || null })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(items) {
+      if (items && items.length) replaceProject(items[0]);
+      syncServicoChips(novoValor);
+      servicoFeedback.textContent = "Salvo.";
+      setTimeout(function() { servicoFeedback.textContent = ""; }, 2000);
+    })
+    .catch(function() { servicoFeedback.textContent = "Erro ao salvar."; });
+  }
+
+  // ── Dossiê vinculado ──────────────────────────────────────────────────────
+  function loadDossiesForSelect() {
+    fetch(backend.url + "/rest/v1/dossies?select=id,titulo&order=titulo.asc", {
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(rows) {
+      state.dossies = rows || [];
+      rebuildDossieSelectOptions();
+    })
+    .catch(function() {});
+  }
+
+  function rebuildDossieSelectOptions() {
+    var current = fieldDossieSelect.value;
+    fieldDossieSelect.innerHTML = '<option value="">Nenhum</option>';
+    (state.dossies || []).forEach(function(d) {
+      var opt = document.createElement("option");
+      opt.value = d.id;
+      opt.textContent = d.titulo;
+      fieldDossieSelect.appendChild(opt);
+    });
+    fieldDossieSelect.value = current;
+  }
+
+  function syncDossieSelect(dossieId) {
+    fieldDossieSelect.value = dossieId || "";
+  }
+
   function handleProjectDeletion() {
     var project = getSelectedProject();
     if (!project) return;
@@ -1525,6 +1629,8 @@
         sort_year: nextSortYear,
         description: String(fieldDescription.value || "").trim() || null,
         is_featured: Boolean(fieldFeatured.checked),
+        servico: getServicoValue(),
+        dossie_id: fieldDossieSelect.value || null,
         published_at: resolvePublishedAt(project, nextStatus)
       })
     })
@@ -3488,10 +3594,7 @@
     checklistList.innerHTML = checks.map(function (item) {
       return '' +
         '<div class="admin-check-item ' + (item.ok ? 'is-ok' : 'is-missing') + '">' +
-          '<div>' +
-            '<strong>' + escapeHtml(item.label) + '</strong>' +
-            '<small>' + escapeHtml(item.help) + '</small>' +
-          '</div>' +
+          '<strong>' + escapeHtml(item.label) + '</strong>' +
           '<span class="admin-check-badge ' + (item.ok ? 'is-ok' : 'is-missing') + '">' + (item.ok ? 'ok' : 'falta') + '</span>' +
         '</div>';
     }).join("");
