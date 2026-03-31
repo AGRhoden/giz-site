@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
+  <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
   <link rel="stylesheet" href="admin.css?v=20260331">
 </head>
 <body class="admin-page">
@@ -290,10 +291,10 @@
                 </label>
               </div>
 
-              <label class="admin-field">
+              <div class="admin-field">
                 <span class="admin-label">Descrição</span>
-                <textarea class="admin-input admin-textarea" id="field-description"></textarea>
-              </label>
+                <div id="field-description-quill" style="min-height:120px;"></div>
+              </div>
 
               <div class="admin-field">
                 <span class="admin-label">Serviço executado</span>
@@ -505,17 +506,7 @@
                   <div class="admin-site-page-tabs" id="site-page-tabs"></div>
                   <div class="admin-site-page-meta" id="site-page-meta"></div>
                   <div class="admin-field">
-                    <div class="admin-html-toolbar" id="html-toolbar">
-                      <button type="button" class="admin-toolbar-btn" data-cmd="bold" title="Negrito"><b>B</b></button>
-                      <button type="button" class="admin-toolbar-btn" data-cmd="italic" title="Itálico"><i>I</i></button>
-                      <button type="button" class="admin-toolbar-btn" data-cmd="formatBlock:h2" title="Título">H2</button>
-                      <button type="button" class="admin-toolbar-btn" data-cmd="formatBlock:h3" title="Subtítulo">H3</button>
-                      <button type="button" class="admin-toolbar-btn" data-cmd="formatBlock:p" title="Parágrafo">¶</button>
-                      <button type="button" class="admin-toolbar-btn" data-cmd="insertUnorderedList" title="Lista">•</button>
-                      <button type="button" class="admin-toolbar-btn" data-cmd="createLink" title="Link">🔗</button>
-                      <button type="button" class="admin-toolbar-btn" data-cmd="removeFormat" title="Limpar formatação">✕</button>
-                    </div>
-                    <div class="admin-html-editor admin-site-textarea" id="site-page-content" contenteditable="true" spellcheck="false"></div>
+                      <div id="site-page-quill" style="min-height:180px;"></div>
                   </div>
                   <div id="dossie-entry-builder" hidden>
                     <div class="admin-dossie-builder">
@@ -642,7 +633,8 @@
     </section>
   </main>
 
-  <script src="backend.config.js?v=20260331"></script>
-  <script src="admin.js?v=20260331"></script>
+  <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+  <script src="backend.config.js?v=20260331b"></script>
+  <script src="admin.js?v=20260331b"></script>
 </body>
 </html>

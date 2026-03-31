@@ -55,6 +55,15 @@ window.GIZ_PORTFOLIO_CONFIG = {
       summary: "Formatos editoriais",
       description: "Percorra o acervo por formato: livros, HQs, revistas e outras frentes."
     },
+    {
+      id: "servicos",
+      label: "Serviços",
+      source: "servico",
+      mode: "csv",
+      selectionOperator: "or",
+      summary: "Por serviço executado",
+      description: "Filtre pelo tipo de serviço realizado em cada projeto."
+    },
   ],
   tagSets: {
     colorTags: [

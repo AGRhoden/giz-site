@@ -589,6 +589,11 @@ function matchesCriterion(project, criterion, selectedValue) {
     return Array.isArray(projectValue) && projectValue.includes(selectedValue);
   }
 
+  if (criterion.mode === "csv") {
+    if (!projectValue) return false;
+    return projectValue.split(",").map((s) => s.trim()).includes(selectedValue);
+  }
+
   return projectValue === selectedValue;
 }
 
@@ -1155,10 +1160,8 @@ function renderPortfolioOverview() {
 function renderProjectPanel() {
   setPanelMode("project");
   const project = state.currentProject;
-  const description = project.descricao || "Texto em construção.";
-  const descriptionClass = project.descricao
-    ? "project-description"
-    : "project-description project-description-empty";
+  const description = project.descricao || "";
+  const descriptionClass = "project-description";
   const featuredBadge = project.isFeatured ? '<p class="project-badge">Destaque</p>' : "";
   const subtitle = project.subtitulo
     ? `<p class="project-subtitle-display">${escapeHtml(project.subtitulo)}</p>`
@@ -1176,7 +1179,7 @@ function renderProjectPanel() {
       <h1 class="titulo-principal">${escapeHtml(project.titulo)}</h1>
       ${subtitle}
       ${context}
-      <p class="${descriptionClass}">${escapeHtml(description)}</p>
+      ${description ? `<div class="${descriptionClass}">${description}</div>` : ""}
       ${tags}
       ${pairs}
       ${related}
@@ -1437,6 +1440,11 @@ function collectCriterionValues(project, criterion, includeSet, excludeSet) {
       if (excludeSet && excludeSet.has(value)) return false;
       return Boolean(value);
     });
+  }
+
+  if (criterion.mode === "csv") {
+    if (!sourceValue) return [];
+    return sourceValue.split(",").map((s) => s.trim()).filter(Boolean);
   }
 
   if (!sourceValue) {

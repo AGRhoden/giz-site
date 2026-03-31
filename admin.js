@@ -101,7 +101,19 @@
   var filterNewLabel = document.getElementById("filter-new-label");
   var filterAddConfirm = document.getElementById("filter-add-confirm");
   var filterAddCancel = document.getElementById("filter-add-cancel");
-  var htmlToolbar = document.getElementById("html-toolbar");
+
+  var QUILL_TOOLBAR = [
+    ["bold", "italic", "underline", "strike"],
+    [{ "header": [1, 2, 3, false] }],
+    [{ "size": ["small", false, "large", "huge"] }],
+    [{ "list": "ordered" }, { "list": "bullet" }],
+    [{ "align": [] }],
+    ["link", "image"],
+    ["clean"]
+  ];
+
+  var quillPage = new Quill("#site-page-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+  var quillDesc = new Quill("#field-description-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
   var siteConfigFeedback = document.getElementById("site-config-feedback");
   var dossieEntryBuilder = document.getElementById("dossie-entry-builder");
 
@@ -232,9 +244,8 @@
   });
   siteConfigForm.addEventListener("click", handleSiteConfigClick);
   siteConfigForm.addEventListener("input", handleSiteConfigInput);
-  sitePageContent.addEventListener("input", handlePageContentInput);
+  quillPage.on("text-change", handlePageContentInput);
   siteConfigSaveButton.addEventListener("click", handleSiteConfigSave);
-  htmlToolbar.addEventListener("click", handleToolbarClick);
   filterAddButton.addEventListener("click", function() {
     filterAddForm.hidden = false;
     filterNewLabel.focus();
@@ -1213,6 +1224,7 @@
     fieldSortYear.value = formatSortYearInput(project.sort_year);
     fieldDescription.value = project.description || "";
     fieldFeatured.checked = Boolean(project.is_featured);
+    quillDesc.root.innerHTML = project.description || "";
     renderServicoChips();
     syncDossieSelect(project.dossie_id || "");
     state.pendingPairIds = [];
@@ -1723,7 +1735,7 @@
         project_type: getProjectTypeValue(),
         status: nextStatus,
         sort_year: nextSortYear,
-        description: String(fieldDescription.value || "").trim() || null,
+        description: quillDesc.root.innerHTML || null,
         is_featured: Boolean(fieldFeatured.checked),
         servico: getServicoValue(),
         dossie_id: fieldDossieSelect.value || null,
@@ -2152,7 +2164,7 @@
     }).join("");
 
     sitePageMeta.textContent = getSitePageMeta(activePage);
-    sitePageContent.innerHTML = pageContent;
+    quillPage.root.innerHTML = pageContent || "";
 
     if (dossieEntryBuilder) {
       dossieEntryBuilder.hidden = activePage.id !== "dossie";
@@ -2206,7 +2218,7 @@
 
   function handlePageContentInput() {
     if (!state.siteConfig.page_content) state.siteConfig.page_content = {};
-    state.siteConfig.page_content[state.activeSitePageId] = sitePageContent.innerHTML || "";
+    state.siteConfig.page_content[state.activeSitePageId] = quillPage.root.innerHTML || "";
   }
 
   function updateSiteNavigationLabel(pageId, value) {
@@ -2266,22 +2278,6 @@
       if (filters[i].id === filterId) return filters[i];
     }
     return null;
-  }
-
-  function handleToolbarClick(event) {
-    var btn = event.target.closest("[data-cmd]");
-    if (!btn) return;
-    var cmd = btn.getAttribute("data-cmd");
-    sitePageContent.focus();
-    if (cmd === "createLink") {
-      var url = window.prompt("URL do link:");
-      if (url) document.execCommand("createLink", false, url);
-    } else if (cmd.indexOf("formatBlock:") === 0) {
-      document.execCommand("formatBlock", false, cmd.split(":")[1]);
-    } else {
-      document.execCommand(cmd, false, null);
-    }
-    handlePageContentInput();
   }
 
   function handleFilterAdd() {
