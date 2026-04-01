@@ -119,8 +119,8 @@
 
   var quillPage = new Quill("#site-page-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
   var quillDesc = new Quill("#field-description-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+  var quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
   var siteConfigFeedback = document.getElementById("site-config-feedback");
-  var dossieEntryBuilder = document.getElementById("dossie-entry-builder");
 
   var state = {
     token: null,
@@ -140,7 +140,8 @@
     pendingPairIds: [],
     workspace: "projects",
     editorSection: "details",
-    activeSitePageId: "inicio"
+    activeSitePageId: "inicio",
+    editingDossie: null
   };
 
   if (!backend.url || !backend.anonKey) {
@@ -263,98 +264,7 @@
   filterNewLabel.addEventListener("keydown", function(e) { if (e.key === "Enter") handleFilterAdd(); });
   siteFilterFields.addEventListener("click", handleFilterDelete);
 
-  var dossieInsertButton = document.getElementById("dossie-insert-button");
-  if (dossieInsertButton) {
-    dossieInsertButton.addEventListener("click", handleDossieInsert);
-  }
-
-  var dossieTypeEl = document.getElementById("dossie-type");
-  var dossieGalleryFields = document.getElementById("dossie-gallery-fields");
-  var dossieMediaField = document.getElementById("dossie-media") && document.getElementById("dossie-media").closest(".admin-field");
-  if (dossieTypeEl && dossieGalleryFields) {
-    dossieTypeEl.addEventListener("change", function() {
-      var isGallery = dossieTypeEl.value === "galeria";
-      dossieGalleryFields.hidden = !isGallery;
-      if (dossieMediaField) dossieMediaField.hidden = isGallery;
-    });
-  }
-
-  // Dossiê workspace (aba dedicada)
-  var dossieWsType = document.getElementById("dossie-type-ws");
-  var dossieWsGalleryFields = document.getElementById("dossie-gallery-fields-ws");
-  var dossieWsMediaField = document.getElementById("dossie-media-field-ws");
-  var dossieWsInsert = document.getElementById("dossie-insert-button-ws");
-  var dossieWsContent = document.getElementById("dossie-ws-content");
-  var dossieWsSave = document.getElementById("dossie-ws-save-button");
-  var dossieWsFeedback = document.getElementById("dossie-ws-feedback");
-
-  if (dossieWsType && dossieWsGalleryFields) {
-    dossieWsType.addEventListener("change", function() {
-      var isGallery = dossieWsType.value === "galeria";
-      dossieWsGalleryFields.hidden = !isGallery;
-      if (dossieWsMediaField) dossieWsMediaField.hidden = isGallery;
-    });
-  }
-
-  if (dossieWsInsert) {
-    dossieWsInsert.addEventListener("click", function() {
-      var type = dossieWsType ? String(dossieWsType.value || "nota") : "nota";
-      var title = String((document.getElementById("dossie-title-ws") || {}).value || "").trim();
-      var body = String((document.getElementById("dossie-body-ws") || {}).value || "").trim();
-      var media = String((document.getElementById("dossie-media-ws") || {}).value || "").trim();
-      var galleryRaw = String((document.getElementById("dossie-gallery-urls-ws") || {}).value || "");
-      var galleryUrls = galleryRaw.split("\n").map(function(u) { return u.trim(); }).filter(Boolean);
-
-      if (type === "galeria") {
-        if (!galleryUrls.length) { alert("Adicione ao menos uma URL de imagem."); return; }
-      } else if (!title && !body) {
-        alert("Preencha ao menos um título ou texto."); return;
-      }
-
-      var html = buildDossieEntryHtml(type, title, body, media, galleryUrls);
-      if (dossieWsContent) {
-        var current = String(dossieWsContent.value || "");
-        dossieWsContent.value = current + (current ? "\n\n" : "") + html;
-      }
-      if (document.getElementById("dossie-title-ws")) document.getElementById("dossie-title-ws").value = "";
-      if (document.getElementById("dossie-body-ws")) document.getElementById("dossie-body-ws").value = "";
-      if (document.getElementById("dossie-media-ws")) document.getElementById("dossie-media-ws").value = "";
-      if (document.getElementById("dossie-gallery-urls-ws")) document.getElementById("dossie-gallery-urls-ws").value = "";
-    });
-  }
-
-  if (dossieWsSave) {
-    dossieWsSave.addEventListener("click", function() {
-      if (!state.token) { if (dossieWsFeedback) dossieWsFeedback.textContent = "Não autenticado."; return; }
-      var content = dossieWsContent ? String(dossieWsContent.value || "") : "";
-      if (!state.siteConfig.page_content) state.siteConfig.page_content = {};
-      state.siteConfig.page_content["dossie"] = content;
-      if (dossieWsFeedback) dossieWsFeedback.textContent = "Salvando…";
-      dossieWsSave.disabled = true;
-      fetch(backend.url + "/rest/v1/site_config", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Prefer: "resolution=merge-duplicates,return=representation",
-          apikey: backend.anonKey,
-          Authorization: "Bearer " + state.token
-        },
-        body: JSON.stringify([serializeSiteConfigForSave()])
-      })
-        .then(function(r) {
-          if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "erro"); });
-          return r.json();
-        })
-        .then(function(items) {
-          if (items && items[0]) state.siteConfig = normalizeSiteConfig(items[0]);
-          if (dossieWsFeedback) dossieWsFeedback.textContent = "Dossiê salvo.";
-        })
-        .catch(function(err) {
-          if (dossieWsFeedback) dossieWsFeedback.textContent = "Erro: " + err.message;
-        })
-        .finally(function() { dossieWsSave.disabled = false; });
-    });
-  }
+  setupDossieWorkspace();
 
   boot();
 
@@ -474,10 +384,34 @@
   }
 
   function renderDossieWorkspace() {
-    var textarea = document.getElementById("dossie-ws-content");
-    if (textarea && state.siteConfig && state.siteConfig.page_content) {
-      textarea.value = String(state.siteConfig.page_content["dossie"] || "");
+    var container = document.getElementById("dossie-list-container");
+    if (!container) return;
+    var dossies = state.dossies || [];
+    if (!dossies.length) {
+      container.innerHTML = '<p class="admin-copy" style="color:var(--admin-muted);">Nenhum dossiê cadastrado.</p>';
+      return;
     }
+    var items = dossies.map(function(d) {
+      var project = (state.projects || []).find(function(p) { return p.id === d.projeto_id; });
+      var projectLabel = project
+        ? escapeHtml(project.title || project.slug)
+        : '<em style="color:var(--admin-muted);">Sem projeto vinculado</em>';
+      return '<div class="admin-site-filter-card">' +
+        '<div class="admin-site-filter-head">' +
+          '<div><h4>' + escapeHtml(d.titulo) + '</h4>' +
+          '<p style="margin:4px 0 0;font-size:13px;color:var(--admin-muted);">' + projectLabel + '</p></div>' +
+          '<button class="admin-button admin-button-sm" type="button" data-dossie-edit="' + escapeHtml(d.id) + '">Editar</button>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+    container.innerHTML = items;
+    container.querySelectorAll("[data-dossie-edit]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var id = btn.getAttribute("data-dossie-edit");
+        var dossie = (state.dossies || []).find(function(d) { return d.id === id; });
+        if (dossie) openDossieForm(dossie);
+      });
+    });
   }
 
   function submitPasswordLogin() {
@@ -1623,7 +1557,7 @@
 
   // ── Dossiê vinculado ──────────────────────────────────────────────────────
   function loadDossies() {
-    return fetch(backend.url + "/rest/v1/dossies?select=id,titulo&order=titulo.asc", {
+    return fetch(backend.url + "/rest/v1/dossies?select=id,titulo,conteudo,media,projeto_id,criado_em,atualizado_em&order=titulo.asc", {
       headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
     })
     .then(function(r) { return r.json(); })
@@ -1647,6 +1581,319 @@
 
   function syncDossieSelect(dossieId) {
     fieldDossieSelect.value = dossieId || "";
+  }
+
+  // ── Dossiê CRUD ──────────────────────────────────────────────────────────────
+
+  function setupDossieWorkspace() {
+    var newBtn = document.getElementById("dossie-new-button");
+    var cancelBtn = document.getElementById("dossie-form-cancel");
+    var saveBtn = document.getElementById("dossie-form-save");
+    var deleteBtn = document.getElementById("dossie-form-delete");
+    var uploadBtn = document.getElementById("dossie-media-upload-button");
+
+    if (newBtn) newBtn.addEventListener("click", function() { openDossieForm(null); });
+    if (cancelBtn) cancelBtn.addEventListener("click", closeDossieForm);
+    if (saveBtn) saveBtn.addEventListener("click", saveDossieRecord);
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", function() {
+        if (state.editingDossie) deleteDossieRecord(state.editingDossie.id);
+      });
+    }
+    if (uploadBtn) {
+      uploadBtn.addEventListener("click", function() {
+        if (!state.editingDossie) return;
+        var input = document.getElementById("dossie-media-upload-input");
+        if (!input || !input.files.length) {
+          setDossieMediaFeedback("Selecione ao menos um arquivo.");
+          return;
+        }
+        uploadDossieMedia(state.editingDossie.id, Array.from(input.files));
+      });
+    }
+  }
+
+  function openDossieForm(dossie) {
+    state.editingDossie = dossie || null;
+
+    var listView = document.getElementById("dossie-list-view");
+    var formView = document.getElementById("dossie-form-view");
+    var heading = document.getElementById("dossie-form-heading");
+    var tituloEl = document.getElementById("dossie-field-titulo");
+    var projetoEl = document.getElementById("dossie-field-projeto");
+    var deleteBtn = document.getElementById("dossie-form-delete");
+    var mediaSection = document.getElementById("dossie-media-section");
+    var feedback = document.getElementById("dossie-form-feedback");
+
+    if (heading) heading.textContent = dossie ? "Editar dossiê" : "Novo dossiê";
+    if (tituloEl) tituloEl.value = dossie ? String(dossie.titulo || "") : "";
+    if (feedback) feedback.textContent = "";
+
+    if (projetoEl) {
+      projetoEl.innerHTML = '<option value="">Nenhum</option>';
+      (state.projects || []).forEach(function(p) {
+        var opt = document.createElement("option");
+        opt.value = p.id;
+        opt.textContent = p.title || p.slug;
+        projetoEl.appendChild(opt);
+      });
+      projetoEl.value = dossie && dossie.projeto_id ? dossie.projeto_id : "";
+    }
+
+    if (quillDossie) {
+      quillDossie.root.innerHTML = dossie && dossie.conteudo ? dossie.conteudo : "";
+    }
+
+    setHidden(deleteBtn, !dossie);
+    setHidden(mediaSection, !dossie);
+
+    if (dossie) {
+      renderDossieMediaList(dossie.media || []);
+    } else {
+      var mediaList = document.getElementById("dossie-media-list");
+      if (mediaList) mediaList.innerHTML = "";
+    }
+
+    setHidden(listView, true);
+    setHidden(formView, false);
+  }
+
+  function closeDossieForm() {
+    state.editingDossie = null;
+    setHidden(document.getElementById("dossie-list-view"), false);
+    setHidden(document.getElementById("dossie-form-view"), true);
+    renderDossieWorkspace();
+  }
+
+  function saveDossieRecord() {
+    var tituloEl = document.getElementById("dossie-field-titulo");
+    var projetoEl = document.getElementById("dossie-field-projeto");
+    var feedback = document.getElementById("dossie-form-feedback");
+    var saveBtn = document.getElementById("dossie-form-save");
+    var deleteBtn = document.getElementById("dossie-form-delete");
+    var mediaSection = document.getElementById("dossie-media-section");
+
+    var titulo = tituloEl ? String(tituloEl.value || "").trim() : "";
+    if (!titulo) {
+      if (feedback) feedback.textContent = "Preencha o título.";
+      return;
+    }
+
+    var payload = {
+      titulo: titulo,
+      conteudo: quillDossie ? (quillDossie.root.innerHTML || null) : null,
+      projeto_id: projetoEl && projetoEl.value ? projetoEl.value : null
+    };
+
+    if (feedback) feedback.textContent = "Salvando…";
+    if (saveBtn) saveBtn.disabled = true;
+
+    var isNew = !state.editingDossie;
+    var url = backend.url + "/rest/v1/dossies" +
+      (isNew ? "" : "?id=eq." + encodeURIComponent(state.editingDossie.id));
+
+    fetch(url, {
+      method: isNew ? "POST" : "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(function(r) {
+      if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "erro"); });
+      return r.json();
+    })
+    .then(function(items) {
+      var saved = Array.isArray(items) ? items[0] : items;
+      if (isNew) {
+        state.dossies.push(saved);
+        rebuildDossieSelectOptions();
+        var heading = document.getElementById("dossie-form-heading");
+        if (heading) heading.textContent = "Editar dossiê";
+        setHidden(deleteBtn, false);
+        setHidden(mediaSection, false);
+        renderDossieMediaList(saved.media || []);
+      } else {
+        var idx = state.dossies.findIndex(function(d) { return d.id === saved.id; });
+        if (idx >= 0) state.dossies[idx] = saved;
+      }
+      state.editingDossie = saved;
+      if (feedback) feedback.textContent = "Salvo.";
+    })
+    .catch(function(err) {
+      if (feedback) feedback.textContent = "Erro: " + err.message;
+    })
+    .finally(function() {
+      if (saveBtn) saveBtn.disabled = false;
+    });
+  }
+
+  function deleteDossieRecord(id) {
+    var confirmed = window.confirm("Excluir este dossiê? Esta ação não pode ser desfeita.");
+    if (!confirmed) return;
+
+    var feedback = document.getElementById("dossie-form-feedback");
+    if (feedback) feedback.textContent = "Excluindo…";
+
+    var mediaItems = (state.editingDossie && state.editingDossie.media) || [];
+    Promise.all(mediaItems.map(function(m) {
+      return deleteStorageObject(m.storage_path).catch(function() {});
+    }))
+    .then(function() {
+      return fetch(backend.url + "/rest/v1/dossies?id=eq." + encodeURIComponent(id), {
+        method: "DELETE",
+        headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
+      });
+    })
+    .then(function(r) {
+      if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "erro"); });
+      state.dossies = state.dossies.filter(function(d) { return d.id !== id; });
+      rebuildDossieSelectOptions();
+      closeDossieForm();
+    })
+    .catch(function(err) {
+      if (feedback) feedback.textContent = "Erro: " + err.message;
+    });
+  }
+
+  function uploadDossieMedia(dossieId, files) {
+    var feedback = document.getElementById("dossie-media-feedback");
+    var uploadBtn = document.getElementById("dossie-media-upload-button");
+    var input = document.getElementById("dossie-media-upload-input");
+
+    setDossieMediaFeedback("Fazendo upload…");
+    if (uploadBtn) uploadBtn.disabled = true;
+
+    var uploads = files.map(function(file) {
+      var path = "dossie/" + dossieId + "/" + sanitizeFilename(file.name);
+      return fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(path), {
+        method: "POST",
+        headers: {
+          apikey: backend.anonKey,
+          Authorization: "Bearer " + state.token,
+          "x-upsert": "true",
+          "Content-Type": file.type || "application/octet-stream"
+        },
+        body: file
+      })
+      .then(function(r) {
+        if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "upload falhou"); });
+        return { storage_path: path, alt: "" };
+      });
+    });
+
+    Promise.all(uploads)
+    .then(function(newItems) {
+      var existing = (state.editingDossie && state.editingDossie.media) || [];
+      var merged = existing.concat(newItems);
+      return fetch(backend.url + "/rest/v1/dossies?id=eq." + encodeURIComponent(dossieId), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Prefer: "return=representation",
+          apikey: backend.anonKey,
+          Authorization: "Bearer " + state.token
+        },
+        body: JSON.stringify({ media: merged })
+      })
+      .then(function(r) {
+        if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "erro ao salvar mídia"); });
+        return r.json();
+      })
+      .then(function(items) {
+        var saved = Array.isArray(items) ? items[0] : items;
+        state.editingDossie = saved;
+        var idx = state.dossies.findIndex(function(d) { return d.id === saved.id; });
+        if (idx >= 0) state.dossies[idx] = saved;
+        renderDossieMediaList(saved.media || []);
+        setDossieMediaFeedback("Upload concluído.");
+        if (input) input.value = "";
+      });
+    })
+    .catch(function(err) {
+      setDossieMediaFeedback("Erro: " + err.message);
+    })
+    .finally(function() {
+      if (uploadBtn) uploadBtn.disabled = false;
+    });
+  }
+
+  function removeDossieMedia(dossieId, storagePath) {
+    setDossieMediaFeedback("Removendo…");
+
+    deleteStorageObject(storagePath)
+    .catch(function() {})
+    .then(function() {
+      var existing = (state.editingDossie && state.editingDossie.media) || [];
+      var filtered = existing.filter(function(m) { return m.storage_path !== storagePath; });
+      return fetch(backend.url + "/rest/v1/dossies?id=eq." + encodeURIComponent(dossieId), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Prefer: "return=representation",
+          apikey: backend.anonKey,
+          Authorization: "Bearer " + state.token
+        },
+        body: JSON.stringify({ media: filtered })
+      })
+      .then(function(r) {
+        if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "erro"); });
+        return r.json();
+      })
+      .then(function(items) {
+        var saved = Array.isArray(items) ? items[0] : items;
+        state.editingDossie = saved;
+        var idx = state.dossies.findIndex(function(d) { return d.id === saved.id; });
+        if (idx >= 0) state.dossies[idx] = saved;
+        renderDossieMediaList(saved.media || []);
+        setDossieMediaFeedback("Mídia removida.");
+      });
+    })
+    .catch(function(err) {
+      setDossieMediaFeedback("Erro: " + err.message);
+    });
+  }
+
+  function renderDossieMediaList(media) {
+    var list = document.getElementById("dossie-media-list");
+    if (!list) return;
+    if (!media || !media.length) {
+      list.innerHTML = '<p class="admin-copy" style="color:var(--admin-muted);margin:8px 0 0;">Nenhuma mídia adicionada.</p>';
+      return;
+    }
+    list.innerHTML = media.map(function(m) {
+      var url = buildPublicMediaUrl(m.storage_path);
+      var isImage = /\.(png|jpe?g|gif|webp|svg)$/i.test(m.storage_path);
+      var preview = isImage
+        ? '<img class="admin-media-preview" src="' + escapeHtml(url) + '" alt="' + escapeHtml(m.alt || "") + '" loading="lazy">'
+        : '<div class="admin-media-preview" style="display:flex;align-items:center;justify-content:center;background:var(--admin-bg-alt);font-size:11px;color:var(--admin-muted);">vídeo</div>';
+      var filename = m.storage_path.split("/").pop();
+      return '<div class="admin-media-item">' +
+        preview +
+        '<div class="admin-media-body">' +
+          '<p class="admin-media-meta">' + escapeHtml(filename) + '</p>' +
+          '<div class="admin-media-actions">' +
+            '<a href="' + escapeHtml(url) + '" target="_blank" class="admin-button admin-button-sm">Abrir</a> ' +
+            '<button class="admin-button admin-button-sm admin-button-danger" type="button" data-remove-path="' + escapeHtml(m.storage_path) + '">Remover</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+    list.querySelectorAll("[data-remove-path]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        if (state.editingDossie) {
+          removeDossieMedia(state.editingDossie.id, btn.getAttribute("data-remove-path"));
+        }
+      });
+    });
+  }
+
+  function setDossieMediaFeedback(msg) {
+    var el = document.getElementById("dossie-media-feedback");
+    if (el) el.textContent = msg;
   }
 
   function handleProjectDeletion() {
@@ -1956,7 +2203,42 @@
       })
       .then(function (images) {
         if (state.selectedProjectId !== projectId) return;
-        state.imagesByProject[projectId] = images || [];
+        var allImages = images || [];
+
+        // Detect duplicate records (same kind + sort_order) and delete the older ones
+        var seen = {};
+        var duplicateIds = [];
+        allImages.forEach(function (img) {
+          var key = img.kind + ":" + String(img.sort_order);
+          if (seen[key]) {
+            // Keep the newer one (higher created_at), discard the older
+            if (img.created_at > seen[key].created_at) {
+              duplicateIds.push(seen[key].id);
+              seen[key] = img;
+            } else {
+              duplicateIds.push(img.id);
+            }
+          } else {
+            seen[key] = img;
+          }
+        });
+
+        if (duplicateIds.length) {
+          duplicateIds.forEach(function (dupId) {
+            fetch(backend.url + "/rest/v1/project_images?id=eq." + encodeURIComponent(dupId), {
+              method: "DELETE",
+              headers: {
+                apikey: backend.anonKey,
+                Authorization: "Bearer " + state.token
+              }
+            }).catch(function () {});
+          });
+          allImages = allImages.filter(function (img) {
+            return duplicateIds.indexOf(img.id) === -1;
+          });
+        }
+
+        state.imagesByProject[projectId] = allImages;
         renderMediaList();
         var selectedProject = getSelectedProject();
         if (selectedProject && selectedProject.id === projectId) {
@@ -2170,10 +2452,6 @@
     sitePageMeta.textContent = getSitePageMeta(activePage);
     quillPage.root.innerHTML = pageContent || "";
 
-    if (dossieEntryBuilder) {
-      dossieEntryBuilder.hidden = activePage.id !== "dossie";
-    }
-
     siteFilterFields.innerHTML = siteConfig.filters.map(function (item) {
       return '' +
         '<article class="admin-site-filter-card">' +
@@ -2345,80 +2623,6 @@
       .finally(function () {
         siteConfigSaveButton.disabled = false;
       });
-  }
-
-  function handleDossieInsert() {
-    var typeEl = document.getElementById("dossie-type");
-    var titleEl = document.getElementById("dossie-title");
-    var bodyEl = document.getElementById("dossie-body");
-    var mediaEl = document.getElementById("dossie-media");
-    var galleryUrlsEl = document.getElementById("dossie-gallery-urls");
-
-    var type = typeEl ? String(typeEl.value || "nota") : "nota";
-    var title = titleEl ? String(titleEl.value || "").trim() : "";
-    var body = bodyEl ? String(bodyEl.value || "").trim() : "";
-    var media = mediaEl ? String(mediaEl.value || "").trim() : "";
-    var galleryUrls = galleryUrlsEl
-      ? String(galleryUrlsEl.value || "").split("\n").map(function(u) { return u.trim(); }).filter(Boolean)
-      : [];
-
-    if (type === "galeria") {
-      if (!galleryUrls.length) {
-        alert("Adicione ao menos uma URL de imagem para a galeria.");
-        return;
-      }
-    } else if (!title && !body) {
-      alert("Preencha ao menos um título ou texto.");
-      return;
-    }
-
-    var html = buildDossieEntryHtml(type, title, body, media, galleryUrls);
-    var current = sitePageContent ? String(sitePageContent.value || "") : "";
-    if (sitePageContent) {
-      sitePageContent.value = current + (current ? "\n\n" : "") + html;
-      if (!state.siteConfig.page_content) {
-        state.siteConfig.page_content = {};
-      }
-      state.siteConfig.page_content["dossie"] = String(sitePageContent.value);
-    }
-
-    if (titleEl) titleEl.value = "";
-    if (bodyEl) bodyEl.value = "";
-    if (mediaEl) mediaEl.value = "";
-    if (galleryUrlsEl) galleryUrlsEl.value = "";
-  }
-
-  function buildDossieEntryHtml(type, title, body, media, galleryUrls) {
-    if (type === "galeria") {
-      var slides = (galleryUrls || []).map(function(url) {
-        return '  <figure class="dossie-slide"><img src="' + escapeHtml(url) + '" alt="' + escapeHtml(title) + '" loading="lazy"></figure>';
-      });
-      var parts = ['<div class="dossie-entry dossie-entry-galeria">'];
-      if (title) parts.push('  <h2 class="dossie-title">' + escapeHtml(title) + '</h2>');
-      parts.push('  <div class="dossie-gallery">');
-      parts = parts.concat(slides);
-      parts.push('  </div>');
-      if (body) parts.push('  <p class="dossie-body">' + escapeHtml(body) + '</p>');
-      parts.push('</div>');
-      return parts.join("\n");
-    }
-
-    var parts = ['<article class="dossie-entry dossie-entry-' + escapeHtml(type) + '">'];
-    if (title) {
-      parts.push('  <h2 class="dossie-title">' + escapeHtml(title) + '</h2>');
-    }
-    if (media) {
-      if (type === "clip") {
-        parts.push('  <div class="dossie-media"><iframe src="' + escapeHtml(media) + '" allowfullscreen loading="lazy"></iframe></div>');
-      } else {
-        parts.push('  <figure class="dossie-media"><img src="' + escapeHtml(media) + '" alt="' + escapeHtml(title) + '" loading="lazy"></figure>');
-      }
-    }
-    if (body) {
-      parts.push('  <p class="dossie-body">' + escapeHtml(body) + '</p>');
-    }
-    parts.push('</article>');
-    return parts.join("\n");
   }
 
   function serializeSiteConfigForSave() {
@@ -3055,28 +3259,44 @@
       return;
     }
 
-    var currentImages = state.imagesByProject[project.id] || [];
-    var uploads = [];
+    var fileArray = Array.prototype.slice.call(files);
     var invalidFiles = [];
+    var validEntries = [];
 
-    Array.prototype.forEach.call(files, function (file) {
+    fileArray.forEach(function (file) {
       var parsed = parseIncomingFilename(file.name);
       if (!parsed || parsed.slug !== project.slug) {
         invalidFiles.push(file.name);
-        return;
+      } else {
+        validEntries.push({ file: file, kind: parsed.kind, sortOrder: parsed.sortOrder });
       }
-
-      uploads.push(overwritePreparedImage(project, currentImages, file, parsed.kind, parsed.sortOrder));
     });
 
-    if (!uploads.length) {
+    if (!validEntries.length) {
       setSaveState("Os arquivos precisam seguir o nome do projeto, como " + project.slug + "_thumb.jpg ou " + project.slug + "_03.jpg");
       return;
     }
 
     setSaveState("Enviando imagens...");
 
-    Promise.all(uploads)
+    // Always fetch fresh images from DB before uploading to avoid stale-cache duplicates
+    fetch(backend.url + "/rest/v1/project_images?select=id,project_id,storage_path,kind,alt_text,sort_order,is_published,created_at&project_id=eq." + encodeURIComponent(project.id) + "&order=sort_order.asc,created_at.asc", {
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      }
+    })
+      .then(function (response) {
+        if (!response.ok) return Promise.resolve([]);
+        return response.json();
+      })
+      .then(function (freshImages) {
+        state.imagesByProject[project.id] = freshImages || [];
+        var uploads = validEntries.map(function (entry) {
+          return overwritePreparedImage(project, state.imagesByProject[project.id], entry.file, entry.kind, entry.sortOrder);
+        });
+        return Promise.all(uploads);
+      })
       .then(function () {
         mediaFiles.value = "";
         if (invalidFiles.length) {
@@ -3500,8 +3720,12 @@
 
     setSaveState("Removendo mídia...");
 
-    deleteStorageObject(image.storage_path)
-      .then(function (response) {
+    var storageDelete = image.storage_path
+      ? deleteStorageObject(image.storage_path).catch(function () {})
+      : Promise.resolve();
+
+    storageDelete
+      .then(function () {
         return fetch(backend.url + "/rest/v1/project_images?id=eq." + encodeURIComponent(imageId), {
           method: "DELETE",
           headers: {
@@ -3519,7 +3743,7 @@
         removeProjectImage(project.id, imageId);
         renderMediaList();
         syncPublicationChecklist(project);
-        setSaveState("Midia removida");
+        setSaveState("Mídia removida");
       })
       .catch(function () {
         setSaveState("Erro ao remover mídia");
