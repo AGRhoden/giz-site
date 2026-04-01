@@ -158,6 +158,23 @@ select {
   text-decoration: none;
 }
 
+.admin-button-danger {
+  border-color: #c0392b;
+  background: #c0392b;
+  color: white;
+}
+
+.admin-layout.admin-layout-single {
+  grid-template-columns: 1fr;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.admin-button-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 .admin-feedback {
   min-height: 1.4em;
   margin: 14px 0 0;

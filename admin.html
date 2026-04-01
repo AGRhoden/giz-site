@@ -6,7 +6,7 @@
   <title>GIZ Admin</title>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
   <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
-  <link rel="stylesheet" href="admin.css?v=20260331">
+  <link rel="stylesheet" href="admin.css?v=20260331c">
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -482,9 +482,7 @@
       </section>
 
       <section class="admin-workspace" data-workspace-section="content" hidden>
-        <section class="admin-content-layout">
-          <aside class="admin-content-sidebar"></aside>
-
+        <section class="admin-layout admin-layout-single">
           <section class="admin-content-main">
             <details class="admin-card admin-collapsible admin-site-content-panel" open>
               <summary class="admin-collapsible-summary">
@@ -507,41 +505,6 @@
                   <div class="admin-site-page-meta" id="site-page-meta"></div>
                   <div class="admin-field">
                       <div id="site-page-quill" style="min-height:180px;"></div>
-                  </div>
-                  <div id="dossie-entry-builder" hidden>
-                    <div class="admin-dossie-builder">
-                      <h4 class="admin-copy" style="margin:16px 0 12px;font-weight:600;">+ Nova entrada no Dossiê</h4>
-                      <div class="admin-site-grid">
-                        <label class="admin-field">
-                          <span class="admin-label">Tipo</span>
-                          <select class="admin-input" id="dossie-type">
-                            <option value="nota">Nota</option>
-                            <option value="still">Foto / Still</option>
-                            <option value="galeria">Galeria / Stills</option>
-                            <option value="clip">Vídeo</option>
-                          </select>
-                        </label>
-                        <label class="admin-field">
-                          <span class="admin-label">Título</span>
-                          <input class="admin-input" type="text" id="dossie-title" placeholder="Título da entrada">
-                        </label>
-                      </div>
-                      <label class="admin-field">
-                        <span class="admin-label">Texto ou legenda</span>
-                        <textarea class="admin-input admin-textarea" id="dossie-body" rows="4" placeholder="Texto, legenda ou descrição..."></textarea>
-                      </label>
-                      <label class="admin-field">
-                        <span class="admin-label">URL da imagem ou vídeo (opcional)</span>
-                        <input class="admin-input" type="url" id="dossie-media" placeholder="https://...">
-                      </label>
-                      <div id="dossie-gallery-fields" hidden>
-                        <label class="admin-field">
-                          <span class="admin-label">URLs das imagens da galeria (uma por linha)</span>
-                          <textarea class="admin-input admin-textarea" id="dossie-gallery-urls" rows="5" placeholder="https://…&#10;https://…&#10;https://…"></textarea>
-                        </label>
-                      </div>
-                      <button type="button" class="admin-button" id="dossie-insert-button">Inserir entrada no HTML</button>
-                    </div>
                   </div>
                 </details>
 
@@ -575,58 +538,70 @@
       <section class="admin-workspace" data-workspace-section="dossie">
         <section class="admin-layout admin-layout-single">
           <section class="admin-content-main">
-            <details class="admin-card admin-collapsible" open>
-              <summary class="admin-collapsible-summary">
-                <div>
-                  <h2>Dossiê</h2>
-                  <p class="admin-copy">Bastidores, processo e histórias por trás dos projetos.</p>
-                </div>
-              </summary>
 
-              <div class="admin-dossie-builder">
-                <h4 class="admin-copy" style="margin:0 0 12px;font-weight:600;">+ Nova entrada</h4>
-                <div class="admin-site-grid">
+            <!-- Dossiê: lista -->
+            <div id="dossie-list-view">
+              <details class="admin-card admin-collapsible" open>
+                <summary class="admin-collapsible-summary">
+                  <div>
+                    <h2>Dossiê</h2>
+                    <p class="admin-copy">Bastidores, processo e histórias por trás dos projetos.</p>
+                  </div>
+                </summary>
+                <div class="admin-inline-actions" style="margin-bottom:16px;">
+                  <button class="admin-button" type="button" id="dossie-new-button">+ Novo dossiê</button>
+                </div>
+                <div id="dossie-list-container"></div>
+              </details>
+            </div>
+
+            <!-- Dossiê: formulário de edição/criação -->
+            <div id="dossie-form-view" hidden>
+              <div class="admin-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                  <h2 id="dossie-form-heading">Novo dossiê</h2>
+                  <button class="admin-secondary-button" type="button" id="dossie-form-cancel">← Voltar</button>
+                </div>
+                <div class="admin-inline-form">
+                  <div class="admin-site-grid">
+                    <label class="admin-field">
+                      <span class="admin-label">Título</span>
+                      <input class="admin-input" type="text" id="dossie-field-titulo" placeholder="Título do dossiê">
+                    </label>
+                    <label class="admin-field">
+                      <span class="admin-label">Projeto vinculado</span>
+                      <select class="admin-input" id="dossie-field-projeto">
+                        <option value="">Nenhum</option>
+                      </select>
+                    </label>
+                  </div>
                   <label class="admin-field">
-                    <span class="admin-label">Tipo</span>
-                    <select class="admin-input" id="dossie-type-ws">
-                      <option value="nota">Nota</option>
-                      <option value="still">Foto / Still</option>
-                      <option value="galeria">Galeria / Stills</option>
-                      <option value="clip">Vídeo</option>
-                    </select>
-                  </label>
-                  <label class="admin-field">
-                    <span class="admin-label">Título</span>
-                    <input class="admin-input" type="text" id="dossie-title-ws" placeholder="Título da entrada">
+                    <span class="admin-label">Conteúdo</span>
+                    <div id="dossie-quill-editor" style="min-height:220px;"></div>
                   </label>
                 </div>
-                <label class="admin-field">
-                  <span class="admin-label">Texto ou legenda</span>
-                  <textarea class="admin-input admin-textarea" id="dossie-body-ws" rows="4" placeholder="Texto, legenda ou descrição..."></textarea>
-                </label>
-                <label class="admin-field" id="dossie-media-field-ws">
-                  <span class="admin-label">URL da imagem ou vídeo (opcional)</span>
-                  <input class="admin-input" type="url" id="dossie-media-ws" placeholder="https://...">
-                </label>
-                <div id="dossie-gallery-fields-ws" hidden>
-                  <label class="admin-field">
-                    <span class="admin-label">URLs das imagens da galeria (uma por linha)</span>
-                    <textarea class="admin-input admin-textarea" id="dossie-gallery-urls-ws" rows="5" placeholder="https://…&#10;https://…&#10;https://…"></textarea>
-                  </label>
+                <div class="admin-inline-actions" style="margin-top:20px;">
+                  <button class="admin-button" type="button" id="dossie-form-save">Salvar</button>
+                  <button class="admin-button admin-button-danger" type="button" id="dossie-form-delete" hidden>Excluir dossiê</button>
                 </div>
-                <button type="button" class="admin-button" id="dossie-insert-button-ws">Inserir no conteúdo</button>
+                <p class="admin-feedback" id="dossie-form-feedback" aria-live="polite"></p>
+
+                <!-- Seção de mídia (só aparece após salvar) -->
+                <div id="dossie-media-section" hidden style="margin-top:28px;border-top:1px solid var(--admin-line);padding-top:24px;">
+                  <h3 style="margin:0 0 14px;font-size:15px;font-weight:600;">Mídia</h3>
+                  <div class="admin-media-upload">
+                    <label class="admin-field">
+                      <span class="admin-label">Enviar imagens</span>
+                      <input type="file" id="dossie-media-upload-input" multiple accept="image/*,video/*" class="admin-input">
+                    </label>
+                    <button class="admin-button" type="button" id="dossie-media-upload-button">Fazer upload</button>
+                  </div>
+                  <div class="admin-media-list" id="dossie-media-list"></div>
+                  <p class="admin-feedback" id="dossie-media-feedback" aria-live="polite"></p>
+                </div>
               </div>
+            </div>
 
-              <label class="admin-field" style="margin-top:24px;">
-                <span class="admin-label">Conteúdo HTML do Dossiê</span>
-                <textarea class="admin-input admin-textarea admin-site-textarea" id="dossie-ws-content" rows="16" placeholder="HTML gerado pelo construtor acima..."></textarea>
-              </label>
-
-              <div class="admin-inline-actions">
-                <button class="admin-button" id="dossie-ws-save-button" type="button">Salvar Dossiê</button>
-              </div>
-              <p class="admin-feedback" id="dossie-ws-feedback" aria-live="polite"></p>
-            </details>
           </section>
         </section>
       </section>
@@ -634,7 +609,7 @@
   </main>
 
   <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
-  <script src="backend.config.js?v=20260331b"></script>
-  <script src="admin.js?v=20260331b"></script>
+  <script src="backend.config.js?v=20260331c"></script>
+  <script src="admin.js?v=20260331c"></script>
 </body>
 </html>
