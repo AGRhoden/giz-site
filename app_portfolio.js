@@ -40,7 +40,9 @@ const elements = {
   gridView: document.getElementById("grid-view"),
   viewerShell: document.getElementById("viewer-shell"),
   panel: document.getElementById("panel"),
-  menuNav: document.getElementById("menu-nav")
+  menuNav: document.getElementById("menu-nav"),
+  dossieView: document.getElementById("dossie-view"),
+  layout: document.querySelector(".layout")
 };
 
 const state = {
@@ -55,8 +57,11 @@ const state = {
   currentProject: null,
   currentImageIndex: 0,
   pairFocusSlugs: null,
-  leftMode: "grid"
+  leftMode: "grid",
+  currentDossie: null
 };
+
+let DOSSIES = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
@@ -200,7 +205,7 @@ async function initialize() {
   await loadSiteSettings();
   renderMenu();
   updateMenu();
-  await Promise.all([loadProjects(), preloadStaticPanels()]);
+  await Promise.all([loadProjects(), preloadStaticPanels(), loadDossies()]);
   if (state.loadFailed) return;
   applyFilters();
   renderGrid();
@@ -236,6 +241,20 @@ function handlePanelClick(event) {
   if (!actionElement) return;
 
   const { action } = actionElement.dataset;
+
+  if (action === "open-dossie") {
+    const dossie = DOSSIES.find((d) => d.id === actionElement.dataset.dossieId);
+    if (dossie) {
+      state.currentDossie = dossie;
+      renderDossieDetail(dossie);
+    }
+    return;
+  }
+
+  if (action === "dossie-back") {
+    closeDossieView();
+    return;
+  }
 
   if (action === "enter-criterion") {
     enterCriterion(actionElement.dataset.criterionId);
@@ -392,6 +411,135 @@ async function loadProjectsFromSupabase() {
   return response.json();
 }
 
+async function loadDossies() {
+  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
+  try {
+    const response = await fetch(
+      new URL("/rest/v1/dossies?select=id,titulo,conteudo,media,projeto_id&order=criado_em.asc", BACKEND_CONFIG.url).toString(),
+      { headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` } }
+    );
+    if (!response.ok) return;
+    const rows = await response.json();
+    if (Array.isArray(rows)) {
+      DOSSIES = rows;
+      SITE_PANEL_OVERRIDES["dossie"] = buildDossieListHtml(rows);
+    }
+  } catch (error) {
+    console.error("Erro ao carregar dossiês:", error);
+  }
+}
+
+function buildDossieListHtml(dossies) {
+  const items = dossies.length
+    ? dossies.map((d) =>
+        `<button type="button" class="dossie-list-item" data-action="open-dossie" data-dossie-id="${escapeHtml(d.id)}">${escapeHtml(d.titulo)}</button>`
+      ).join("\n")
+    : `<p class="small-note">Em breve.</p>`;
+  return `<div class="panel-inner panel-inner-static panel-inner-static-shell">
+  <h1 class="static-page-title">Dossiê</h1>
+  <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
+  <nav class="dossie-list">${items}</nav>
+</div>`;
+}
+
+function renderDossieDetail(dossie) {
+  const slides = (Array.isArray(dossie.media) ? dossie.media : [])
+    .filter((m) => /\.(png|jpe?g|gif|webp|svg)$/i.test(m.storage_path || ""));
+
+  const carouselHtml = slides.length ? (() => {
+    const slidesHtml = slides.map((m, i) => {
+      const url = resolveProjectMediaUrl(m.storage_path);
+      return `<div class="dc-slide${i === 0 ? " dc-slide--active" : ""}" aria-hidden="${i !== 0}">
+        <img class="dc-img" src="${escapeHtml(url)}" alt="${escapeHtml(m.alt || dossie.titulo)}" loading="${i === 0 ? "eager" : "lazy"}">
+      </div>`;
+    }).join("");
+    const dotsHtml = slides.length > 1 ? `<div class="dc-dots">${slides.map((_, i) =>
+      `<button type="button" class="dc-dot${i === 0 ? " dc-dot--active" : ""}" data-dc-index="${i}" aria-label="Slide ${i + 1}"></button>`
+    ).join("")}</div>` : "";
+    const arrowsHtml = slides.length > 1 ? `
+      <button type="button" class="dc-arrow dc-arrow--prev" aria-label="Anterior">&#9664;</button>
+      <button type="button" class="dc-arrow dc-arrow--next" aria-label="Próximo">&#9654;</button>` : "";
+    return `<div class="dossie-carousel" id="dossie-carousel">
+      <div class="dc-track">${slidesHtml}</div>
+      ${arrowsHtml}
+      ${dotsHtml}
+    </div>`;
+  })() : "";
+
+  elements.dossieView.innerHTML = `
+    <div class="dv-inner">
+      <header class="dv-header">
+        <div class="dv-menu-nav">${elements.menuNav.innerHTML}</div>
+      </header>
+      <div class="dv-body">
+        <button type="button" class="dv-back" data-action="dossie-back">← Dossiê</button>
+        <h1 class="dv-title">${escapeHtml(dossie.titulo)}</h1>
+        ${carouselHtml}
+        ${dossie.conteudo ? `<div class="dv-conteudo">${dossie.conteudo}</div>` : ""}
+      </div>
+    </div>
+  `;
+
+  // Copy active menu state into dossie-view header
+  elements.dossieView.querySelectorAll(".dv-menu-nav .menu-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      closeDossieView();
+      const pageId = btn.dataset.pageId;
+      if (pageId) openPage(pageId);
+    });
+  });
+
+  elements.dossieView.hidden = false;
+  elements.layout.hidden = true;
+  document.body.classList.add("dossie-view-open");
+
+  elements.dossieView.querySelector("[data-action='dossie-back']")?.addEventListener("click", closeDossieView);
+
+  if (slides.length > 1) initDossieCarousel();
+}
+
+function closeDossieView() {
+  elements.dossieView.hidden = true;
+  elements.layout.hidden = false;
+  document.body.classList.remove("dossie-view-open");
+  state.currentDossie = null;
+  clearInterval(window._dossieCarouselTimer);
+}
+
+function initDossieCarousel() {
+  const carousel = document.getElementById("dossie-carousel");
+  if (!carousel) return;
+  const slideEls = carousel.querySelectorAll(".dc-slide");
+  const dots = carousel.querySelectorAll(".dc-dot");
+  let current = 0;
+
+  function goTo(index) {
+    const next = (index + slideEls.length) % slideEls.length;
+    if (next === current) return;
+
+    dots[current]?.classList.remove("dc-dot--active");
+    slideEls[current].classList.remove("dc-slide--active");
+    slideEls[current].setAttribute("aria-hidden", "true");
+
+    current = next;
+
+    slideEls[current].classList.add("dc-slide--active");
+    slideEls[current].setAttribute("aria-hidden", "false");
+    dots[current]?.classList.add("dc-dot--active");
+  }
+
+  function resetTimer() {
+    clearInterval(window._dossieCarouselTimer);
+    window._dossieCarouselTimer = setInterval(() => goTo(current + 1), 5000);
+  }
+
+  carousel.querySelector(".dc-arrow--prev")?.addEventListener("click", () => { goTo(current - 1); resetTimer(); });
+  carousel.querySelector(".dc-arrow--next")?.addEventListener("click", () => { goTo(current + 1); resetTimer(); });
+  dots.forEach((dot) => dot.addEventListener("click", () => { goTo(Number(dot.dataset.dcIndex)); resetTimer(); }));
+
+  resetTimer();
+}
+
 async function preloadStaticPanels() {
   const pagesWithContent = PAGES.filter((page) => page.content);
 
@@ -513,6 +661,7 @@ function openPage(pageId) {
 
   state.currentPage = pageId;
   state.currentProject = null;
+  state.currentDossie = null;
   state.currentImageIndex = 0;
   state.pairFocusSlugs = null;
   state.leftMode = "grid";
@@ -653,6 +802,15 @@ function renderGrid() {
 
     const back = document.createElement("div");
     back.className = "grid-card-back";
+
+    if (project.imagens[1]) {
+      const backBg = document.createElement("img");
+      backBg.className = "grid-back-bg";
+      backBg.src = project.imagens[1];
+      backBg.alt = "";
+      backBg.setAttribute("aria-hidden", "true");
+      back.appendChild(backBg);
+    }
 
     const backTitle = document.createElement("strong");
     backTitle.className = "grid-back-title";
@@ -960,6 +1118,11 @@ function renderPanel() {
     return;
   }
 
+  if (state.currentDossie) {
+    renderDossieDetail(state.currentDossie);
+    return;
+  }
+
   const page = PAGE_BY_ID.get(state.currentPage);
   if (!page) {
     renderPanelState("Página indisponível", "A navegação atual não está configurada corretamente.", "error");
@@ -1013,7 +1176,7 @@ async function loadPanelMarkup(fileName) {
     return PANEL_CACHE.get(fileName);
   }
 
-  const response = await fetch(`textos/${fileName}`);
+  const response = await fetch(`textos/${fileName}?v=20260331`);
   if (!response.ok) {
     throw new Error(`Falha ao carregar textos/${fileName} (${response.status})`);
   }
@@ -1113,36 +1276,42 @@ function normalizePortfolioIntroPanel() {
 }
 
 function normalizeSimpleStaticPanel(pageId) {
-  const panelInner = elements.panel.querySelector(".panel-inner");
-  if (!panelInner) return;
+  // If content came from Supabase with panel-inner wrapper, flatten it
+  const legacyInner = elements.panel.querySelector(".panel-inner:not(.panel-inner-static-shell)");
+  if (legacyInner) {
+    while (legacyInner.firstChild) elements.panel.insertBefore(legacyInner.firstChild, legacyInner);
+    legacyInner.remove();
+  }
 
-  panelInner.classList.add("panel-inner-static", "panel-inner-static-shell");
+  // Wrap everything in shell div if not already present
+  let shell = elements.panel.querySelector(".panel-inner-static-shell");
+  if (!shell) {
+    shell = document.createElement("div");
+    shell.className = "panel-inner-static-shell";
+    while (elements.panel.firstChild) shell.appendChild(elements.panel.firstChild);
+    elements.panel.appendChild(shell);
+  }
 
-  const title = panelInner.querySelector("h1");
-  const notes = [...panelInner.querySelectorAll(":scope > .small-note")];
-  const actions = panelInner.querySelector(".panel-actions");
-
+  // Title: first heading
+  const title = shell.querySelector("h1, h2, h3");
   if (title) {
-    title.classList.add("static-page-title");
+    title.className = "static-page-title";
   }
 
-  if (notes[0]) {
-    notes[0].classList.add("static-page-subtitle");
+  // Subtitle: first p or heading after title
+  const allEls = [...shell.children];
+  const titleIdx = title ? allEls.indexOf(title) : -1;
+  const subtitle = allEls.find((el, i) => i > titleIdx && /^(P|H[23456])$/.test(el.tagName));
+  if (subtitle) {
+    subtitle.className = "static-page-subtitle";
   }
 
-  if (pageId === "contato" && notes[1]) {
-    notes[1].classList.add("static-page-meta");
-  } else if (notes[1]) {
-    notes[1].classList.add("static-page-intro");
-  }
-
-  if (actions) {
-    actions.classList.add("static-page-actions");
-  }
-
-  if (pageId === "inicio" && actions) {
-    actions.remove();
-  }
+  // Remaining paragraphs
+  allEls.forEach((el, i) => {
+    if (i > titleIdx && el !== subtitle && el.tagName === "P") {
+      el.className = "static-page-body";
+    }
+  });
 }
 
 function renderPortfolioOverview() {
@@ -1152,7 +1321,7 @@ function renderPortfolioOverview() {
   return `
     <div class="portfolio-overview-card">
       <p class="small-note">${escapeHtml(formatProjectCount(state.filtered.length, state.projects.length))}</p>
-      ${activeFilters ? `<div class="portfolio-overview-actions"><span class="small-note">${escapeHtml(selectedCount === 1 ? "1 filtro ativo" : `${selectedCount} filtros ativos`)}</span><button type="button" class="panel-button" data-action="clear-filters">Zerar navegação</button></div>` : ""}
+      ${activeFilters ? `<div class="portfolio-overview-actions"><span class="small-note">${escapeHtml(selectedCount === 1 ? "1 filtro ativo" : `${selectedCount} filtros ativos`)}</span><button type="button" class="panel-button" data-action="clear-filters">✖</button></div>` : ""}
     </div>
   `;
 }
@@ -1160,29 +1329,27 @@ function renderPortfolioOverview() {
 function renderProjectPanel() {
   setPanelMode("project");
   const project = state.currentProject;
-  const description = project.descricao || "";
+  const rawDesc = project.descricao || "";
+  const descText = rawDesc.replace(/<[^>]+>/g, "").trim();
+  const description = descText === "Texto em construção" ? "" : rawDesc;
   const descriptionClass = "project-description";
   const featuredBadge = project.isFeatured ? '<p class="project-badge">Destaque</p>' : "";
   const subtitle = project.subtitulo
     ? `<p class="project-subtitle-display">${escapeHtml(project.subtitulo)}</p>`
     : "";
   const context = renderProjectContextLine(project);
-  const navigation = renderProjectNavigation(project);
   const tags = renderClickableTags(project);
   const pairs = renderProjectPairs(project.pares);
-  const related = renderRelatedProjects(project);
 
   elements.panel.innerHTML = `
     <div class="panel-inner panel-inner-project">
-      ${navigation}
       ${featuredBadge}
       <h1 class="titulo-principal">${escapeHtml(project.titulo)}</h1>
       ${subtitle}
       ${context}
       ${description ? `<div class="${descriptionClass}">${description}</div>` : ""}
-      ${tags}
       ${pairs}
-      ${related}
+      ${tags}
     </div>
   `;
 }
@@ -1266,10 +1433,7 @@ function renderFilterPanel() {
   setPanelMode("filter");
   const criterion = FILTER_BY_ID.get(state.currentCriterionId) || FILTERS[0];
   const options = criterion ? getCriterionOptions(criterion) : [];
-  const isColorFilter = criterion?.id === "cores";
-  const optionsHtml = isColorFilter
-    ? `<div class="lista-filtros lista-filtros-cores">${options.map((option) => renderColorFilterOption(criterion.id, option)).join("")}</div>`
-    : `<div class="lista-filtros">${options.map((option) => renderFilterOption(criterion.id, option)).join("")}</div>`;
+  const optionsHtml = `<div class="lista-filtros">${options.map((option) => renderFilterOption(criterion.id, option)).join("")}</div>`;
 
   elements.panel.innerHTML = `
     <div class="panel-inner">

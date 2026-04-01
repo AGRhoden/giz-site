@@ -75,6 +75,21 @@ button {
   position: relative;
   overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.18) transparent;
+}
+
+.left::-webkit-scrollbar {
+  width: 4px;
+}
+
+.left::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.18);
+  border-radius: 2px;
+}
+
+.left::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .grid-view[hidden],
@@ -98,15 +113,20 @@ button {
   cursor: pointer;
   display: block;
   perspective: 700px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .grid-card-inner {
   position: relative;
   transform-style: preserve-3d;
-  transition: transform 0.42s cubic-bezier(.4, 0, .2, 1);
+  transition: transform 0.52s cubic-bezier(.34, 1.38, .64, 1);
 }
 
 @media (hover: hover) {
+  .grid-card:hover {
+    transform: scale(1.04);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  }
   .grid-card:hover .grid-card-inner {
     transform: rotateY(180deg);
   }
@@ -134,6 +154,23 @@ button {
   background: var(--color-placeholder);
   padding: 12px;
   text-align: center;
+  overflow: hidden;
+}
+
+.grid-back-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.grid-back-title,
+.grid-back-service {
+  position: relative;
+  z-index: 1;
 }
 
 .grid-back-title {
@@ -248,10 +285,10 @@ button {
 
 .project-subtitle-display {
   margin: 6px 0 0 0;
-  font-size: 20px;
+  font-size: clamp(20px, 2.3vw, 27px);
   line-height: 1.2;
   color: var(--color-text);
-  font-weight: var(--weight-medium);
+  font-weight: 200;
 }
 
 .project-context-line {
@@ -545,19 +582,37 @@ button {
   flex: 1;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
   text-align: center;
-  padding: 40px;
+  padding: 270px 40px 40px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.18) transparent;
 }
 
-.panel-content.panel-content-static {
-  align-items: flex-start;
+.panel-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.panel-content::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.18);
+  border-radius: 2px;
+}
+
+.panel-content::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 .panel-inner,
 .panel-state {
   max-width: 520px;
   width: 100%;
+}
+
+.panel-content > *:first-child,
+.panel-content > * > *:first-child {
+  margin-top: 0;
 }
 
 .panel-inner {
@@ -570,7 +625,7 @@ button {
     "acoes"
     "contador";
   grid-template-rows:
-    44px
+    auto
     auto
     auto
     40px
@@ -589,23 +644,36 @@ button {
   display: block;
   min-height: auto;
   text-align: center;
-  padding-top: 92px;
 }
 
 .panel-inner-static-shell {
   text-align: center;
-  padding-top: 108px;
+  width: 100%;
+  max-width: 520px;
 }
 
 .static-page-title {
   margin: 0;
+  font-size: 32px;
+  font-weight: 300;
+  line-height: 1.15;
 }
 
 .static-page-subtitle {
   margin: 12px 0 18px 0;
-  font-size: 18px;
-  line-height: 1.45;
-  font-weight: var(--weight-regular);
+  font-size: 26px;
+  line-height: 1.3;
+  font-weight: 300;
+}
+
+.static-page-body {
+  font-size: var(--font-size-body);
+  font-weight: 400;
+  line-height: 1.6;
+  margin: 12px 0 0 0;
+  max-width: 34ch;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .static-page-intro {
@@ -628,7 +696,6 @@ button {
 
 .portfolio-intro-title {
   margin: 0;
-  transform: translateY(-10px);
 }
 
 .panel-inner-portfolio-intro > .small-note {
@@ -641,6 +708,12 @@ button {
   font-size: var(--font-size-title);
 }
 
+.panel-inner-static-shell h1,
+.panel-inner-static-shell h2 {
+  font-size: 32px;
+  font-weight: 300;
+}
+
 .panel-content p {
   font-size: var(--font-size-body);
   line-height: 1.5;
@@ -648,7 +721,8 @@ button {
 
 .panel-inner-project .titulo-principal {
   margin: 0;
-  font-size: clamp(36px, 4.2vw, 48px);
+  font-size: clamp(25px, 2.9vw, 34px);
+  font-weight: 200;
   line-height: 1;
   letter-spacing: -0.04em;
 }
@@ -735,6 +809,8 @@ button {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 6px;
+  max-width: 80%;
+  margin: 0 auto;
 }
 
 .project-pair-card {
@@ -745,14 +821,12 @@ button {
   margin: 0;
   cursor: pointer;
   display: block;
-  aspect-ratio: 3 / 4;
-  overflow: hidden;
 }
 
 .project-pair-thumb {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  object-fit: contain;
   display: block;
 }
 
@@ -791,6 +865,11 @@ button {
   gap: 10px;
 }
 
+.panel-inner-project .project-tag-list {
+  justify-content: center;
+  margin-top: 28px;
+}
+
 .project-tag {
   display: inline-flex;
   align-items: center;
@@ -800,15 +879,11 @@ button {
 }
 
 .project-tag::before {
-  content: "•";
+  content: none;
 }
 
 .project-tag-swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  display: inline-block;
-  border: 1px solid rgba(0, 0, 0, 0.14);
+  display: none;
 }
 
 .criterio {
@@ -975,6 +1050,246 @@ button {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+/* ── Dossiê full-screen view ── */
+.dossie-view {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  overflow-y: auto;
+  z-index: 100;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.18) transparent;
+}
+
+.dossie-view::-webkit-scrollbar { width: 4px; }
+.dossie-view::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.18); border-radius: 2px; }
+.dossie-view::-webkit-scrollbar-track { background: transparent; }
+
+.dv-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 80px 100px;
+}
+
+.dv-header {
+  height: var(--menu-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-menu);
+  letter-spacing: 1px;
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.dv-menu-nav {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.dv-menu-nav .menu-item {
+  cursor: pointer;
+  user-select: none;
+}
+
+.dv-body {
+  padding-top: 48px;
+}
+
+.dv-back {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--font-size-note);
+  color: var(--color-muted);
+  padding: 0;
+  margin-bottom: 24px;
+  display: block;
+  letter-spacing: 0.05em;
+}
+
+.dv-back:hover { color: var(--color-text); }
+
+/* Melcher-style title: large centered with flanking rules */
+.dv-title {
+  font-size: clamp(26px, 3.5vw, 44px);
+  font-weight: var(--weight-bold);
+  margin: 0 0 48px 0;
+  line-height: 1.15;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.dv-title::before,
+.dv-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.25;
+}
+
+.dv-conteudo {
+  margin-top: 40px;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #222;
+}
+
+/* ── Dossiê list ── */
+.dossie-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.dossie-list-item {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  color: var(--color-text);
+  text-align: center;
+  padding: 6px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dossie-back {
+  margin-bottom: 16px;
+}
+
+.dossie-entry-conteudo {
+  margin-top: 20px;
+  font-size: var(--font-size-body);
+  line-height: 1.6;
+  text-align: left;
+}
+
+/* ── Dossiê carousel (Melcher style) ── */
+.dossie-carousel {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+.dc-track {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  overflow: hidden;
+  background: #f0ede4;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  perspective: 1200px;
+}
+
+.dc-slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.7s ease;
+}
+
+.dc-slide--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dc-slide--exit {
+  opacity: 0;
+}
+
+.dc-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* Setas dentro do frame — circulares */
+.dc-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 40px; /* ou line-height: 40px para centralização exata */
+  color: rgba(249, 247, 143, 0.25);
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 4;
+  transition: color 0.15s;
+}
+
+.dc-arrow:hover {
+  background: transparent;
+  color: rgba(243, 197, 99, 0.6);
+}
+
+.dc-arrow--prev { left: 12px; }
+.dc-arrow--next { right: 12px; }
+
+/* Dots circulares como Melcher */
+.dc-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.dc-dot {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+  font-size: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dc-dot::before {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid #aaa;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.dc-dot--active::before {
+  background: #555;
+  border-color: #555;
 }
 
 .visually-hidden {
