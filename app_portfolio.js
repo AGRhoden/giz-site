@@ -353,6 +353,17 @@ function handlePanelClick(event) {
 
   if (action === "filter-by-tag") {
     filterByTag(actionElement.dataset.criterionId, actionElement.dataset.value);
+    return;
+  }
+
+  if (action === "album-enter") {
+    enterAlbumMode();
+    return;
+  }
+
+  if (action === "album-exit") {
+    exitAlbumMode();
+    return;
   }
 }
 
@@ -393,15 +404,6 @@ function handleLeftClick(event) {
     return;
   }
 
-  if (action === "album-enter") {
-    enterAlbumMode();
-    return;
-  }
-
-  if (action === "album-exit") {
-    exitAlbumMode();
-    return;
-  }
 }
 
 async function loadProjects() {
