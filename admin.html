@@ -50,6 +50,7 @@
         <button class="admin-workspace-tab is-active" type="button" data-workspace-tab="projects">Projetos</button>
         <button class="admin-workspace-tab" type="button" data-workspace-tab="content">Conteúdo do site</button>
         <button class="admin-workspace-tab" type="button" data-workspace-tab="dossie">Dossiê</button>
+        <button class="admin-workspace-tab" type="button" data-workspace-tab="album">Álbum</button>
       </nav>
 
       <section class="admin-workspace is-active" data-workspace-section="projects">
@@ -612,6 +613,27 @@
           </section>
         </section>
       </section>
+
+      <!-- ── Álbum ──────────────────────────────────────────────────────────── -->
+      <section class="admin-workspace" data-workspace-section="album" hidden>
+        <section class="admin-layout">
+          <div class="admin-card" style="max-width:900px;">
+            <h2 style="margin:0 0 20px;font-size:18px;font-weight:700;">Álbum secreto</h2>
+
+            <div class="admin-media-upload" style="margin-bottom:20px;">
+              <label class="admin-field">
+                <span class="admin-label">Adicionar fotos</span>
+                <input type="file" id="album-upload-input" multiple accept="image/*" class="admin-input">
+              </label>
+              <button class="admin-button" type="button" id="album-upload-button">Fazer upload</button>
+            </div>
+            <p class="admin-feedback" id="album-feedback" aria-live="polite"></p>
+
+            <div id="album-photo-grid" class="album-admin-grid"></div>
+          </div>
+        </section>
+      </section>
+
     </section>
   </main>
 

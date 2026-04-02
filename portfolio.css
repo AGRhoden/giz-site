@@ -1644,3 +1644,139 @@ button.project-tag-link:hover {
 .ql-size-huge  { font-size: 1.8em; }
 .ql-indent-1 { padding-left: 2em; }
 .ql-indent-2 { padding-left: 4em; }
+
+/* ── Álbum secreto ──────────────────────────────────────────────────────────── */
+
+/* Card secreto no grid */
+.album-secret-card .album-secret-front {
+  aspect-ratio: 4/5;
+  background: #1a1714;
+}
+
+.album-secret-card .album-secret-back {
+  background: #111;
+}
+
+/* Verso das fotos do álbum: blur + escurecimento */
+.album-photo-back {
+  background: #111;
+}
+
+.album-back-blur {
+  opacity: 1 !important;
+  filter: blur(12px) brightness(0.35) saturate(0.6);
+}
+
+.album-back-legend {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+
+/* Painel da descoberta (coluna fixa) */
+.panel-album-discovery {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 24px;
+  height: 100%;
+  padding: 40px 0;
+}
+
+.album-discovery-text {
+  font-size: var(--font-size-note);
+  color: var(--color-muted);
+  line-height: 1.6;
+  max-width: 22ch;
+}
+
+.album-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.album-chip {
+  appearance: none;
+  border: 1px solid var(--color-line);
+  background: transparent;
+  border-radius: 100px;
+  padding: 7px 20px;
+  font-family: var(--font-body);
+  font-size: var(--font-size-note);
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  color: var(--color-text);
+  transition: background 120ms, color 120ms, border-color 120ms;
+  width: fit-content;
+}
+
+.album-chip-enter:hover {
+  background: var(--color-text);
+  color: var(--color-bg);
+  border-color: var(--color-text);
+}
+
+.album-chip-exit {
+  color: var(--color-muted);
+}
+
+.album-chip-exit:hover {
+  color: var(--color-text);
+  border-color: var(--color-muted);
+}
+
+/* Modo álbum ativo: travar menus e filtros */
+.album-mode-active .menu-nav,
+.album-mode-active [data-action="enter-criterion"],
+.album-mode-active [data-action="toggle-filter"],
+.album-mode-active [data-action="clear-filters"],
+.album-mode-active [data-action="show-portfolio-intro"],
+.album-mode-active .portfolio-botao,
+.album-mode-active .filter-panel {
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* Overlay fullscreen das fotos */
+.album-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.album-fullscreen[hidden] { display: none; }
+
+.album-fullscreen-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.album-fullscreen-close {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  appearance: none;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  transition: color 120ms;
+  z-index: 1001;
+}
+
+.album-fullscreen-close:hover { color: #fff; }
+
+.album-fullscreen-open { overflow: hidden; }

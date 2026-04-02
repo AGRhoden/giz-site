@@ -160,7 +160,11 @@
     workspace: "projects",
     editorSection: "details",
     activeSitePageId: "inicio",
-    editingDossie: null
+    editingDossie: null,
+    albumPhotos: [],
+    dossieLang: "pt",
+    dossieLangTitulo: { pt: "", en: "", es: "" },
+    dossieLangContent: { pt: "", en: "", es: "" }
   };
 
   if (!backend.url || !backend.anonKey) {
@@ -398,6 +402,10 @@
 
     if (state.workspace === "dossie") {
       renderDossieWorkspace();
+    }
+
+    if (state.workspace === "album") {
+      initAlbumWorkspace();
     }
   }
 
@@ -4344,4 +4352,164 @@
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
   }
+
+  // ── Álbum secreto ────────────────────────────────────────────────────────
+
+  var albumInitialized = false;
+
+  function initAlbumWorkspace() {
+    if (!albumInitialized) {
+      albumInitialized = true;
+      setupAlbumWorkspace();
+    }
+    loadAlbumPhotos();
+  }
+
+  function setupAlbumWorkspace() {
+    var uploadBtn = document.getElementById("album-upload-button");
+    var input = document.getElementById("album-upload-input");
+    if (uploadBtn) {
+      uploadBtn.addEventListener("click", function() {
+        if (input && input.files && input.files.length) {
+          uploadAlbumPhotos(Array.prototype.slice.call(input.files));
+        } else {
+          setAlbumFeedback("Selecione ao menos uma imagem.");
+        }
+      });
+    }
+  }
+
+  function loadAlbumPhotos() {
+    fetch(backend.url + "/rest/v1/album_photos?select=id,storage_path,url,legenda,created_at&order=created_at.desc", {
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(photos) {
+      state.albumPhotos = Array.isArray(photos) ? photos : [];
+      renderAlbumPhotoGrid(state.albumPhotos);
+    })
+    .catch(function() { setAlbumFeedback("Erro ao carregar fotos."); });
+  }
+
+  function uploadAlbumPhotos(files) {
+    var uploadBtn = document.getElementById("album-upload-button");
+    var input = document.getElementById("album-upload-input");
+    setAlbumFeedback("Enviando " + files.length + " foto(s)…");
+    if (uploadBtn) uploadBtn.disabled = true;
+
+    var uploads = files.map(function(file) {
+      var safeName = sanitizeFilename(file.name);
+      var path = "album/" + Date.now() + "_" + safeName;
+      return fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(path), {
+        method: "POST",
+        headers: {
+          apikey: backend.anonKey,
+          Authorization: "Bearer " + state.token,
+          "x-upsert": "true",
+          "Content-Type": file.type || "application/octet-stream"
+        },
+        body: file
+      })
+      .then(function(r) {
+        if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "upload falhou"); });
+        var url = buildPublicMediaUrl(path);
+        return fetch(backend.url + "/rest/v1/album_photos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Prefer: "return=representation",
+            apikey: backend.anonKey,
+            Authorization: "Bearer " + state.token
+          },
+          body: JSON.stringify({ storage_path: path, url: url, legenda: "" })
+        })
+        .then(function(r2) { return r2.json(); })
+        .then(function(rows) { return Array.isArray(rows) ? rows[0] : rows; });
+      });
+    });
+
+    Promise.all(uploads)
+    .then(function() {
+      if (input) input.value = "";
+      setAlbumFeedback("Upload concluído.");
+      loadAlbumPhotos();
+    })
+    .catch(function(err) { setAlbumFeedback("Erro: " + err.message); })
+    .finally(function() { if (uploadBtn) uploadBtn.disabled = false; });
+  }
+
+  function saveAlbumLegenda(id, legenda) {
+    fetch(backend.url + "/rest/v1/album_photos?id=eq." + encodeURIComponent(id), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify({ legenda: legenda })
+    }).catch(function() { setAlbumFeedback("Erro ao salvar legenda."); });
+  }
+
+  function deleteAlbumPhoto(id, storagePath) {
+    setAlbumFeedback("Removendo…");
+    deleteStorageObject(storagePath)
+    .catch(function() {})
+    .then(function() {
+      return fetch(backend.url + "/rest/v1/album_photos?id=eq." + encodeURIComponent(id), {
+        method: "DELETE",
+        headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
+      });
+    })
+    .then(function() {
+      setAlbumFeedback("Foto removida.");
+      loadAlbumPhotos();
+    })
+    .catch(function() { setAlbumFeedback("Erro ao remover foto."); });
+  }
+
+  function renderAlbumPhotoGrid(photos) {
+    var grid = document.getElementById("album-photo-grid");
+    if (!grid) return;
+    if (!photos || !photos.length) {
+      grid.innerHTML = '<p class="admin-copy" style="color:var(--admin-muted);margin:0;">Nenhuma foto no álbum.</p>';
+      return;
+    }
+    grid.innerHTML = photos.map(function(photo) {
+      return '<div class="album-admin-item" data-photo-id="' + escapeHtml(photo.id) + '">' +
+        '<img class="album-admin-thumb" src="' + escapeHtml(photo.url) + '" alt="" loading="lazy">' +
+        '<div class="album-admin-item-body">' +
+          '<textarea class="album-admin-legenda" rows="2" placeholder="Legenda (ex: Rio, 2023)">' + escapeHtml(photo.legenda || "") + '</textarea>' +
+          '<div class="album-admin-actions">' +
+            '<button class="admin-button admin-button-sm" type="button" data-album-save="' + escapeHtml(photo.id) + '">Salvar</button>' +
+            '<button class="admin-button admin-button-sm admin-button-danger" type="button" data-album-delete="' + escapeHtml(photo.id) + '" data-album-path="' + escapeHtml(photo.storage_path) + '">Remover</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join("");
+
+    grid.querySelectorAll("[data-album-save]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var id = btn.getAttribute("data-album-save");
+        var item = btn.closest(".album-admin-item");
+        var textarea = item && item.querySelector(".album-admin-legenda");
+        if (id && textarea) saveAlbumLegenda(id, textarea.value.trim());
+        setAlbumFeedback("Legenda salva.");
+      });
+    });
+
+    grid.querySelectorAll("[data-album-delete]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        var id = btn.getAttribute("data-album-delete");
+        var path = btn.getAttribute("data-album-path");
+        if (id && path) deleteAlbumPhoto(id, path);
+      });
+    });
+  }
+
+  function setAlbumFeedback(msg) {
+    var el = document.getElementById("album-feedback");
+    if (el) el.textContent = msg;
+  }
+
 })();

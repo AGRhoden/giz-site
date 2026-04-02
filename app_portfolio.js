@@ -59,10 +59,14 @@ const state = {
   pairFocusSlugs: null,
   leftMode: "grid",
   currentDossie: null,
-  dossieLang: "pt"
+  dossieLang: "pt",
+  albumDiscovered: false,
+  albumMode: false,
+  currentAlbumPhoto: null
 };
 
 let DOSSIES = [];
+let ALBUM_PHOTOS = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
@@ -206,7 +210,7 @@ async function initialize() {
   await loadSiteSettings();
   renderMenu();
   updateMenu();
-  await Promise.all([loadProjects(), preloadStaticPanels(), loadDossies()]);
+  await Promise.all([loadProjects(), preloadStaticPanels(), loadDossies(), loadAlbumPhotos()]);
   if (state.loadFailed) return;
   applyFilters();
   renderGrid();
@@ -229,6 +233,24 @@ function handleMenuClick(event) {
 }
 
 function handleGridClick(event) {
+  // Card secreto do álbum
+  const secretCard = event.target.closest("[data-album-secret]");
+  if (secretCard) {
+    discoverAlbum();
+    return;
+  }
+
+  // Card de foto do álbum (modo álbum ativo)
+  const albumCard = event.target.closest("[data-album-photo-index]");
+  if (albumCard) {
+    const idx = Number(albumCard.dataset.albumPhotoIndex);
+    if (!Number.isNaN(idx)) openAlbumPhoto(idx);
+    return;
+  }
+
+  // Modo álbum: bloqueia abertura de projetos
+  if (state.albumMode) return;
+
   const card = event.target.closest("[data-project-index]");
   if (!card) return;
 
@@ -367,6 +389,17 @@ function handleLeftClick(event) {
 
   if (action === "clear-pair-focus") {
     clearPairFocus();
+    return;
+  }
+
+  if (action === "album-enter") {
+    enterAlbumMode();
+    return;
+  }
+
+  if (action === "album-exit") {
+    exitAlbumMode();
+    return;
   }
 }
 
@@ -427,6 +460,21 @@ async function loadDossies() {
     }
   } catch (error) {
     console.error("Erro ao carregar dossiês:", error);
+  }
+}
+
+async function loadAlbumPhotos() {
+  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
+  try {
+    const response = await fetch(
+      new URL("/rest/v1/album_photos?select=id,url,legenda,created_at&order=created_at.asc", BACKEND_CONFIG.url).toString(),
+      { headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` } }
+    );
+    if (!response.ok) return;
+    const rows = await response.json();
+    if (Array.isArray(rows)) replaceArrayContents(ALBUM_PHOTOS, rows);
+  } catch (error) {
+    console.error("Erro ao carregar álbum:", error);
   }
 }
 
@@ -880,7 +928,45 @@ function renderGrid() {
     elements.grid.appendChild(card);
   });
 
+  // Card secreto do álbum — injetado em posição aleatória
+  if (ALBUM_PHOTOS.length) {
+    const secretCard = buildAlbumSecretCard();
+    const children = Array.from(elements.grid.children);
+    if (children.length > 0) {
+      const insertAt = Math.floor(Math.random() * (children.length + 1));
+      if (insertAt >= children.length) {
+        elements.grid.appendChild(secretCard);
+      } else {
+        elements.grid.insertBefore(secretCard, children[insertAt]);
+      }
+    } else {
+      elements.grid.appendChild(secretCard);
+    }
+  }
+
   elements.gridView.hidden = false;
+}
+
+function buildAlbumSecretCard() {
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "grid-card album-secret-card";
+  card.dataset.albumSecret = "true";
+  card.setAttribute("aria-label", "Carta desconhecida");
+
+  const inner = document.createElement("div");
+  inner.className = "grid-card-inner";
+
+  const front = document.createElement("div");
+  front.className = "grid-card-front album-secret-front";
+
+  const back = document.createElement("div");
+  back.className = "grid-card-back album-secret-back";
+
+  inner.appendChild(front);
+  inner.appendChild(back);
+  card.appendChild(inner);
+  return card;
 }
 
 function renderGridState(title, message, tone = "neutral") {
@@ -1161,6 +1247,11 @@ function zoomMove(event) {
 }
 
 function renderPanel() {
+  if (state.albumDiscovered || state.albumMode) {
+    renderAlbumDiscoveryPanel();
+    return;
+  }
+
   if (state.currentProject) {
     renderProjectPanel();
     return;
@@ -1983,4 +2074,134 @@ function escapeHtml(value) {
 
 function escapeAttribute(value) {
   return escapeHtml(value);
+}
+
+// ── Álbum secreto ────────────────────────────────────────────────────────────
+
+function discoverAlbum() {
+  state.albumDiscovered = true;
+  renderAlbumDiscoveryPanel();
+}
+
+function enterAlbumMode() {
+  state.albumMode = true;
+  document.body.classList.add("album-mode-active");
+  renderAlbumGrid();
+  renderAlbumDiscoveryPanel();
+}
+
+function exitAlbumMode() {
+  state.albumMode = false;
+  state.albumDiscovered = false;
+  state.currentAlbumPhoto = null;
+  document.body.classList.remove("album-mode-active");
+  closeAlbumFullscreen();
+  renderGrid();
+  renderPanel();
+}
+
+function renderAlbumDiscoveryPanel() {
+  setPanelMode("static");
+  elements.panel.innerHTML = `
+    <div class="panel-inner panel-inner-static panel-album-discovery">
+      <p class="album-discovery-text">Você descobriu a capa que não existe.</p>
+      <div class="album-chips">
+        <button type="button" class="album-chip album-chip-enter" data-action="album-enter">Entrar</button>
+        <button type="button" class="album-chip album-chip-exit" data-action="album-exit">Sair</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderAlbumGrid() {
+  const shuffledPhotos = shuffle([...ALBUM_PHOTOS]);
+  elements.grid.innerHTML = "";
+
+  shuffledPhotos.forEach((photo, index) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "grid-card";
+    card.dataset.albumPhotoIndex = String(index);
+    card.setAttribute("aria-label", photo.legenda || "Foto do álbum");
+    card.dataset._albumId = photo.id;
+
+    const inner = document.createElement("div");
+    inner.className = "grid-card-inner";
+
+    // Frente: foto
+    const front = document.createElement("div");
+    front.className = "grid-card-front";
+    const img = document.createElement("img");
+    img.src = photo.url;
+    img.alt = photo.legenda || "";
+    img.loading = "lazy";
+    front.appendChild(img);
+
+    // Verso: mesma foto desfocada + legenda
+    const back = document.createElement("div");
+    back.className = "grid-card-back album-photo-back";
+
+    const backBg = document.createElement("img");
+    backBg.className = "grid-back-bg album-back-blur";
+    backBg.src = photo.url;
+    backBg.alt = "";
+    backBg.setAttribute("aria-hidden", "true");
+    back.appendChild(backBg);
+
+    if (photo.legenda) {
+      const legend = document.createElement("span");
+      legend.className = "grid-back-title album-back-legend";
+      legend.textContent = photo.legenda;
+      back.appendChild(legend);
+    }
+
+    // Armazena índice real no array shuffled para o fullscreen
+    card.dataset.albumPhotoIndex = String(index);
+    card._albumPhoto = photo;
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
+    elements.grid.appendChild(card);
+  });
+
+  // Guarda cópia embaralhada para o fullscreen navegar
+  elements.grid._albumPhotos = shuffledPhotos;
+  elements.gridView.hidden = false;
+}
+
+function openAlbumPhoto(index) {
+  const photos = elements.grid._albumPhotos || ALBUM_PHOTOS;
+  const photo = photos[index];
+  if (!photo) return;
+  state.currentAlbumPhoto = { photo, index, photos };
+
+  // Overlay fullscreen
+  let overlay = document.getElementById("album-fullscreen");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "album-fullscreen";
+    overlay.className = "album-fullscreen";
+    overlay.innerHTML = `
+      <button type="button" class="album-fullscreen-close" aria-label="Fechar">✕</button>
+      <img class="album-fullscreen-img" src="" alt="">
+    `;
+    overlay.querySelector(".album-fullscreen-close").addEventListener("click", closeAlbumFullscreen);
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeAlbumFullscreen();
+    });
+    document.body.appendChild(overlay);
+  }
+
+  const imgEl = overlay.querySelector(".album-fullscreen-img");
+  imgEl.src = photo.url;
+  imgEl.alt = photo.legenda || "";
+  overlay.hidden = false;
+  document.body.classList.add("album-fullscreen-open");
+}
+
+function closeAlbumFullscreen() {
+  const overlay = document.getElementById("album-fullscreen");
+  if (overlay) overlay.hidden = true;
+  document.body.classList.remove("album-fullscreen-open");
 }

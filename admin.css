@@ -1434,6 +1434,58 @@ select {
   font-weight: 600;
 }
 
+/* ── Álbum: grade de fotos no admin ──────────────────────────────────────── */
+.album-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.album-admin-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--admin-paper-soft);
+  border: 1px solid var(--admin-line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.album-admin-thumb {
+  width: 100%;
+  aspect-ratio: 4/5;
+  object-fit: cover;
+  display: block;
+  background: var(--admin-bg-alt);
+}
+
+.album-admin-item-body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.album-admin-legenda {
+  width: 100%;
+  font-family: var(--admin-font);
+  font-size: 12px;
+  border: 1px solid var(--admin-line);
+  border-radius: 6px;
+  padding: 5px 8px;
+  background: var(--admin-paper);
+  color: var(--admin-text);
+  resize: none;
+}
+
+.album-admin-legenda:focus { outline: none; border-color: var(--admin-accent); }
+
+.album-admin-actions {
+  display: flex;
+  gap: 6px;
+}
+
 /* ── Quill: fontes Typekit no picker ─────────────────────────────────────── */
 .ql-font-laca { font-family: "laca", sans-serif; }
 .ql-font-laca-light { font-family: "laca", sans-serif; font-weight: 300; }
