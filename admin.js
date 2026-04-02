@@ -4476,9 +4476,14 @@
       return;
     }
     grid.innerHTML = photos.map(function(photo) {
-      return '<div class="album-admin-item" data-photo-id="' + escapeHtml(photo.id) + '">' +
+      var isSecret = Boolean(photo.is_secret);
+      return '<div class="album-admin-item' + (isSecret ? ' is-secret' : '') + '" data-photo-id="' + escapeHtml(photo.id) + '">' +
         '<img class="album-admin-thumb" src="' + escapeHtml(photo.url) + '" alt="" loading="lazy">' +
         '<div class="album-admin-item-body">' +
+          '<label class="album-secret-check">' +
+            '<input type="checkbox" data-album-secret-toggle="' + escapeHtml(photo.id) + '"' + (isSecret ? ' checked' : '') + '> ' +
+            'Capa secreta' +
+          '</label>' +
           '<textarea class="album-admin-legenda" rows="2" placeholder="Legenda (ex: Rio, 2023)">' + escapeHtml(photo.legenda || "") + '</textarea>' +
           '<div class="album-admin-actions">' +
             '<button class="admin-button admin-button-sm" type="button" data-album-save="' + escapeHtml(photo.id) + '">Salvar</button>' +
@@ -4487,6 +4492,31 @@
         '</div>' +
       '</div>';
     }).join("");
+
+    grid.querySelectorAll("[data-album-secret-toggle]").forEach(function(checkbox) {
+      checkbox.addEventListener("change", function() {
+        var id = checkbox.getAttribute("data-album-secret-toggle");
+        if (!checkbox.checked) {
+          // Desmarcar
+          setAlbumSecret(id, false);
+          return;
+        }
+        // Marcar: primeiro desmarcar todos os outros no banco e na UI
+        var allCheckboxes = grid.querySelectorAll("[data-album-secret-toggle]");
+        allCheckboxes.forEach(function(cb) {
+          if (cb !== checkbox && cb.checked) {
+            cb.checked = false;
+            var otherId = cb.getAttribute("data-album-secret-toggle");
+            var otherItem = cb.closest(".album-admin-item");
+            if (otherItem) otherItem.classList.remove("is-secret");
+            setAlbumSecret(otherId, false);
+          }
+        });
+        setAlbumSecret(id, true);
+        var item = checkbox.closest(".album-admin-item");
+        if (item) item.classList.add("is-secret");
+      });
+    });
 
     grid.querySelectorAll("[data-album-save]").forEach(function(btn) {
       btn.addEventListener("click", function() {
@@ -4505,6 +4535,19 @@
         if (id && path) deleteAlbumPhoto(id, path);
       });
     });
+  }
+
+  function setAlbumSecret(id, value) {
+    fetch(backend.url + "/rest/v1/album_photos?id=eq." + encodeURIComponent(id), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify({ is_secret: value })
+    }).catch(function() { setAlbumFeedback("Erro ao atualizar capa secreta."); });
   }
 
   function setAlbumFeedback(msg) {

@@ -67,6 +67,7 @@ const state = {
 
 let DOSSIES = [];
 let ALBUM_PHOTOS = [];
+let ALBUM_SECRET_CARD = null; // foto marcada como capa secreta
 
 document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
@@ -467,12 +468,15 @@ async function loadAlbumPhotos() {
   if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
   try {
     const response = await fetch(
-      new URL("/rest/v1/album_photos?select=id,url,legenda,created_at&order=created_at.asc", BACKEND_CONFIG.url).toString(),
+      new URL("/rest/v1/album_photos?select=id,url,legenda,is_secret,created_at&order=created_at.asc", BACKEND_CONFIG.url).toString(),
       { headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` } }
     );
     if (!response.ok) return;
     const rows = await response.json();
-    if (Array.isArray(rows)) replaceArrayContents(ALBUM_PHOTOS, rows);
+    if (Array.isArray(rows)) {
+      ALBUM_SECRET_CARD = rows.find((r) => r.is_secret) || null;
+      replaceArrayContents(ALBUM_PHOTOS, rows.filter((r) => !r.is_secret));
+    }
   } catch (error) {
     console.error("Erro ao carregar álbum:", error);
   }
@@ -929,8 +933,8 @@ function renderGrid() {
   });
 
   // Card secreto do álbum — injetado em posição aleatória
-  if (ALBUM_PHOTOS.length) {
-    const secretCard = buildAlbumSecretCard();
+  if (ALBUM_SECRET_CARD) {
+    const secretCard = buildAlbumSecretCard(ALBUM_SECRET_CARD);
     const children = Array.from(elements.grid.children);
     if (children.length > 0) {
       const insertAt = Math.floor(Math.random() * (children.length + 1));
@@ -947,21 +951,42 @@ function renderGrid() {
   elements.gridView.hidden = false;
 }
 
-function buildAlbumSecretCard() {
+function buildAlbumSecretCard(photo) {
   const card = document.createElement("button");
   card.type = "button";
-  card.className = "grid-card album-secret-card";
+  card.className = "grid-card";
   card.dataset.albumSecret = "true";
-  card.setAttribute("aria-label", "Carta desconhecida");
+  card.setAttribute("aria-label", photo.legenda || "Projeto");
 
   const inner = document.createElement("div");
   inner.className = "grid-card-inner";
 
+  // Frente: thumb da capa fake — idêntica às outras capas
   const front = document.createElement("div");
-  front.className = "grid-card-front album-secret-front";
+  front.className = "grid-card-front";
+  const img = document.createElement("img");
+  img.src = photo.url;
+  img.alt = photo.legenda || "";
+  img.loading = "lazy";
+  front.appendChild(img);
 
+  // Verso: mesma imagem em 0.3 opacity + legenda como título (igual projeto sem segundo still)
   const back = document.createElement("div");
-  back.className = "grid-card-back album-secret-back";
+  back.className = "grid-card-back";
+
+  const backBg = document.createElement("img");
+  backBg.className = "grid-back-bg";
+  backBg.src = photo.url;
+  backBg.alt = "";
+  backBg.setAttribute("aria-hidden", "true");
+  back.appendChild(backBg);
+
+  if (photo.legenda) {
+    const backTitle = document.createElement("strong");
+    backTitle.className = "grid-back-title";
+    backTitle.textContent = photo.legenda;
+    back.appendChild(backTitle);
+  }
 
   inner.appendChild(front);
   inner.appendChild(back);

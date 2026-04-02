@@ -1647,16 +1647,6 @@ button.project-tag-link:hover {
 
 /* ── Álbum secreto ──────────────────────────────────────────────────────────── */
 
-/* Card secreto no grid */
-.album-secret-card .album-secret-front {
-  aspect-ratio: 4/5;
-  background: #1a1714;
-}
-
-.album-secret-card .album-secret-back {
-  background: #111;
-}
-
 /* Verso das fotos do álbum: blur + escurecimento */
 .album-photo-back {
   background: #111;
