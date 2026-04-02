@@ -58,7 +58,8 @@ const state = {
   currentImageIndex: 0,
   pairFocusSlugs: null,
   leftMode: "grid",
-  currentDossie: null
+  currentDossie: null,
+  dossieLang: "pt"
 };
 
 let DOSSIES = [];
@@ -415,7 +416,7 @@ async function loadDossies() {
   if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
   try {
     const response = await fetch(
-      new URL("/rest/v1/dossies?select=id,titulo,conteudo,media,projeto_id&order=criado_em.asc", BACKEND_CONFIG.url).toString(),
+      new URL("/rest/v1/dossies?select=id,titulo,conteudo,titulo_en,conteudo_en,titulo_es,conteudo_es,media,projeto_id&order=criado_em.asc", BACKEND_CONFIG.url).toString(),
       { headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` } }
     );
     if (!response.ok) return;
@@ -442,6 +443,12 @@ function buildDossieListHtml(dossies) {
 </div>`;
 }
 
+function getDossieLocalized(dossie, field) {
+  const lang = state.dossieLang || "pt";
+  if (lang === "pt") return dossie[field] || "";
+  return dossie[field + "_" + lang] || dossie[field] || "";
+}
+
 function renderDossieDetail(dossie) {
   const slides = (Array.isArray(dossie.media) ? dossie.media : [])
     .filter((m) => /\.(png|jpe?g|gif|webp|svg)$/i.test(m.storage_path || ""));
@@ -466,16 +473,29 @@ function renderDossieDetail(dossie) {
     </div>`;
   })() : "";
 
+  const lang = state.dossieLang || "pt";
+  const titulo = getDossieLocalized(dossie, "titulo");
+  const conteudo = getDossieLocalized(dossie, "conteudo");
+
+  const langSwitcher = `<div class="dv-lang-switcher">
+    <button type="button" class="dv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt" aria-label="Português">🇧🇷</button>
+    <button type="button" class="dv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en" aria-label="English">🇺🇸</button>
+    <button type="button" class="dv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es" aria-label="Español">🇪🇸</button>
+  </div>`;
+
   elements.dossieView.innerHTML = `
     <div class="dv-inner">
       <header class="dv-header">
         <div class="dv-menu-nav">${elements.menuNav.innerHTML}</div>
       </header>
       <div class="dv-body">
-        <button type="button" class="dv-back" data-action="dossie-back">← Dossiê</button>
-        <h1 class="dv-title">${escapeHtml(dossie.titulo)}</h1>
+        <div class="dv-nav-row">
+          <button type="button" class="dv-back" data-action="dossie-back">← Dossiê</button>
+          ${langSwitcher}
+        </div>
+        <h1 class="dv-title">${escapeHtml(titulo)}</h1>
         ${carouselHtml}
-        ${dossie.conteudo ? `<div class="dv-conteudo">${dossie.conteudo}</div>` : ""}
+        ${conteudo ? `<div class="dv-conteudo">${conteudo}</div>` : ""}
       </div>
     </div>
   `;
@@ -486,6 +506,34 @@ function renderDossieDetail(dossie) {
       closeDossieView();
       const pageId = btn.dataset.pageId;
       if (pageId) openPage(pageId);
+    });
+  });
+
+  elements.dossieView.querySelectorAll(".dv-lang-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const newLang = btn.dataset.lang;
+      if (!newLang || newLang === state.dossieLang) return;
+      state.dossieLang = newLang;
+      // Atualizar título e conteúdo sem re-renderizar o carrossel
+      const newTitulo = getDossieLocalized(dossie, "titulo");
+      const newConteudo = getDossieLocalized(dossie, "conteudo");
+      const titleEl = elements.dossieView.querySelector(".dv-title");
+      const conteudoEl = elements.dossieView.querySelector(".dv-conteudo");
+      if (titleEl) titleEl.textContent = newTitulo;
+      if (conteudoEl) conteudoEl.innerHTML = newConteudo || "";
+      else if (newConteudo) {
+        // Criar elemento se não existia (dossie sem conteúdo pt mas com conteúdo em outra língua)
+        const body = elements.dossieView.querySelector(".dv-body");
+        if (body) {
+          const div = document.createElement("div");
+          div.className = "dv-conteudo";
+          div.innerHTML = newConteudo;
+          body.appendChild(div);
+        }
+      }
+      elements.dossieView.querySelectorAll(".dv-lang-btn").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.lang === newLang);
+      });
     });
   });
 

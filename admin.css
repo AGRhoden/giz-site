@@ -1409,6 +1409,31 @@ select {
   margin-top: 8px;
 }
 
+/* ── Dossiê: abas de idioma ──────────────────────────────────────────────── */
+.dossie-lang-tabs {
+  display: flex;
+  gap: 6px;
+}
+.dossie-lang-tab {
+  appearance: none;
+  border: 1px solid var(--admin-line);
+  background: var(--admin-paper-soft);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: var(--admin-font);
+  color: var(--admin-muted);
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.dossie-lang-tab:hover { border-color: var(--admin-accent); color: var(--admin-text); }
+.dossie-lang-tab.is-active {
+  background: var(--admin-accent);
+  border-color: var(--admin-accent);
+  color: #fff;
+  font-weight: 600;
+}
+
 /* ── Quill: fontes Typekit no picker ─────────────────────────────────────── */
 .ql-font-laca { font-family: "laca", sans-serif; }
 .ql-font-laca-light { font-family: "laca", sans-serif; font-weight: 300; }

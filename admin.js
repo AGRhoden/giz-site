@@ -117,9 +117,28 @@
     ["clean"]
   ];
 
-  var quillPage = new Quill("#site-page-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
-  var quillDesc = new Quill("#field-description-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
-  var quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+  // Quill: lazy init — inicializar só quando o container já está visível,
+  // pois pickers do Quill 1.x falham quando inicializados dentro de display:none.
+  var quillPage = null;
+  var quillDesc = null;
+  var quillDossie = null;
+
+  function initQuillPage() {
+    if (quillPage) return quillPage;
+    quillPage = new Quill("#site-page-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+    quillPage.on("text-change", handlePageContentInput);
+    return quillPage;
+  }
+  function initQuillDesc() {
+    if (quillDesc) return quillDesc;
+    quillDesc = new Quill("#field-description-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+    return quillDesc;
+  }
+  function initQuillDossie() {
+    if (quillDossie) return quillDossie;
+    quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+    return quillDossie;
+  }
   var siteConfigFeedback = document.getElementById("site-config-feedback");
 
   var state = {
@@ -250,7 +269,6 @@
   });
   siteConfigForm.addEventListener("click", handleSiteConfigClick);
   siteConfigForm.addEventListener("input", handleSiteConfigInput);
-  quillPage.on("text-change", handlePageContentInput);
   siteConfigSaveButton.addEventListener("click", handleSiteConfigSave);
   filterAddButton.addEventListener("click", function() {
     filterAddForm.hidden = false;
@@ -1162,7 +1180,7 @@
     fieldStatus.value = project.status || "draft";
     fieldSortYear.value = formatSortYearInput(project.sort_year);
     fieldFeatured.checked = Boolean(project.is_featured);
-    quillDesc.root.innerHTML = project.description || "";
+    initQuillDesc().root.innerHTML = project.description || "";
     renderServicoChips();
     syncDossieSelect(project.dossie_id || "");
     state.pendingPairIds = [];
@@ -1557,7 +1575,7 @@
 
   // ── Dossiê vinculado ──────────────────────────────────────────────────────
   function loadDossies() {
-    return fetch(backend.url + "/rest/v1/dossies?select=id,titulo,conteudo,media,projeto_id,criado_em,atualizado_em&order=titulo.asc", {
+    return fetch(backend.url + "/rest/v1/dossies?select=id,titulo,conteudo,titulo_en,conteudo_en,titulo_es,conteudo_es,media,projeto_id,criado_em,atualizado_em&order=titulo.asc", {
       headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
     })
     .then(function(r) { return r.json(); })
@@ -1585,16 +1603,42 @@
 
   // ── Dossiê CRUD ──────────────────────────────────────────────────────────────
 
+  function switchDossieLanguage(lang) {
+    var tituloEl = document.getElementById("dossie-field-titulo");
+    var currentLang = state.dossieLang || "pt";
+    // Salvar valores atuais no estado
+    if (tituloEl) state.dossieLangTitulo[currentLang] = tituloEl.value;
+    if (quillDossie) state.dossieLangContent[currentLang] = quillDossie.root.innerHTML;
+    // Trocar idioma
+    state.dossieLang = lang;
+    // Restaurar valores do novo idioma
+    if (tituloEl) tituloEl.value = state.dossieLangTitulo[lang] || "";
+    if (quillDossie) quillDossie.root.innerHTML = state.dossieLangContent[lang] || "";
+    // Atualizar UI das abas
+    document.querySelectorAll(".dossie-lang-tab").forEach(function(btn) {
+      btn.classList.toggle("is-active", btn.dataset.lang === lang);
+    });
+  }
+
   function setupDossieWorkspace() {
     var newBtn = document.getElementById("dossie-new-button");
     var cancelBtn = document.getElementById("dossie-form-cancel");
     var saveBtn = document.getElementById("dossie-form-save");
     var deleteBtn = document.getElementById("dossie-form-delete");
     var uploadBtn = document.getElementById("dossie-media-upload-button");
+    var langTabs = document.getElementById("dossie-lang-tabs");
 
     if (newBtn) newBtn.addEventListener("click", function() { openDossieForm(null); });
     if (cancelBtn) cancelBtn.addEventListener("click", closeDossieForm);
     if (saveBtn) saveBtn.addEventListener("click", saveDossieRecord);
+    if (langTabs) {
+      langTabs.addEventListener("click", function(e) {
+        var btn = e.target.closest(".dossie-lang-tab");
+        if (!btn) return;
+        var lang = btn.dataset.lang;
+        if (lang && lang !== state.dossieLang) switchDossieLanguage(lang);
+      });
+    }
     if (deleteBtn) {
       deleteBtn.addEventListener("click", function() {
         if (state.editingDossie) deleteDossieRecord(state.editingDossie.id);
@@ -1616,8 +1660,12 @@
   function openDossieForm(dossie) {
     state.editingDossie = dossie || null;
 
+    // Mostrar form antes de inicializar o Quill para que o container não esteja em display:none
     var listView = document.getElementById("dossie-list-view");
     var formView = document.getElementById("dossie-form-view");
+    setHidden(listView, true);
+    setHidden(formView, false);
+
     var heading = document.getElementById("dossie-form-heading");
     var tituloEl = document.getElementById("dossie-field-titulo");
     var projetoEl = document.getElementById("dossie-field-projeto");
@@ -1626,7 +1674,6 @@
     var feedback = document.getElementById("dossie-form-feedback");
 
     if (heading) heading.textContent = dossie ? "Editar dossiê" : "Novo dossiê";
-    if (tituloEl) tituloEl.value = dossie ? String(dossie.titulo || "") : "";
     if (feedback) feedback.textContent = "";
 
     if (projetoEl) {
@@ -1640,9 +1687,30 @@
       projetoEl.value = dossie && dossie.projeto_id ? dossie.projeto_id : "";
     }
 
-    if (quillDossie) {
-      quillDossie.root.innerHTML = dossie && dossie.conteudo ? dossie.conteudo : "";
-    }
+    // Inicializar Quill lazy (container já visível agora)
+    initQuillDossie();
+
+    // Estado multilíngue
+    state.dossieLang = "pt";
+    state.dossieLangTitulo = {
+      pt: dossie ? String(dossie.titulo || "") : "",
+      en: dossie ? String(dossie.titulo_en || "") : "",
+      es: dossie ? String(dossie.titulo_es || "") : ""
+    };
+    state.dossieLangContent = {
+      pt: dossie ? String(dossie.conteudo || "") : "",
+      en: dossie ? String(dossie.conteudo_en || "") : "",
+      es: dossie ? String(dossie.conteudo_es || "") : ""
+    };
+
+    // Preencher campos com idioma PT (ativo por padrão)
+    if (tituloEl) tituloEl.value = state.dossieLangTitulo.pt;
+    if (quillDossie) quillDossie.root.innerHTML = state.dossieLangContent.pt;
+
+    // Resetar abas para PT
+    document.querySelectorAll(".dossie-lang-tab").forEach(function(btn) {
+      btn.classList.toggle("is-active", btn.dataset.lang === "pt");
+    });
 
     setHidden(deleteBtn, !dossie);
     setHidden(mediaSection, !dossie);
@@ -1654,8 +1722,6 @@
       if (mediaList) mediaList.innerHTML = "";
     }
 
-    setHidden(listView, true);
-    setHidden(formView, false);
   }
 
   function closeDossieForm() {
@@ -1673,16 +1739,25 @@
     var deleteBtn = document.getElementById("dossie-form-delete");
     var mediaSection = document.getElementById("dossie-media-section");
 
-    var titulo = tituloEl ? String(tituloEl.value || "").trim() : "";
+    // Capturar conteúdo do idioma atualmente visível antes de montar o payload
+    var currentLang = state.dossieLang || "pt";
+    if (tituloEl) state.dossieLangTitulo[currentLang] = tituloEl.value;
+    if (quillDossie) state.dossieLangContent[currentLang] = quillDossie.root.innerHTML;
+
+    var titulo = (state.dossieLangTitulo.pt || "").trim();
     if (!titulo) {
-      if (feedback) feedback.textContent = "Preencha o título.";
+      if (feedback) feedback.textContent = "Preencha o título em português.";
       return;
     }
 
     var payload = {
-      titulo: titulo,
-      conteudo: quillDossie ? (quillDossie.root.innerHTML || null) : null,
-      projeto_id: projetoEl && projetoEl.value ? projetoEl.value : null
+      titulo:      state.dossieLangTitulo.pt || null,
+      conteudo:    state.dossieLangContent.pt || null,
+      titulo_en:   state.dossieLangTitulo.en || null,
+      conteudo_en: state.dossieLangContent.en || null,
+      titulo_es:   state.dossieLangTitulo.es || null,
+      conteudo_es: state.dossieLangContent.es || null,
+      projeto_id:  projetoEl && projetoEl.value ? projetoEl.value : null
     };
 
     if (feedback) feedback.textContent = "Salvando…";
@@ -1986,7 +2061,7 @@
         project_type: getProjectTypeValue(),
         status: nextStatus,
         sort_year: nextSortYear,
-        description: quillDesc.root.innerHTML || null,
+        description: quillDesc ? (quillDesc.root.innerHTML || null) : null,
         is_featured: Boolean(fieldFeatured.checked),
         servico: getServicoValue(),
         dossie_id: fieldDossieSelect.value || null,
@@ -2450,7 +2525,7 @@
     }).join("");
 
     sitePageMeta.textContent = getSitePageMeta(activePage);
-    quillPage.root.innerHTML = pageContent || "";
+    initQuillPage().root.innerHTML = pageContent || "";
 
     siteFilterFields.innerHTML = siteConfig.filters.map(function (item) {
       return '' +
@@ -2500,7 +2575,7 @@
 
   function handlePageContentInput() {
     if (!state.siteConfig.page_content) state.siteConfig.page_content = {};
-    state.siteConfig.page_content[state.activeSitePageId] = quillPage.root.innerHTML || "";
+    state.siteConfig.page_content[state.activeSitePageId] = quillPage ? (quillPage.root.innerHTML || "") : "";
   }
 
   function updateSiteNavigationLabel(pageId, value) {

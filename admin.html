@@ -563,22 +563,29 @@
                   <button class="admin-secondary-button" type="button" id="dossie-form-cancel">← Voltar</button>
                 </div>
                 <div class="admin-inline-form">
-                  <div class="admin-site-grid">
-                    <label class="admin-field">
-                      <span class="admin-label">Título</span>
-                      <input class="admin-input" type="text" id="dossie-field-titulo" placeholder="Título do dossiê">
-                    </label>
-                    <label class="admin-field">
-                      <span class="admin-label">Projeto vinculado</span>
-                      <select class="admin-input" id="dossie-field-projeto">
-                        <option value="">Nenhum</option>
-                      </select>
-                    </label>
-                  </div>
                   <label class="admin-field">
+                    <span class="admin-label">Projeto vinculado</span>
+                    <select class="admin-input" id="dossie-field-projeto">
+                      <option value="">Nenhum</option>
+                    </select>
+                  </label>
+
+                  <!-- Abas de idioma -->
+                  <div class="dossie-lang-tabs" id="dossie-lang-tabs">
+                    <button class="dossie-lang-tab is-active" type="button" data-lang="pt">🇧🇷 PT</button>
+                    <button class="dossie-lang-tab" type="button" data-lang="en">🇺🇸 EN</button>
+                    <button class="dossie-lang-tab" type="button" data-lang="es">🇪🇸 ES</button>
+                  </div>
+
+                  <div class="admin-field">
+                    <span class="admin-label">Título</span>
+                    <input class="admin-input" type="text" id="dossie-field-titulo" placeholder="Título do dossiê">
+                  </div>
+                  <div class="admin-field">
                     <span class="admin-label">Conteúdo</span>
                     <div id="dossie-quill-editor" style="min-height:220px;"></div>
-                  </label>
+                  </div>
+                  <p class="admin-copy" style="font-size:12px;color:var(--admin-muted);margin:0;">O carrossel de mídia é compartilhado entre os idiomas.</p>
                 </div>
                 <div class="admin-inline-actions" style="margin-top:20px;">
                   <button class="admin-button" type="button" id="dossie-form-save">Salvar</button>
