@@ -551,7 +551,6 @@ function renderDossieDetail(dossie) {
       <div class="dv-body">
         <div class="dv-nav-row">
           ${prevBtn}
-          <button type="button" class="dv-back" data-action="dossie-back">Dossiê</button>
           ${nextBtn}
         </div>
         <div class="dv-title-row">
@@ -608,8 +607,6 @@ function renderDossieDetail(dossie) {
   elements.dossieView.hidden = false;
   elements.layout.hidden = true;
   document.body.classList.add("dossie-view-open");
-
-  elements.dossieView.querySelector("[data-action='dossie-back']")?.addEventListener("click", closeDossieView);
 
   elements.dossieView.querySelector("[data-action='dossie-prev']")?.addEventListener("click", () => {
     if (prevDossie) { state.currentDossie = prevDossie; renderDossieDetail(prevDossie); }

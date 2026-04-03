@@ -1105,11 +1105,11 @@ button {
 }
 
 .dv-nav-row {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-bottom: 24px;
-  gap: 8px;
+  gap: 16px;
 }
 
 .dv-back {
@@ -1136,10 +1136,7 @@ button {
   color: var(--color-muted);
   padding: 0;
   letter-spacing: 0.03em;
-  max-width: 28%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  max-width: 45%;
   transition: color 120ms;
 }
 
