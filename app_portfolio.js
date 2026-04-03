@@ -532,10 +532,21 @@ function renderDossieDetail(dossie) {
   const conteudo = getDossieLocalized(dossie, "conteudo");
 
   const langSwitcher = `<div class="dv-lang-switcher">
-    <button type="button" class="dv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt" aria-label="Português">🇧🇷</button>
-    <button type="button" class="dv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en" aria-label="English">🇺🇸</button>
-    <button type="button" class="dv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es" aria-label="Español">🇪🇸</button>
+    <button type="button" class="dv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt" aria-label="Português">P</button>
+    <button type="button" class="dv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en" aria-label="English">EN</button>
+    <button type="button" class="dv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es" aria-label="Español">ES</button>
   </div>`;
+
+  const currentIndex = DOSSIES.findIndex((d) => d.id === dossie.id);
+  const prevDossie = currentIndex > 0 ? DOSSIES[currentIndex - 1] : null;
+  const nextDossie = currentIndex < DOSSIES.length - 1 ? DOSSIES[currentIndex + 1] : null;
+
+  const prevBtn = prevDossie
+    ? `<button type="button" class="dv-sibling dv-sibling--prev" data-action="dossie-prev">← ${escapeHtml(prevDossie.titulo)}</button>`
+    : `<span class="dv-sibling dv-sibling--prev"></span>`;
+  const nextBtn = nextDossie
+    ? `<button type="button" class="dv-sibling dv-sibling--next" data-action="dossie-next">${escapeHtml(nextDossie.titulo)} →</button>`
+    : `<span class="dv-sibling dv-sibling--next"></span>`;
 
   elements.dossieView.innerHTML = `
     <div class="dv-inner">
@@ -544,10 +555,14 @@ function renderDossieDetail(dossie) {
       </header>
       <div class="dv-body">
         <div class="dv-nav-row">
-          <button type="button" class="dv-back" data-action="dossie-back">← Dossiê</button>
+          ${prevBtn}
+          <button type="button" class="dv-back" data-action="dossie-back">Dossiê</button>
+          ${nextBtn}
+        </div>
+        <div class="dv-title-row">
+          <h1 class="dv-title">${escapeHtml(titulo)}</h1>
           ${langSwitcher}
         </div>
-        <h1 class="dv-title">${escapeHtml(titulo)}</h1>
         ${carouselHtml}
         ${conteudo ? `<div class="dv-conteudo">${conteudo}</div>` : ""}
       </div>
@@ -596,6 +611,13 @@ function renderDossieDetail(dossie) {
   document.body.classList.add("dossie-view-open");
 
   elements.dossieView.querySelector("[data-action='dossie-back']")?.addEventListener("click", closeDossieView);
+
+  elements.dossieView.querySelector("[data-action='dossie-prev']")?.addEventListener("click", () => {
+    if (prevDossie) { state.currentDossie = prevDossie; renderDossieDetail(prevDossie); }
+  });
+  elements.dossieView.querySelector("[data-action='dossie-next']")?.addEventListener("click", () => {
+    if (nextDossie) { state.currentDossie = nextDossie; renderDossieDetail(nextDossie); }
+  });
 
   if (slides.length > 1) initDossieCarousel();
 }

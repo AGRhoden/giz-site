@@ -1125,6 +1125,41 @@ button {
 
 .dv-back:hover { color: var(--color-text); }
 
+.dv-sibling {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--color-muted);
+  padding: 0;
+  letter-spacing: 0.03em;
+  max-width: 28%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 120ms;
+}
+
+.dv-sibling:hover { color: var(--color-text); }
+.dv-sibling--prev { text-align: left; }
+.dv-sibling--next { text-align: right; }
+span.dv-sibling { pointer-events: none; }
+
+.dv-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.dv-title-row .dv-title {
+  margin-bottom: 0;
+  flex: 1;
+}
+
 .dv-lang-switcher {
   display: flex;
   gap: 4px;
@@ -1133,18 +1168,31 @@ button {
 .dv-lang-btn {
   appearance: none;
   background: none;
-  border: 1px solid transparent;
-  border-radius: 6px;
+  border: 1.5px solid #008080;
+  border-radius: 50%;
   cursor: pointer;
-  font-size: 20px;
-  line-height: 1;
-  padding: 3px 5px;
+  font-size: 10px;
+  font-family: var(--font-body);
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.03em;
+  color: #008080;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
   opacity: 0.45;
-  transition: opacity 120ms, border-color 120ms;
+  transition: opacity 120ms, background 120ms, color 120ms;
+  flex-shrink: 0;
 }
 
-.dv-lang-btn:hover { opacity: 0.8; }
-.dv-lang-btn.is-active { opacity: 1; border-color: rgba(0,0,0,0.18); }
+.dv-lang-btn:hover { opacity: 0.75; }
+.dv-lang-btn.is-active {
+  opacity: 1;
+  background: #008080;
+  color: #fff;
+}
 
 /* Melcher-style title: large centered with flanking rules */
 .dv-title {
@@ -1745,8 +1793,8 @@ button.project-tag-link:hover {
 .album-fullscreen[hidden] { display: none; }
 
 .album-fullscreen-img {
-  max-width: 100%;
-  max-height: 100%;
+  max-width: 55vw;
+  max-height: 55vh;
   object-fit: contain;
   display: block;
 }
