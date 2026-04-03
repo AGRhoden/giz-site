@@ -1105,10 +1105,11 @@ button {
 }
 
 .dv-nav-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: space-between;
   margin-bottom: 24px;
+  gap: 8px;
 }
 
 .dv-back {
@@ -1149,15 +1150,15 @@ span.dv-sibling { pointer-events: none; }
 
 .dv-title-row {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 8px;
 }
 
 .dv-title-row .dv-title {
+  width: 100%;
   margin-bottom: 0;
-  flex: 1;
 }
 
 .dv-lang-switcher {
