@@ -1149,15 +1149,14 @@ span.dv-sibling { pointer-events: none; }
 
 .dv-title-row {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 8px;
 }
 
 .dv-title-row .dv-title {
   margin-bottom: 0;
-  flex: 1;
 }
 
 .dv-lang-switcher {

@@ -531,11 +531,6 @@ function renderDossieDetail(dossie) {
   const titulo = getDossieLocalized(dossie, "titulo");
   const conteudo = getDossieLocalized(dossie, "conteudo");
 
-  const langSwitcher = `<div class="dv-lang-switcher">
-    <button type="button" class="dv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt" aria-label="Português">P</button>
-    <button type="button" class="dv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en" aria-label="English">EN</button>
-    <button type="button" class="dv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es" aria-label="Español">ES</button>
-  </div>`;
 
   const currentIndex = DOSSIES.findIndex((d) => d.id === dossie.id);
   const prevDossie = currentIndex > 0 ? DOSSIES[currentIndex - 1] : null;
@@ -561,7 +556,11 @@ function renderDossieDetail(dossie) {
         </div>
         <div class="dv-title-row">
           <h1 class="dv-title">${escapeHtml(titulo)}</h1>
-          ${langSwitcher}
+          <div class="dv-lang-switcher">
+            <button type="button" class="dv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt" aria-label="Português">P</button>
+            <button type="button" class="dv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en" aria-label="English">EN</button>
+            <button type="button" class="dv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es" aria-label="Español">ES</button>
+          </div>
         </div>
         ${carouselHtml}
         ${conteudo ? `<div class="dv-conteudo">${conteudo}</div>` : ""}
@@ -956,8 +955,8 @@ function renderGrid() {
     elements.grid.appendChild(card);
   });
 
-  // Card secreto do álbum — injetado em posição aleatória
-  if (ALBUM_SECRET_CARD) {
+  // Card secreto do álbum — só no grid inicial (sem filtros, sem critério, sem par em foco)
+  if (ALBUM_SECRET_CARD && state.portfolioMode === "intro" && !state.pairFocusSlugs) {
     const secretCard = buildAlbumSecretCard(ALBUM_SECRET_CARD);
     const children = Array.from(elements.grid.children);
     if (children.length > 0) {
