@@ -450,31 +450,29 @@
           <section class="admin-content-main">
             <details class="admin-card admin-collapsible admin-site-content-panel" open>
               <summary class="admin-collapsible-summary">
-                <div><h2>Estrutura pública</h2></div>
+                <div>
+                  <h2>Navegação e filtros</h2>
+                  <p class="admin-copy">Rótulos do menu e critérios do portfólio. Textos de página são editados diretamente nos arquivos <code>textos/*.html</code>.</p>
+                </div>
               </summary>
 
               <form class="admin-site-config" id="site-config-form">
                 <details class="admin-section-card admin-collapsible" open>
                   <summary class="admin-collapsible-summary">
-                    <div><h3>Menu principal</h3></div>
+                    <div>
+                      <h3>Menu principal</h3>
+                      <p class="admin-copy">Rótulos exibidos na navegação do site.</p>
+                    </div>
                   </summary>
                   <div class="admin-site-grid" id="site-navigation-fields"></div>
                 </details>
 
                 <details class="admin-section-card admin-collapsible" open>
                   <summary class="admin-collapsible-summary">
-                    <div><h3>Textos das páginas</h3></div>
-                  </summary>
-                  <div class="admin-site-page-tabs" id="site-page-tabs"></div>
-                  <div class="admin-site-page-meta" id="site-page-meta"></div>
-                  <div class="admin-field">
-                      <div id="site-page-quill" style="min-height:180px;"></div>
-                  </div>
-                </details>
-
-                <details class="admin-section-card admin-collapsible" open>
-                  <summary class="admin-collapsible-summary">
-                    <div><h3>Trilhas do portfólio</h3></div>
+                    <div>
+                      <h3>Trilhas do portfólio</h3>
+                      <p class="admin-copy">Nome, resumo e descrição de cada critério de filtro.</p>
+                    </div>
                   </summary>
                   <div class="admin-site-filter-list" id="site-filter-fields"></div>
                   <div class="admin-inline-form admin-filter-add-form" id="filter-add-form" hidden>
@@ -490,7 +488,7 @@
                 </details>
 
                 <div class="admin-inline-actions">
-                  <button class="admin-button" id="site-config-save-button" type="button">Salvar conteúdo do site</button>
+                  <button class="admin-button" id="site-config-save-button" type="button">Salvar configuração</button>
                 </div>
                 <p class="admin-feedback" id="site-config-feedback" aria-live="polite"></p>
               </form>

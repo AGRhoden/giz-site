@@ -238,8 +238,8 @@
   batchClearSelectionButton.addEventListener("click", clearBatchSelection);
   batchApplyPublisherButton.addEventListener("click", handleBatchPublisherApply);
   batchClearPublisherButton.addEventListener("click", handleBatchPublisherClear);
-  flagReviewText.addEventListener("change", handleEditorialFlagChange);
-  flagFutureFeature.addEventListener("change", handleEditorialFlagChange);
+  if (flagReviewText) flagReviewText.addEventListener("change", handleEditorialFlagChange);
+  if (flagFutureFeature) flagFutureFeature.addEventListener("change", handleEditorialFlagChange);
   pairSearch.addEventListener("input", renderPairResults);
   pairResults.addEventListener("click", handlePairCandidateToggle);
   pairConnectButton.addEventListener("click", handleAddPairs);
@@ -310,9 +310,8 @@
       mediaList.innerHTML = "";
       tagResults.innerHTML = "";
       pairSelectionPreview.innerHTML = "";
-      flagSummary.innerHTML = "";
+      if (flagSummary) flagSummary.innerHTML = "";
       state.siteConfig = createDefaultSiteConfig();
-      state.activeSitePageId = "inicio";
       renderWorkspaceTabs();
       renderTagManager();
       renderSiteConfigEditor();
@@ -2507,13 +2506,9 @@
   }
 
   function renderSiteConfigEditor() {
-    if (!siteNavigationFields || !sitePageTabs || !sitePageMeta || !siteFilterFields) return;
-
-    ensureActiveSitePage();
+    if (!siteNavigationFields || !siteFilterFields) return;
 
     var siteConfig = state.siteConfig || createDefaultSiteConfig();
-    var activePage = getSiteNavigationItem(state.activeSitePageId) || siteConfig.navigation[0] || { id: "inicio", label: "Início" };
-    var pageContent = siteConfig.page_content[activePage.id] || "";
 
     siteNavigationFields.innerHTML = siteConfig.navigation.map(function (item) {
       return '' +
@@ -2522,17 +2517,6 @@
           '<input class="admin-input" type="text" data-site-nav-id="' + escapeHtml(item.id) + '" value="' + escapeHtml(item.label || "") + '">' +
         '</label>';
     }).join("");
-
-    sitePageTabs.innerHTML = siteConfig.navigation.map(function (item) {
-      var className = "admin-editor-tab" + (item.id === activePage.id ? " is-active" : "");
-      return '' +
-        '<button class="' + className + '" type="button" data-site-page-id="' + escapeHtml(item.id) + '">' +
-          escapeHtml(item.label || item.id) +
-        '</button>';
-    }).join("");
-
-    sitePageMeta.textContent = getSitePageMeta(activePage);
-    initQuillPage().clipboard.dangerouslyPasteHTML(pageContent || "");
 
     siteFilterFields.innerHTML = siteConfig.filters.map(function (item) {
       return '' +
@@ -2545,6 +2529,14 @@
             '<span class="admin-label">Nome</span>' +
             '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="label" value="' + escapeHtml(item.label || "") + '">' +
           '</label>' +
+          '<label class="admin-field">' +
+            '<span class="admin-label">Resumo</span>' +
+            '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="summary" value="' + escapeHtml(item.summary || "") + '" placeholder="Linha breve de contexto">' +
+          '</label>' +
+          '<label class="admin-field">' +
+            '<span class="admin-label">Descrição</span>' +
+            '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="description" value="' + escapeHtml(item.description || "") + '" placeholder="Uma frase sobre o critério">' +
+          '</label>' +
         '</article>';
     }).join("");
 
@@ -2552,11 +2544,7 @@
   }
 
   function handleSiteConfigClick(event) {
-    var pageButton = event.target.closest("[data-site-page-id]");
-    if (!pageButton) return;
-
-    state.activeSitePageId = pageButton.getAttribute("data-site-page-id") || "inicio";
-    renderSiteConfigEditor();
+    // reserved for future click handling in site config form
   }
 
   function handleSiteConfigInput(event) {
@@ -2672,7 +2660,6 @@
   function handleSiteConfigSave(event) {
     if (event && event.preventDefault) event.preventDefault();
 
-    ensureActiveSitePage();
     setSiteConfigFeedback("Salvando conteúdo do site...", false);
     siteConfigSaveButton.disabled = true;
 
@@ -2727,9 +2714,7 @@
       labels: state.siteConfig && state.siteConfig.labels && typeof state.siteConfig.labels === "object"
         ? state.siteConfig.labels
         : {},
-      page_content: state.siteConfig && state.siteConfig.page_content && typeof state.siteConfig.page_content === "object"
-        ? state.siteConfig.page_content
-        : {}
+      page_content: {}
     };
   }
 
