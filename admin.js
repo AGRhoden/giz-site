@@ -3981,52 +3981,26 @@
 
   function updatePublicationPanel(project) {
     if (!project) {
-      publicationPill.textContent = "Rascunho";
-      publicationPill.dataset.status = "draft";
-      publicationState.textContent = "Rascunho";
-      publicationDate.textContent = "Não definido";
-      fieldFeatured.checked = false;
-      fieldFeatured.disabled = true;
-      flagReviewText.checked = false;
-      flagFutureFeature.checked = false;
-      flagReviewText.disabled = true;
-      flagFutureFeature.disabled = true;
-      checklistSummary.innerHTML = "";
-      checklistList.innerHTML = "";
-      flagSummary.innerHTML = "";
+      if (publicationPill) { publicationPill.textContent = "Rascunho"; publicationPill.dataset.status = "draft"; }
+      if (publicationState) publicationState.textContent = "Rascunho";
+      if (publicationDate) publicationDate.textContent = "Não definido";
+      if (fieldFeatured) { fieldFeatured.checked = false; fieldFeatured.disabled = true; }
       return;
     }
 
     var status = String(project.status || "draft");
-    publicationPill.textContent = formatStatusLabel(status);
-    publicationPill.dataset.status = status;
-    publicationState.textContent = formatStatusLabel(status);
-    publicationDate.textContent = project.sort_year ? String(project.sort_year) : "Não definido";
-    fieldFeatured.checked = Boolean(project.is_featured);
-    fieldFeatured.disabled = false;
-    flagReviewText.disabled = false;
-    flagFutureFeature.disabled = false;
-    syncPublicationChecklist(project);
+    if (publicationPill) { publicationPill.textContent = formatStatusLabel(status); publicationPill.dataset.status = status; }
+    if (publicationState) publicationState.textContent = formatStatusLabel(status);
+    if (publicationDate) publicationDate.textContent = project.sort_year ? String(project.sort_year) : "Não definido";
+    if (fieldFeatured) { fieldFeatured.checked = Boolean(project.is_featured); fieldFeatured.disabled = false; }
   }
 
   function syncEditorialFlagsPanel(projectId) {
-    flagReviewText.checked = hasEditorialFlag(projectId, "review_text");
-    flagFutureFeature.checked = hasEditorialFlag(projectId, "future_feature");
-    flagSummary.innerHTML = renderEditorialFlagSummary(projectId);
+    // flags panel removed — no-op
   }
 
   function syncPublicationChecklist(project) {
-    var checks = getPublicationChecks(project);
-    var readyCount = checks.filter(function (item) { return item.ok; }).length;
-
-    checklistSummary.innerHTML = '<span class="admin-status-pill">' + readyCount + '/' + checks.length + ' itens</span>';
-    checklistList.innerHTML = checks.map(function (item) {
-      return '' +
-        '<div class="admin-check-item ' + (item.ok ? 'is-ok' : 'is-missing') + '">' +
-          '<strong>' + escapeHtml(item.label) + '</strong>' +
-          '<span class="admin-check-badge ' + (item.ok ? 'is-ok' : 'is-missing') + '">' + (item.ok ? 'ok' : 'falta') + '</span>' +
-        '</div>';
-    }).join("");
+    // checklist panel removed — no-op
   }
 
   function getPublicationChecks(project) {
