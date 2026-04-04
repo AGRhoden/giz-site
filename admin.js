@@ -93,7 +93,6 @@
   var siteNavigationFields = document.getElementById("site-navigation-fields");
   var sitePageTabs = document.getElementById("site-page-tabs");
   var sitePageMeta = document.getElementById("site-page-meta");
-  var sitePageContent = document.getElementById("site-page-content");
   var siteFilterFields = document.getElementById("site-filter-fields");
   var siteConfigSaveButton = document.getElementById("site-config-save-button");
   var filterAddButton = document.getElementById("filter-add-button");
@@ -1188,7 +1187,7 @@
     fieldStatus.value = project.status || "draft";
     fieldSortYear.value = formatSortYearInput(project.sort_year);
     fieldFeatured.checked = Boolean(project.is_featured);
-    initQuillDesc().root.innerHTML = project.description || "";
+    initQuillDesc().clipboard.dangerouslyPasteHTML(project.description || "");
     renderServicoChips();
     syncDossieSelect(project.dossie_id || "");
     state.pendingPairIds = [];
@@ -1621,7 +1620,7 @@
     state.dossieLang = lang;
     // Restaurar valores do novo idioma
     if (tituloEl) tituloEl.value = state.dossieLangTitulo[lang] || "";
-    if (quillDossie) quillDossie.root.innerHTML = state.dossieLangContent[lang] || "";
+    if (quillDossie) quillDossie.clipboard.dangerouslyPasteHTML(state.dossieLangContent[lang] || "");
     // Atualizar UI das abas
     document.querySelectorAll(".dossie-lang-tab").forEach(function(btn) {
       btn.classList.toggle("is-active", btn.dataset.lang === lang);
@@ -1713,7 +1712,7 @@
 
     // Preencher campos com idioma PT (ativo por padrão)
     if (tituloEl) tituloEl.value = state.dossieLangTitulo.pt;
-    if (quillDossie) quillDossie.root.innerHTML = state.dossieLangContent.pt;
+    if (quillDossie) quillDossie.clipboard.dangerouslyPasteHTML(state.dossieLangContent.pt || "");
 
     // Resetar abas para PT
     document.querySelectorAll(".dossie-lang-tab").forEach(function(btn) {
@@ -2508,7 +2507,7 @@
   }
 
   function renderSiteConfigEditor() {
-    if (!siteNavigationFields || !sitePageTabs || !sitePageMeta || !sitePageContent || !siteFilterFields) return;
+    if (!siteNavigationFields || !sitePageTabs || !sitePageMeta || !siteFilterFields) return;
 
     ensureActiveSitePage();
 
@@ -2533,7 +2532,7 @@
     }).join("");
 
     sitePageMeta.textContent = getSitePageMeta(activePage);
-    initQuillPage().root.innerHTML = pageContent || "";
+    initQuillPage().clipboard.dangerouslyPasteHTML(pageContent || "");
 
     siteFilterFields.innerHTML = siteConfig.filters.map(function (item) {
       return '' +

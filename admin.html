@@ -77,7 +77,6 @@
                 <select class="admin-input" id="status-filter">
                   <option value="">Todos</option>
                   <option value="draft">Rascunho</option>
-                  <option value="review">Em revisão</option>
                   <option value="published">Publicado</option>
                   <option value="archived">Arquivado</option>
                 </select>
@@ -280,7 +279,6 @@
                   <span class="admin-label">Status</span>
                   <select class="admin-input" id="field-status">
                     <option value="draft">Rascunho</option>
-                    <option value="review">Em revisão</option>
                     <option value="published">Publicado</option>
                     <option value="archived">Arquivado</option>
                   </select>
@@ -320,41 +318,6 @@
                 </select>
               </div>
 
-              <div class="admin-details-grid admin-subsection">
-                <details class="admin-checklist-panel admin-section-card admin-collapsible" open>
-                  <summary class="admin-collapsible-summary">
-                    <div>
-                      <h3>Checklist de publicação</h3>
-                      <p class="admin-copy">Acompanhe o que ainda falta antes de publicar.</p>
-                    </div>
-                    <div class="admin-flag-summary" id="checklist-summary"></div>
-                  </summary>
-
-                  <div class="admin-checklist-list" id="checklist-list"></div>
-                </details>
-
-                <details class="admin-flag-panel admin-section-card admin-collapsible" open>
-                  <summary class="admin-collapsible-summary">
-                    <div>
-                      <h3>Flags editoriais</h3>
-                      <p class="admin-copy">Sinalizações internas de revisão e curadoria.</p>
-                    </div>
-                    <div class="admin-flag-summary" id="flag-summary"></div>
-                  </summary>
-
-                  <div class="admin-flag-grid">
-                    <label class="admin-flag-toggle admin-flag-toggle-review">
-                      <input id="flag-review-text" type="checkbox">
-                      <span><strong>Revisar texto</strong></span>
-                    </label>
-
-                    <label class="admin-flag-toggle admin-flag-toggle-feature">
-                      <input id="flag-future-feature" type="checkbox">
-                      <span><strong>Destaque futuro</strong></span>
-                    </label>
-                  </div>
-                </details>
-              </div>
             </section>
 
             <section class="admin-subsection admin-editor-section" data-editor-section="media">
