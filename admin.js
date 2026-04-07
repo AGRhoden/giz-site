@@ -2578,14 +2578,6 @@
             '<span class="admin-label">Nome</span>' +
             '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="label" value="' + escapeHtml(item.label || "") + '">' +
           '</label>' +
-          '<label class="admin-field">' +
-            '<span class="admin-label">Resumo</span>' +
-            '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="summary" value="' + escapeHtml(item.summary || "") + '" placeholder="Linha breve de contexto">' +
-          '</label>' +
-          '<label class="admin-field">' +
-            '<span class="admin-label">Descrição</span>' +
-            '<input class="admin-input" type="text" data-site-filter-id="' + escapeHtml(item.id) + '" data-site-filter-field="description" value="' + escapeHtml(item.description || "") + '" placeholder="Uma frase sobre o critério">' +
-          '</label>' +
         '</article>';
     }).join("");
 
