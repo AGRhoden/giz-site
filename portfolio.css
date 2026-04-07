@@ -413,6 +413,17 @@ button {
   user-select: none;
 }
 
+@keyframes viewer-slide-left {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes viewer-slide-right {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.viewer-slide-left  { animation: viewer-slide-left  0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.viewer-slide-right { animation: viewer-slide-right 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+
 .viewer-tap-prev,
 .viewer-tap-next {
   display: none;

@@ -243,20 +243,23 @@ function bindEvents() {
   }, { passive: true });
 
   let _wheelAccum = 0;
-  let _wheelTimer = null;
+  let _wheelLast = 0;
+  let _wheelLocked = false;
   elements.viewerShell.addEventListener("wheel", (e) => {
     if (state.leftMode !== "viewer") return;
-    if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY) * 0.6) return;
     e.preventDefault();
+    const now = Date.now();
+    if (now - _wheelLast > 300) { _wheelAccum = 0; _wheelLocked = false; }
+    _wheelLast = now;
+    if (_wheelLocked) return;
     _wheelAccum += e.deltaX;
-    clearTimeout(_wheelTimer);
-    _wheelTimer = setTimeout(() => {
-      if (Math.abs(_wheelAccum) > 40) {
-        if (_wheelAccum > 0) goToNextImage();
-        else goToPreviousImage();
-      }
+    if (Math.abs(_wheelAccum) > 50) {
+      _wheelLocked = true;
+      if (_wheelAccum > 0) goToNextImage("left");
+      else goToPreviousImage("right");
       _wheelAccum = 0;
-    }, 80);
+    }
   }, { passive: false });
 }
 
@@ -1228,7 +1231,7 @@ function createPairFocusSlugs(project) {
   return relatedProjects.map((item) => item.slug);
 }
 
-function renderViewer() {
+function renderViewer(slideDir) {
   if (!state.currentProject || state.leftMode === "grid") {
     elements.viewerShell.hidden = true;
     elements.viewerShell.innerHTML = "";
@@ -1284,6 +1287,14 @@ function renderViewer() {
       </button>
     </div>
   `;
+
+  if (slideDir) {
+    const img = document.getElementById("imgZoom");
+    if (img) {
+      img.classList.add("viewer-slide-" + slideDir);
+      img.addEventListener("animationend", () => img.classList.remove("viewer-slide-" + slideDir), { once: true });
+    }
+  }
 
   if (ENABLE_HOVER_ZOOM) {
     activateViewerZoom();
@@ -1397,22 +1408,20 @@ function fsMobilePrev() {
   renderMobileFs(getMobileFs());
 }
 
-function goToPreviousImage() {
+function goToPreviousImage(slideDir) {
   if (!state.currentProject || state.currentImageIndex <= 0) {
     closeViewer();
     return;
   }
-
   state.currentImageIndex -= 1;
-  renderViewer();
+  renderViewer(slideDir || "right");
 }
 
-function goToNextImage() {
+function goToNextImage(slideDir) {
   if (!state.currentProject) return;
   if (state.currentImageIndex >= state.currentProject.imagens.length - 1) return;
-
   state.currentImageIndex += 1;
-  renderViewer();
+  renderViewer(slideDir || "left");
 }
 
 function activateViewerZoom() {
