@@ -68,6 +68,9 @@ const state = {
 let DOSSIES = [];
 let ALBUM_PHOTOS = [];
 let ALBUM_SECRET_CARD = null; // foto marcada como capa secreta
+let _swipeTouchStartX = 0;
+let _swipeTouchStartY = 0;
+let _swipeActive = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
@@ -224,6 +227,20 @@ function bindEvents() {
   elements.panel.addEventListener("click", handlePanelClick);
   elements.viewerShell.addEventListener("click", handleViewerClick);
   elements.left.addEventListener("click", handleLeftClick);
+
+  elements.viewerShell.addEventListener("touchstart", (e) => {
+    _swipeTouchStartX = e.touches[0].clientX;
+    _swipeTouchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  elements.viewerShell.addEventListener("touchend", (e) => {
+    if (state.leftMode !== "viewer") return;
+    const dx = e.changedTouches[0].clientX - _swipeTouchStartX;
+    const dy = e.changedTouches[0].clientY - _swipeTouchStartY;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx) * 0.9) return;
+    if (dx < 0) goToNextImage();
+    else goToPreviousImage();
+  }, { passive: true });
 }
 
 function handleMenuClick(event) {
@@ -909,6 +926,10 @@ function renderGrid() {
       image.src = project.thumb;
       image.alt = project.titulo;
       image.loading = "lazy";
+      image.decoding = "async";
+      front.classList.add("loading");
+      image.addEventListener("load", () => front.classList.remove("loading"), { once: true });
+      image.addEventListener("error", () => front.classList.remove("loading"), { once: true });
       front.appendChild(image);
     } else {
       const placeholder = document.createElement("div");
@@ -1164,6 +1185,7 @@ function renderViewer() {
           id="imgZoom"
           src="${escapeAttribute(currentImage)}"
           alt="${escapeAttribute(project.titulo)}"
+          draggable="false"
         >
         <div class="zoom-lens" id="lens" aria-hidden="true"></div>
         ${renderViewerNavigation(imageCount)}
@@ -1183,6 +1205,7 @@ function renderViewer() {
   if (ENABLE_HOVER_ZOOM) {
     activateViewerZoom();
   }
+
 }
 
 function renderViewerNavigation(totalImages) {
@@ -1192,6 +1215,8 @@ function renderViewerNavigation(totalImages) {
   const nextDisabled = state.currentImageIndex >= totalImages - 1;
 
   return `
+    <button type="button" class="viewer-tap-prev${previousDisabled ? " inativo" : ""}" data-action="viewer-previous" aria-label="Imagem anterior" tabindex="-1"></button>
+    <button type="button" class="viewer-tap-next${nextDisabled ? " inativo" : ""}" data-action="viewer-next" aria-label="Próxima imagem" tabindex="-1"></button>
     <div class="viewer-nav" aria-label="Navegação entre imagens">
       <button
         type="button"
