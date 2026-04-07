@@ -572,11 +572,9 @@ function buildDossieListHtml(dossies) {
   <h1 class="static-page-title">Dossiê</h1>
   <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
   <div class="dossie-cards-wrap">
-    <div class="dossie-cards-row">
-      ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-prev"${prevDisabled} aria-label="Anteriores">&#8592;</button>` : ""}
-      <div class="dossie-cards-grid">${cards}</div>
-      ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-next"${nextDisabled} aria-label="Próximos">&#8594;</button>` : ""}
-    </div>
+    ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-prev"${prevDisabled} aria-label="Anteriores">&#8592;</button>` : ""}
+    <div class="dossie-cards-grid">${cards}</div>
+    ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-next"${nextDisabled} aria-label="Próximos">&#8594;</button>` : ""}
   </div>
 </div>`;
 }

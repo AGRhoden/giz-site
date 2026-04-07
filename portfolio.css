@@ -1309,20 +1309,27 @@ span.dv-sibling { pointer-events: none; }
 
 .dossie-cards-wrap {
   margin-top: 20px;
-}
-
-.dossie-cards-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
+  position: relative;
+  padding: 0 28px;
 }
 
 .dossie-cards-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  flex: 1;
-  min-width: 0;
+  grid-template-columns: repeat(3, 150px);
+  gap: 10px;
+  justify-content: center;
+}
+
+@media (max-width: 520px) {
+  .dossie-cards-grid {
+    grid-template-columns: repeat(2, 150px);
+  }
+}
+
+@media (max-width: 340px) {
+  .dossie-cards-grid {
+    grid-template-columns: 150px;
+  }
 }
 
 .dossie-card {
@@ -1340,22 +1347,20 @@ span.dv-sibling { pointer-events: none; }
 }
 
 .dossie-card-thumb {
-  width: 218px;
-  height: 126px;
+  width: 150px;
+  height: 86px;
   object-fit: cover;
   display: block;
   background: var(--color-placeholder);
-  flex-shrink: 0;
 }
 
 .dossie-card-thumb-placeholder {
-  width: 218px;
-  height: 126px;
+  width: 150px;
+  height: 86px;
   background: var(--color-placeholder);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .dossie-card-body {
@@ -1399,14 +1404,17 @@ span.dv-sibling { pointer-events: none; }
   cursor: pointer;
   color: var(--color-text);
   font-size: 18px;
-  padding: 8px 6px;
+  padding: 8px 4px;
   opacity: 0.45;
   transition: opacity 0.15s;
   line-height: 1;
-  flex-shrink: 0;
-  margin-top: 63px;
+  position: absolute;
+  top: 43px;
   transform: translateY(-50%);
 }
+
+.dossie-cards-arrow[data-action="dossie-list-prev"] { left: 0; }
+.dossie-cards-arrow[data-action="dossie-list-next"] { right: 0; }
 
 .dossie-cards-arrow:hover {
   opacity: 1;
