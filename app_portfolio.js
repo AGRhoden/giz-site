@@ -241,6 +241,23 @@ function bindEvents() {
     if (dx < 0) goToNextImage();
     else goToPreviousImage();
   }, { passive: true });
+
+  let _wheelAccum = 0;
+  let _wheelTimer = null;
+  elements.viewerShell.addEventListener("wheel", (e) => {
+    if (state.leftMode !== "viewer") return;
+    if (Math.abs(e.deltaX) < Math.abs(e.deltaY)) return;
+    e.preventDefault();
+    _wheelAccum += e.deltaX;
+    clearTimeout(_wheelTimer);
+    _wheelTimer = setTimeout(() => {
+      if (Math.abs(_wheelAccum) > 40) {
+        if (_wheelAccum > 0) goToNextImage();
+        else goToPreviousImage();
+      }
+      _wheelAccum = 0;
+    }, 80);
+  }, { passive: false });
 }
 
 function handleMenuClick(event) {
