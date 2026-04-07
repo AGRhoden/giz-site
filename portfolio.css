@@ -1435,6 +1435,59 @@ span.dv-sibling { pointer-events: none; }
   border: 0;
 }
 
+.mobile-fs {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: pan-y;
+}
+
+.mobile-fs[hidden] {
+  display: none;
+}
+
+.mobile-fs-img {
+  max-width: 100%;
+  max-height: 100vh;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.mobile-fs-close {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 201;
+  background: rgba(255, 255, 255, 0.15);
+  border: 0;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-fs-dots {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+
 @media (min-width: 1700px) {
   .grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1524,27 +1577,16 @@ span.dv-sibling { pointer-events: none; }
   }
 
   .viewer-shell {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    background: var(--color-bg);
-    overflow: hidden;
+    min-height: auto;
   }
 
   .viewer {
-    height: 100%;
-    min-height: 100%;
-    padding: 0;
-    justify-content: center;
+    min-height: auto;
+    padding: 12px 0 88px;
   }
 
   .viewer-stage {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    width: 100%;
-    align-items: center;
-    justify-content: center;
+    display: block;
   }
 
   .viewer-media {
@@ -1552,9 +1594,9 @@ span.dv-sibling { pointer-events: none; }
     width: auto;
     max-width: 100%;
     height: auto;
-    max-height: calc(100vh - 100px);
+    max-height: calc(100vh - var(--menu-height) - var(--mobile-panel-height) - 150px);
     margin: 0 auto;
-    cursor: auto;
+    cursor: pointer;
   }
 
   .zoom-lens {
@@ -1565,9 +1607,9 @@ span.dv-sibling { pointer-events: none; }
     position: fixed;
     left: 50%;
     right: auto;
-    bottom: 24px;
+    bottom: calc(var(--mobile-panel-height) + 76px);
     transform: translateX(-50%);
-    z-index: 52;
+    z-index: 26;
     margin-top: 0;
     padding: 6px 10px;
     border-radius: 999px;
@@ -1596,12 +1638,12 @@ span.dv-sibling { pointer-events: none; }
   .grid-button,
   .grid-focus-button {
     position: fixed;
-    right: 16px;
-    bottom: 20px;
-    left: auto;
-    transform: none;
+    right: auto;
+    bottom: calc(var(--mobile-panel-height) + 20px);
+    left: 50%;
+    transform: translateX(-50%);
     margin-top: 0;
-    z-index: 52;
+    z-index: 26;
     background: rgba(255, 255, 255, 0.92);
     border-radius: 8px;
     padding: 6px;
