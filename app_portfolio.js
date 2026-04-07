@@ -60,6 +60,7 @@ const state = {
   leftMode: "grid",
   currentDossie: null,
   dossieLang: "pt",
+  dossieListPage: 0,
   albumDiscovered: false,
   albumMode: false,
   currentAlbumPhoto: null
@@ -372,6 +373,21 @@ function handlePanelClick(event) {
     return;
   }
 
+  if (action === "dossie-list-prev") {
+    state.dossieListPage = Math.max(0, state.dossieListPage - 1);
+    SITE_PANEL_OVERRIDES["dossie"] = buildDossieListHtml(DOSSIES);
+    renderPanel();
+    return;
+  }
+
+  if (action === "dossie-list-next") {
+    const totalPages = Math.ceil(DOSSIES.length / DOSSIE_PAGE_SIZE);
+    state.dossieListPage = Math.min(totalPages - 1, state.dossieListPage + 1);
+    SITE_PANEL_OVERRIDES["dossie"] = buildDossieListHtml(DOSSIES);
+    renderPanel();
+    return;
+  }
+
   if (action === "album-enter") {
     enterAlbumMode();
     return;
@@ -479,7 +495,7 @@ async function loadDossies() {
   if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
   try {
     const response = await fetch(
-      new URL("/rest/v1/dossies?select=id,titulo,conteudo,titulo_en,conteudo_en,titulo_es,conteudo_es,media,projeto_id&order=criado_em.asc", BACKEND_CONFIG.url).toString(),
+      new URL("/rest/v1/dossies?select=id,titulo,conteudo,titulo_en,conteudo_en,titulo_es,conteudo_es,media,projeto_id,descricao,thumb_path&order=criado_em.asc", BACKEND_CONFIG.url).toString(),
       { headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` } }
     );
     if (!response.ok) return;
@@ -511,16 +527,55 @@ async function loadAlbumPhotos() {
   }
 }
 
+const DOSSIE_PAGE_SIZE = 3;
+
 function buildDossieListHtml(dossies) {
-  const items = dossies.length
-    ? dossies.map((d) =>
-        `<button type="button" class="dossie-list-item" data-action="open-dossie" data-dossie-id="${escapeHtml(d.id)}">${escapeHtml(d.titulo)}</button>`
-      ).join("\n")
-    : `<p class="small-note">Em breve.</p>`;
+  if (!dossies.length) {
+    return `<div class="panel-inner panel-inner-static panel-inner-static-shell">
+  <h1 class="static-page-title">Dossiê</h1>
+  <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
+  <p class="small-note">Em breve.</p>
+</div>`;
+  }
+
+  const totalPages = Math.ceil(dossies.length / DOSSIE_PAGE_SIZE);
+  const page = Math.min(state.dossieListPage, totalPages - 1);
+  const slice = dossies.slice(page * DOSSIE_PAGE_SIZE, (page + 1) * DOSSIE_PAGE_SIZE);
+
+  const cards = slice.map((d) => {
+    const thumbUrl = d.thumb_path ? resolveProjectMediaUrl(d.thumb_path) : "";
+    const thumb = thumbUrl
+      ? `<img class="dossie-card-thumb" src="${escapeAttribute(thumbUrl)}" alt="${escapeAttribute(d.titulo)}" loading="lazy" width="218" height="126">`
+      : `<div class="dossie-card-thumb-placeholder"></div>`;
+    const desc = d.descricao
+      ? `<p class="dossie-card-desc">${escapeHtml(d.descricao)}</p>`
+      : "";
+    return `<button type="button" class="dossie-card" data-action="open-dossie" data-dossie-id="${escapeAttribute(d.id)}">
+      ${thumb}
+      <div class="dossie-card-body">
+        <h3 class="dossie-card-title">${escapeHtml(d.titulo)}</h3>
+        ${desc}
+        <span class="dossie-card-read-more">Leia mais</span>
+      </div>
+    </button>`;
+  }).join("\n");
+
+  const prevDisabled = page === 0 ? " disabled" : "";
+  const nextDisabled = page >= totalPages - 1 ? " disabled" : "";
+  const arrows = totalPages > 1 ? `
+    <button type="button" class="dossie-cards-arrow" data-action="dossie-list-prev"${prevDisabled} aria-label="Anteriores">&#8592;</button>
+    <button type="button" class="dossie-cards-arrow" data-action="dossie-list-next"${nextDisabled} aria-label="Próximos">&#8594;</button>` : "";
+
   return `<div class="panel-inner panel-inner-static panel-inner-static-shell">
   <h1 class="static-page-title">Dossiê</h1>
   <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
-  <nav class="dossie-list">${items}</nav>
+  <div class="dossie-cards-wrap">
+    <div class="dossie-cards-row">
+      ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-prev"${prevDisabled} aria-label="Anteriores">&#8592;</button>` : ""}
+      <div class="dossie-cards-grid">${cards}</div>
+      ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-next"${nextDisabled} aria-label="Próximos">&#8594;</button>` : ""}
+    </div>
+  </div>
 </div>`;
 }
 

@@ -1721,6 +1721,10 @@
     setHidden(deleteBtn, !dossie);
     setHidden(mediaSection, !dossie);
 
+    var descricaoEl = document.getElementById("dossie-field-descricao");
+    if (descricaoEl) descricaoEl.value = dossie ? (dossie.descricao || "") : "";
+    updateDossieThumbPreview(dossie ? dossie.thumb_path : null);
+
     if (dossie) {
       renderDossieMediaList(dossie.media || []);
     } else {
@@ -1728,6 +1732,22 @@
       if (mediaList) mediaList.innerHTML = "";
     }
 
+  }
+
+  function updateDossieThumbPreview(thumbPath) {
+    var img = document.getElementById("dossie-thumb-img");
+    var none = document.getElementById("dossie-thumb-none");
+    if (!img || !none) return;
+    if (thumbPath) {
+      img.src = buildPublicMediaUrl(thumbPath);
+      img.style.display = "";
+      none.style.display = "none";
+    } else {
+      img.src = "";
+      img.style.display = "none";
+      none.style.display = "";
+    }
+    if (state.editingDossie) state.editingDossie.thumb_path = thumbPath || null;
   }
 
   function closeDossieForm() {
@@ -1763,7 +1783,9 @@
       conteudo_en: state.dossieLangContent.en || null,
       titulo_es:   state.dossieLangTitulo.es || null,
       conteudo_es: state.dossieLangContent.es || null,
-      projeto_id:  projetoEl && projetoEl.value ? projetoEl.value : null
+      projeto_id:  projetoEl && projetoEl.value ? projetoEl.value : null,
+      descricao:   document.getElementById("dossie-field-descricao") ? (document.getElementById("dossie-field-descricao").value.trim() || null) : null,
+      thumb_path:  state.editingDossie ? (state.editingDossie.thumb_path || null) : null
     };
 
     if (feedback) feedback.textContent = "Salvando…";
@@ -1958,6 +1980,7 @@
           '<p class="admin-media-meta">' + escapeHtml(filename) + '</p>' +
           '<div class="admin-media-actions">' +
             '<a href="' + escapeHtml(url) + '" target="_blank" class="admin-button admin-button-sm">Abrir</a> ' +
+            (isImage ? '<button class="admin-button admin-button-sm" type="button" data-set-thumb="' + escapeHtml(m.storage_path) + '">Thumb</button> ' : '') +
             '<button class="admin-button admin-button-sm admin-button-danger" type="button" data-remove-path="' + escapeHtml(m.storage_path) + '">Remover</button>' +
           '</div>' +
         '</div>' +
@@ -1968,6 +1991,32 @@
         if (state.editingDossie) {
           removeDossieMedia(state.editingDossie.id, btn.getAttribute("data-remove-path"));
         }
+      });
+    });
+    list.querySelectorAll("[data-set-thumb]").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        if (!state.editingDossie) return;
+        var path = btn.getAttribute("data-set-thumb");
+        fetch(backend.url + "/rest/v1/dossies?id=eq." + encodeURIComponent(state.editingDossie.id), {
+          method: "PATCH",
+          headers: {
+            apikey: backend.anonKey,
+            Authorization: "Bearer " + state.token,
+            "Content-Type": "application/json",
+            Prefer: "return=representation"
+          },
+          body: JSON.stringify({ thumb_path: path })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(rows) {
+          var saved = rows && rows[0];
+          if (saved) {
+            state.editingDossie.thumb_path = saved.thumb_path;
+            updateDossieThumbPreview(saved.thumb_path);
+            setDossieMediaFeedback("Thumb definida.");
+          }
+        })
+        .catch(function(err) { setDossieMediaFeedback("Erro: " + err.message); });
       });
     });
   }
