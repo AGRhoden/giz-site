@@ -1305,6 +1305,113 @@ span.dv-sibling { pointer-events: none; }
   margin-bottom: 16px;
 }
 
+/* ── Dossiê: grid de cards ── */
+
+.dossie-cards-wrap {
+  margin-top: 20px;
+}
+
+.dossie-cards-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dossie-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dossie-card {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dossie-card-thumb {
+  width: 100%;
+  aspect-ratio: 218 / 126;
+  object-fit: cover;
+  display: block;
+  background: var(--color-placeholder);
+}
+
+.dossie-card-thumb-placeholder {
+  width: 100%;
+  aspect-ratio: 218 / 126;
+  background: var(--color-placeholder);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dossie-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dossie-card-title {
+  font-size: 14px;
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.dossie-card-desc {
+  font-size: 12px;
+  font-weight: 300;
+  line-height: 1.4;
+  color: var(--color-muted, #666);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.dossie-card-read-more {
+  font-size: 12px;
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  color: var(--color-text);
+}
+
+.dossie-cards-arrow {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text);
+  font-size: 16px;
+  padding: 4px 2px;
+  opacity: 0.5;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+
+.dossie-cards-arrow:hover {
+  opacity: 1;
+}
+
+.dossie-cards-arrow:disabled {
+  opacity: 0.15;
+  cursor: default;
+}
+
 .dossie-entry-conteudo {
   margin-top: 20px;
   font-size: var(--font-size-body);

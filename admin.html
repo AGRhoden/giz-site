@@ -544,6 +544,10 @@
                     <input class="admin-input" type="text" id="dossie-field-titulo" placeholder="Título do dossiê">
                   </div>
                   <div class="admin-field">
+                    <span class="admin-label">Descrição curta (card)</span>
+                    <textarea class="admin-input" id="dossie-field-descricao" rows="2" placeholder="Texto breve exibido no card do dossiê" style="resize:vertical;"></textarea>
+                  </div>
+                  <div class="admin-field">
                     <span class="admin-label">Conteúdo</span>
                     <div id="dossie-quill-editor" style="min-height:220px;"></div>
                   </div>
@@ -567,6 +571,13 @@
                   </div>
                   <div class="admin-media-list" id="dossie-media-list"></div>
                   <p class="admin-feedback" id="dossie-media-feedback" aria-live="polite"></p>
+                  <div id="dossie-thumb-section" style="margin-top:16px;">
+                    <p class="admin-label" style="margin-bottom:8px;">Thumb do card (clique em uma imagem para definir)</p>
+                    <div id="dossie-thumb-preview" style="display:flex;align-items:center;gap:10px;">
+                      <img id="dossie-thumb-img" src="" alt="" style="width:109px;height:63px;object-fit:cover;background:var(--admin-line);display:none;">
+                      <span id="dossie-thumb-none" style="font-size:12px;color:var(--admin-muted);">Nenhuma thumb definida</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
