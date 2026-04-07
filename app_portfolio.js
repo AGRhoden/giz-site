@@ -70,7 +70,6 @@ let ALBUM_PHOTOS = [];
 let ALBUM_SECRET_CARD = null; // foto marcada como capa secreta
 let _swipeTouchStartX = 0;
 let _swipeTouchStartY = 0;
-let _swipeActive = false;
 
 document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
@@ -228,19 +227,6 @@ function bindEvents() {
   elements.viewerShell.addEventListener("click", handleViewerClick);
   elements.left.addEventListener("click", handleLeftClick);
 
-  elements.viewerShell.addEventListener("touchstart", (e) => {
-    _swipeTouchStartX = e.touches[0].clientX;
-    _swipeTouchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  elements.viewerShell.addEventListener("touchend", (e) => {
-    if (state.leftMode !== "viewer") return;
-    const dx = e.changedTouches[0].clientX - _swipeTouchStartX;
-    const dy = e.changedTouches[0].clientY - _swipeTouchStartY;
-    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx) * 0.9) return;
-    if (dx < 0) goToNextImage();
-    else goToPreviousImage();
-  }, { passive: true });
 }
 
 function handleMenuClick(event) {
@@ -407,6 +393,17 @@ function handleViewerClick(event) {
 
   if (action === "show-pair-grid") {
     showPairGrid();
+    return;
+  }
+
+  if (action === "open-fullscreen") {
+    if (window.matchMedia("(hover: none)").matches) openMobileFullscreen();
+    return;
+  }
+
+  if (action === "close-fullscreen") {
+    closeMobileFullscreen();
+    return;
   }
 }
 
@@ -1186,6 +1183,7 @@ function renderViewer() {
           src="${escapeAttribute(currentImage)}"
           alt="${escapeAttribute(project.titulo)}"
           draggable="false"
+          data-action="open-fullscreen"
         >
         <div class="zoom-lens" id="lens" aria-hidden="true"></div>
         ${renderViewerNavigation(imageCount)}
@@ -1215,8 +1213,6 @@ function renderViewerNavigation(totalImages) {
   const nextDisabled = state.currentImageIndex >= totalImages - 1;
 
   return `
-    <button type="button" class="viewer-tap-prev${previousDisabled ? " inativo" : ""}" data-action="viewer-previous" aria-label="Imagem anterior" tabindex="-1"></button>
-    <button type="button" class="viewer-tap-next${nextDisabled ? " inativo" : ""}" data-action="viewer-next" aria-label="Próxima imagem" tabindex="-1"></button>
     <div class="viewer-nav" aria-label="Navegação entre imagens">
       <button
         type="button"
@@ -1237,6 +1233,83 @@ function renderViewerNavigation(totalImages) {
       >▶</button>
     </div>
   `;
+}
+
+function getMobileFs() {
+  let el = document.getElementById("mobile-fs");
+  if (el) return el;
+
+  el = document.createElement("div");
+  el.id = "mobile-fs";
+  el.className = "mobile-fs";
+  el.hidden = true;
+  el.innerHTML = `
+    <button class="mobile-fs-close" data-action="close-fullscreen" aria-label="Fechar">✕</button>
+    <img class="mobile-fs-img" src="" alt="" draggable="false">
+    <div class="mobile-fs-dots"></div>
+  `;
+  document.body.appendChild(el);
+
+  el.addEventListener("touchstart", (e) => {
+    _swipeTouchStartX = e.touches[0].clientX;
+    _swipeTouchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  el.addEventListener("touchend", (e) => {
+    const dx = e.changedTouches[0].clientX - _swipeTouchStartX;
+    const dy = e.changedTouches[0].clientY - _swipeTouchStartY;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx) * 0.9) return;
+    if (dx < 0) fsMobileNext();
+    else fsMobilePrev();
+  }, { passive: true });
+
+  el.addEventListener("click", (e) => {
+    if (e.target.closest("[data-action='close-fullscreen']")) closeMobileFullscreen();
+  });
+
+  return el;
+}
+
+function renderMobileFs(el) {
+  const images = state.currentProject.imagens;
+  const img = el.querySelector(".mobile-fs-img");
+  img.src = images[state.currentImageIndex];
+  img.alt = state.currentProject.titulo;
+
+  const dots = el.querySelector(".mobile-fs-dots");
+  if (images.length > 1) {
+    dots.innerHTML = Array.from({ length: images.length }, (_, i) =>
+      `<span class="viewer-dot${i === state.currentImageIndex ? " ativo" : ""}"></span>`
+    ).join("");
+  } else {
+    dots.innerHTML = "";
+  }
+}
+
+function openMobileFullscreen() {
+  if (!state.currentProject) return;
+  const el = getMobileFs();
+  renderMobileFs(el);
+  el.hidden = false;
+}
+
+function closeMobileFullscreen() {
+  const el = document.getElementById("mobile-fs");
+  if (el) el.hidden = true;
+}
+
+function fsMobileNext() {
+  if (!state.currentProject) return;
+  if (state.currentImageIndex >= state.currentProject.imagens.length - 1) return;
+  state.currentImageIndex++;
+  renderMobileFs(getMobileFs());
+}
+
+function fsMobilePrev() {
+  if (!state.currentProject) return;
+  if (state.currentImageIndex <= 0) return;
+  state.currentImageIndex--;
+  renderMobileFs(getMobileFs());
 }
 
 function goToPreviousImage() {
