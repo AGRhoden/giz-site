@@ -227,6 +227,19 @@ function bindEvents() {
   elements.viewerShell.addEventListener("click", handleViewerClick);
   elements.left.addEventListener("click", handleLeftClick);
 
+  elements.viewerShell.addEventListener("touchstart", (e) => {
+    _swipeTouchStartX = e.touches[0].clientX;
+    _swipeTouchStartY = e.touches[0].clientY;
+  }, { passive: true });
+
+  elements.viewerShell.addEventListener("touchend", (e) => {
+    if (state.leftMode !== "viewer") return;
+    const dx = e.changedTouches[0].clientX - _swipeTouchStartX;
+    const dy = e.changedTouches[0].clientY - _swipeTouchStartY;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx) * 0.9) return;
+    if (dx < 0) goToNextImage();
+    else goToPreviousImage();
+  }, { passive: true });
 }
 
 function handleMenuClick(event) {
