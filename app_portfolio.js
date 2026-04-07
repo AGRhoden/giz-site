@@ -562,19 +562,17 @@ function buildDossieListHtml(dossies) {
 
   const prevDisabled = page === 0 ? " disabled" : "";
   const nextDisabled = page >= totalPages - 1 ? " disabled" : "";
-  const arrows = totalPages > 1 ? `
+  const nav = totalPages > 1 ? `
+  <div class="dossie-cards-nav">
     <button type="button" class="dossie-cards-arrow" data-action="dossie-list-prev"${prevDisabled} aria-label="Anteriores">&#8592;</button>
-    <button type="button" class="dossie-cards-arrow" data-action="dossie-list-next"${nextDisabled} aria-label="Próximos">&#8594;</button>` : "";
+    <button type="button" class="dossie-cards-arrow" data-action="dossie-list-next"${nextDisabled} aria-label="Próximos">&#8594;</button>
+  </div>` : "";
 
   return `<div class="panel-inner panel-inner-static panel-inner-static-shell">
   <h1 class="static-page-title">Dossiê</h1>
   <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
   <div class="dossie-cards-wrap">
-    <div class="dossie-cards-row">
-      ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-prev"${prevDisabled} aria-label="Anteriores">&#8592;</button>` : ""}
-      <div class="dossie-cards-grid">${cards}</div>
-      ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-next"${nextDisabled} aria-label="Próximos">&#8594;</button>` : ""}
-    </div>
+    <div class="dossie-cards-grid">${cards}</div>${nav}
   </div>
 </div>`;
 }
