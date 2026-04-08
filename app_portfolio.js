@@ -214,7 +214,7 @@ async function initialize() {
   await loadSiteSettings();
   renderMenu();
   updateMenu();
-  await Promise.all([loadProjects(), preloadStaticPanels(), loadDossies(), loadAlbumPhotos()]);
+  await Promise.all([loadProjects(), loadTagLabels(), preloadStaticPanels(), loadDossies(), loadAlbumPhotos()]);
   if (state.loadFailed) return;
   applyFilters();
   renderGrid();
@@ -509,6 +509,20 @@ async function loadProjectsFromSupabase() {
   }
 
   return response.json();
+}
+
+async function loadTagLabels() {
+  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
+  try {
+    const res = await fetch(new URL("/rest/v1/tags?select=slug,label", BACKEND_CONFIG.url).toString(), {
+      headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` }
+    });
+    if (!res.ok) return;
+    const rows = await res.json();
+    (rows || []).forEach((row) => {
+      if (row.slug && row.label) LABEL_OVERRIDES[row.slug] = row.label;
+    });
+  } catch (_) {}
 }
 
 async function loadDossies() {

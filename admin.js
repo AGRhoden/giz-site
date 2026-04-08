@@ -915,6 +915,10 @@
       var matchesQuery = !query || haystack.indexOf(query) !== -1;
       var matchesAlpha = !alphaFilter || getProjectInitial(project) === alphaFilter;
       return matchesStatus && matchesQuery && matchesAlpha;
+    }).sort(function (a, b) {
+      var ka = normalizeSearchText(stripLeadingArticle(String(a.title || a.slug || "")));
+      var kb = normalizeSearchText(stripLeadingArticle(String(b.title || b.slug || "")));
+      return ka.localeCompare(kb, "pt-BR");
     });
 
     if (state.selectedProjectId) {
@@ -3614,9 +3618,14 @@
     return normalizeTitleKey(value).replace(/\s+/g, " ");
   }
 
+  function stripLeadingArticle(text) {
+    return text.replace(/^(a|o|as|os|um|uma|uns|umas|the|an?)\s+/i, "");
+  }
+
   function getProjectInitial(project) {
     var source = normalizeSearchText(project && (project.title || project.slug));
-    var match = source.match(/[a-z0-9]/);
+    var stripped = normalizeSearchText(stripLeadingArticle(source));
+    var match = stripped.match(/[a-z0-9]/);
     if (!match) return "#";
     if (/\d/.test(match[0])) return "#";
     return match[0].toUpperCase();
@@ -4175,8 +4184,6 @@
 
     if (hasEditorialFlag(projectId, "review_text")) {
       pills.push('<span class="admin-status-pill is-review-flag">Texto</span>');
-    } else {
-      pills.push('<span class="admin-status-pill is-approved-flag">Ok</span>');
     }
 
     if (hasEditorialFlag(projectId, "future_feature")) {
