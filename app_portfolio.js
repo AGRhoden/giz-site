@@ -1073,7 +1073,8 @@ function renderGrid() {
   });
 
   // Card secreto do álbum — só no grid inicial (sem filtros, sem critério, sem par em foco)
-  if (ALBUM_SECRET_CARD && state.portfolioMode === "intro" && !state.pairFocusSlugs) {
+  const hasActiveFilters = FILTERS.some((c) => (state.filters[c.id] || []).length > 0);
+  if (ALBUM_SECRET_CARD && state.portfolioMode === "intro" && !state.pairFocusSlugs && !hasActiveFilters && !state.currentCriterionId) {
     const secretCard = buildAlbumSecretCard(ALBUM_SECRET_CARD);
     const children = Array.from(elements.grid.children);
     if (children.length > 0) {

@@ -29,6 +29,7 @@
   var batchReadinessResults = document.getElementById("batch-readiness-results");
   var batchTagSearch = document.getElementById("batch-tag-search");
   var batchTagResults = document.getElementById("batch-tag-results");
+  var batchServicoResults = document.getElementById("batch-servico-results");
   var batchPublisherResults = document.getElementById("batch-publisher-results");
   var batchPublisherCustom = document.getElementById("batch-publisher-custom");
   var batchApplyPublisherButton = document.getElementById("batch-apply-publisher-button");
@@ -235,6 +236,7 @@
   });
   batchTagSearch.addEventListener("input", renderBatchTagResults);
   batchTagResults.addEventListener("click", handleBatchTagToggle);
+  batchServicoResults.addEventListener("click", handleBatchServicoToggle);
   batchPublisherResults.addEventListener("click", handleBatchPublisherChipClick);
   batchSelectVisibleButton.addEventListener("click", handleSelectVisibleProjects);
   batchClearSelectionButton.addEventListener("click", clearBatchSelection);
@@ -614,7 +616,7 @@
   }
 
   function loadProjects() {
-    fetch(backend.url + "/rest/v1/projects?select=id,slug,title,subtitle,description,client,project_type,status,published_at,sort_year,is_featured&order=title.asc", {
+    fetch(backend.url + "/rest/v1/projects?select=id,slug,title,subtitle,description,client,project_type,status,published_at,sort_year,is_featured,servico&order=title.asc", {
       headers: {
         apikey: backend.anonKey,
         Authorization: "Bearer " + state.token
@@ -1091,6 +1093,7 @@
 
     renderBatchSelectionPreview(selectedProjects);
     renderBatchTagResults();
+    renderBatchServicoResults();
     renderBatchPublisherResults();
 
     if (!selectedProjects.length) {
@@ -2439,6 +2442,74 @@
           escapeHtml(tag.label) +
         '</button>';
     }).join("");
+  }
+
+  function renderBatchServicoResults() {
+    var selectedProjects = getBatchSelectedProjects();
+    var tipos = getServicoTypes();
+
+    if (!selectedProjects.length) {
+      batchServicoResults.innerHTML = '<p class="admin-inline-empty">Selecione projetos para aplicar execução em lote.</p>';
+      return;
+    }
+
+    if (!tipos.length) {
+      batchServicoResults.innerHTML = '<p class="admin-inline-empty">Nenhum tipo de serviço cadastrado ainda.</p>';
+      return;
+    }
+
+    batchServicoResults.innerHTML = tipos.map(function(tipo) {
+      var hasAll = selectedProjects.every(function(p) {
+        return (p.servico || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean).indexOf(tipo) !== -1;
+      });
+      var hasSome = selectedProjects.some(function(p) {
+        return (p.servico || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean).indexOf(tipo) !== -1;
+      });
+      var className = "admin-chip" + (hasAll ? " is-active" : hasSome ? " is-mixed" : "");
+      return '<button class="' + className + '" type="button" data-batch-servico="' + escapeHtml(tipo) + '">' + escapeHtml(tipo) + '</button>';
+    }).join("");
+  }
+
+  function handleBatchServicoToggle(event) {
+    var button = event.target.closest("[data-batch-servico]");
+    if (!button) return;
+    var tipo = button.getAttribute("data-batch-servico");
+    var selectedProjects = getBatchSelectedProjects();
+    if (!tipo || !selectedProjects.length) return;
+
+    var hasAll = selectedProjects.every(function(p) {
+      return (p.servico || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean).indexOf(tipo) !== -1;
+    });
+
+    var jobs = selectedProjects.map(function(project) {
+      var current = (project.servico || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean);
+      var hasIt = current.indexOf(tipo) !== -1;
+      var novoValor;
+      if (hasAll) {
+        novoValor = current.filter(function(s) { return s !== tipo; }).join(",") || null;
+      } else {
+        if (hasIt) return null;
+        novoValor = current.concat([tipo]).join(",");
+      }
+      return fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(project.id), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Prefer: "return=representation",
+          apikey: backend.anonKey,
+          Authorization: "Bearer " + state.token
+        },
+        body: JSON.stringify({ servico: novoValor || null })
+      }).then(function(r) { return r.json(); }).then(function(items) {
+        if (items && items.length) replaceProject(items[0]);
+      });
+    }).filter(Boolean);
+
+    Promise.all(jobs).then(function() {
+      renderBatchServicoResults();
+    }).catch(function() {
+      setBatchFeedback("Erro ao aplicar execução em lote.", true);
+    });
   }
 
   function renderBatchTagResults() {
@@ -4190,6 +4261,8 @@
     if (!String(project.client || "").trim()) issues.push("Editora");
     if (!String(project.project_type || "").trim()) issues.push("Tipo");
     if (!project.sort_year) issues.push("Ano");
+    if (!String(project.servico || "").trim()) issues.push("Execução");
+    if (!(state.projectTagsByProject[project.id] || []).length) issues.push("Tags");
     return issues;
   }
 

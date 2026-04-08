@@ -172,6 +172,17 @@
                   <div class="admin-batch-step-head">
                     <span class="admin-step-kicker">3</span>
                     <div>
+                      <h3>Execução</h3>
+                      <p class="admin-copy">Clique para marcar ou remover serviços dos projetos selecionados.</p>
+                    </div>
+                  </div>
+                  <div class="admin-tag-picker" id="batch-servico-results"></div>
+                </div>
+
+                <div class="admin-batch-step">
+                  <div class="admin-batch-step-head">
+                    <span class="admin-step-kicker">4</span>
+                    <div>
                       <h3>Editora</h3>
                       <p class="admin-copy">Aplique uma editora existente ou defina uma nova para o grupo.</p>
                     </div>
@@ -192,7 +203,7 @@
 
                 <div class="admin-batch-step">
                   <div class="admin-batch-step-head">
-                    <span class="admin-step-kicker">3</span>
+                    <span class="admin-step-kicker">5</span>
                     <div>
                       <h3>Qualidade</h3>
                       <p class="admin-copy">Verificar requisitos mínimos de publicação.</p>
@@ -310,8 +321,7 @@
                 <div id="field-description-quill" style="min-height:120px;"></div>
               </div>
 
-              <div class="admin-field">
-                <span class="admin-label">Execução</span>
+              <div class="admin-field admin-field-hidden" hidden>
                 <div class="admin-chip-group" id="servico-chips"></div>
                 <div class="admin-inline-form admin-servico-add-form" id="servico-add-form" hidden>
                   <input class="admin-input" type="text" id="servico-new-input" placeholder="Nome do novo serviço...">
@@ -320,9 +330,7 @@
                     <button type="button" class="admin-secondary-button" id="servico-add-cancel">Cancelar</button>
                   </div>
                 </div>
-                <div class="admin-inline-actions" style="margin-top:8px;">
-                  <button type="button" class="admin-secondary-button" id="servico-edit-button">Gerenciar lista</button>
-                </div>
+                <button type="button" class="admin-secondary-button" id="servico-edit-button" hidden>Gerenciar lista</button>
                 <p class="admin-feedback" id="servico-feedback" aria-live="polite"></p>
               </div>
 
@@ -350,21 +358,12 @@
             </section>
 
             <section class="admin-subsection admin-editor-section" data-editor-section="tags">
-              <div class="admin-subsection-heading">
-                <div>
-                  <h3>Tags do projeto</h3>
-                  <p class="admin-copy">Clique para marcar ou remover na ficha atual.</p>
-                </div>
+              <div hidden>
+                <input class="admin-input" id="tag-search" type="search">
+                <div id="tag-results"></div>
               </div>
 
-              <label class="admin-field">
-                <span class="admin-label">Buscar tag</span>
-                <input class="admin-input" id="tag-search" type="search" placeholder="amarelo, vermelho, fantasia...">
-              </label>
-
-              <div class="admin-tag-picker" id="tag-results"></div>
-
-              <div class="admin-subsection-heading" style="margin-top:24px;">
+              <div class="admin-subsection-heading">
                 <div>
                   <h3>Taxonomia</h3>
                   <p class="admin-copy">Crie, renomeie ou exclua tags globalmente.</p>
