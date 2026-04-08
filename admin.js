@@ -24,6 +24,9 @@
   var batchFeedback = document.getElementById("batch-feedback");
   var batchSelectVisibleButton = document.getElementById("batch-select-visible-button");
   var batchClearSelectionButton = document.getElementById("batch-clear-selection-button");
+  var batchCheckReadinessButton = document.getElementById("batch-check-readiness-button");
+  var batchConvertDraftsButton = document.getElementById("batch-convert-drafts-button");
+  var batchReadinessResults = document.getElementById("batch-readiness-results");
   var batchTagSearch = document.getElementById("batch-tag-search");
   var batchTagResults = document.getElementById("batch-tag-results");
   var batchPublisherResults = document.getElementById("batch-publisher-results");
@@ -235,6 +238,8 @@
   batchPublisherResults.addEventListener("click", handleBatchPublisherChipClick);
   batchSelectVisibleButton.addEventListener("click", handleSelectVisibleProjects);
   batchClearSelectionButton.addEventListener("click", clearBatchSelection);
+  batchCheckReadinessButton.addEventListener("click", handleCheckReadiness);
+  batchConvertDraftsButton.addEventListener("click", handleConvertIncompleteToDraft);
   batchApplyPublisherButton.addEventListener("click", handleBatchPublisherApply);
   batchClearPublisherButton.addEventListener("click", handleBatchPublisherClear);
   if (flagReviewText) flagReviewText.addEventListener("change", handleEditorialFlagChange);
@@ -1017,6 +1022,7 @@
               '</div>' +
               '<div class="admin-project-flags">' +
                 renderProjectFlagPills(project.id) +
+                renderReadinessPill(project) +
               '</div>' +
             '</button>' +
           '</div>' +
@@ -4176,6 +4182,84 @@
     }
 
     return pills.join("");
+  }
+
+  function getReadinessIssues(project) {
+    var issues = [];
+    if (!String(project.title || "").trim() || project.title === project.slug) issues.push("Título");
+    if (!String(project.client || "").trim()) issues.push("Editora");
+    if (!String(project.project_type || "").trim()) issues.push("Tipo");
+    if (!String(project.servico || "").trim()) issues.push("Execução");
+    if (!project.sort_year) issues.push("Ano");
+    if (!(state.projectTagsByProject[project.id] || []).length) issues.push("Tags");
+    return issues;
+  }
+
+  function renderReadinessPill(project) {
+    var issues = getReadinessIssues(project);
+    if (!issues.length) return "";
+    return '<span class="admin-status-pill is-review-flag" title="Pendente: ' + escapeHtml(issues.join(", ")) + '">Revisar</span>';
+  }
+
+  function handleCheckReadiness() {
+    var incomplete = state.projects.filter(function (p) {
+      return getReadinessIssues(p).length > 0;
+    });
+
+    if (!incomplete.length) {
+      batchReadinessResults.innerHTML = '<p class="admin-copy" style="color:var(--admin-success,green);margin:8px 0 0;">Todos os projetos atendem os requisitos mínimos.</p>';
+      batchConvertDraftsButton.disabled = true;
+      return;
+    }
+
+    batchReadinessResults.innerHTML = '<p class="admin-copy" style="margin:8px 0 4px;">' + incomplete.length + ' projeto(s) com pendências:</p>' +
+      '<ul style="margin:0;padding-left:16px;font-size:12px;">' +
+      incomplete.map(function (p) {
+        var issues = getReadinessIssues(p);
+        return '<li><strong>' + escapeHtml(p.title || p.slug) + '</strong>: ' + escapeHtml(issues.join(", ")) + '</li>';
+      }).join("") +
+      '</ul>';
+    batchConvertDraftsButton.disabled = false;
+  }
+
+  function handleConvertIncompleteToDraft() {
+    var toConvert = state.projects.filter(function (p) {
+      return p.status === "published" && getReadinessIssues(p).length > 0;
+    });
+
+    if (!toConvert.length) {
+      setBatchFeedback("Nenhum projeto publicado com pendências encontrado.", false);
+      return;
+    }
+
+    if (!window.confirm("Converter " + toConvert.length + " projeto(s) publicado(s) para Rascunho?")) return;
+
+    setBatchFeedback("Convertendo...", false);
+    var jobs = toConvert.map(function (p) {
+      return fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(p.id), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: backend.anonKey,
+          Authorization: "Bearer " + state.token
+        },
+        body: JSON.stringify({ status: "draft", published_at: null })
+      }).then(function () {
+        p.status = "draft";
+        p.published_at = null;
+      });
+    });
+
+    Promise.all(jobs)
+      .then(function () {
+        setBatchFeedback(toConvert.length + " projeto(s) convertido(s) para Rascunho.", false);
+        batchConvertDraftsButton.disabled = true;
+        renderProjectList();
+        handleCheckReadiness();
+      })
+      .catch(function () {
+        setBatchFeedback("Erro ao converter alguns projetos.", true);
+      });
   }
 
   function renderEditorialFlagSummary(projectId) {
