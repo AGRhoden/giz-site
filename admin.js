@@ -1038,6 +1038,8 @@
     state.selectedProjectId = button.getAttribute("data-project-id");
     renderProjectList();
     renderEditor();
+    renderBatchTagResults();
+    renderBatchServicoResults();
   }
 
   function handleProjectSelectionToggle(event) {
@@ -1077,6 +1079,14 @@
     return state.selectedProjectIds
       .map(function (projectId) { return getProjectById(projectId); })
       .filter(Boolean);
+  }
+
+  // Tags e Execução: usa seleção em lote se houver, senão cai para o projeto aberto no editor.
+  function getWorkingProjectList() {
+    var batch = getBatchSelectedProjects();
+    if (batch.length) return batch;
+    var current = getSelectedProject();
+    return current ? [current] : [];
   }
 
   function renderBatchControls() {
@@ -2445,11 +2455,11 @@
   }
 
   function renderBatchServicoResults() {
-    var selectedProjects = getBatchSelectedProjects();
+    var selectedProjects = getWorkingProjectList();
     var tipos = getServicoTypes();
 
     if (!selectedProjects.length) {
-      batchServicoResults.innerHTML = '<p class="admin-inline-empty">Selecione projetos para aplicar execução em lote.</p>';
+      batchServicoResults.innerHTML = '<p class="admin-inline-empty">Abra ou selecione um projeto para editar execução.</p>';
       return;
     }
 
@@ -2474,7 +2484,7 @@
     var button = event.target.closest("[data-batch-servico]");
     if (!button) return;
     var tipo = button.getAttribute("data-batch-servico");
-    var selectedProjects = getBatchSelectedProjects();
+    var selectedProjects = getWorkingProjectList();
     if (!tipo || !selectedProjects.length) return;
 
     var hasAll = selectedProjects.every(function(p) {
@@ -2513,11 +2523,11 @@
   }
 
   function renderBatchTagResults() {
-    var selectedProjects = getBatchSelectedProjects();
+    var selectedProjects = getWorkingProjectList();
     var query = String(batchTagSearch.value || "").trim().toLowerCase();
 
     if (!selectedProjects.length) {
-      batchTagResults.innerHTML = '<p class="admin-inline-empty">Selecione projetos para aplicar tags em lote.</p>';
+      batchTagResults.innerHTML = '<p class="admin-inline-empty">Abra ou selecione um projeto para editar tags.</p>';
       return;
     }
 
@@ -2947,7 +2957,7 @@
     if (!button) return;
 
     var tagId = button.getAttribute("data-batch-tag-id");
-    var projectIds = state.selectedProjectIds.slice();
+    var projectIds = getWorkingProjectList().map(function(p) { return p.id; });
     if (!tagId || !projectIds.length) return;
 
     var coverage = getTagCoverageState(projectIds, tagId);
