@@ -1199,6 +1199,11 @@
     setHidden(editorForm, false);
     setHidden(mediaUploadForm, false);
     renderEditorTabs();
+    // Reset servico edit mode when switching projects
+    servicoEditMode = false;
+    servicoAddForm.hidden = true;
+    servicoNewInput.value = "";
+    servicoEditButton.textContent = "Gerenciar lista";
     editorTitle.textContent = project.title;
     fieldTitle.value = project.title || "";
     fieldSubtitle.value = project.subtitle || "";
