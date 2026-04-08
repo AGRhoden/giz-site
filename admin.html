@@ -259,7 +259,7 @@
             <nav class="admin-editor-nav" aria-label="Seções do projeto">
               <button class="admin-editor-tab is-active" type="button" data-editor-tab="details">Cadastro</button>
               <button class="admin-editor-tab" type="button" data-editor-tab="media">Imagens</button>
-              <button class="admin-editor-tab" type="button" data-editor-tab="tags">Taxonomia</button>
+              <button class="admin-editor-tab" type="button" data-editor-tab="tags">Tags</button>
               <button class="admin-editor-tab" type="button" data-editor-tab="pairs">Pares</button>
             </nav>
 
@@ -318,7 +318,8 @@
                 <div id="field-description-quill" style="min-height:120px;"></div>
               </div>
 
-              <div class="admin-field admin-field-hidden" hidden>
+              <div class="admin-field">
+                <span class="admin-label">Execução</span>
                 <div class="admin-chip-group" id="servico-chips"></div>
                 <div class="admin-inline-form admin-servico-add-form" id="servico-add-form" hidden>
                   <input class="admin-input" type="text" id="servico-new-input" placeholder="Nome do novo serviço...">
@@ -327,7 +328,9 @@
                     <button type="button" class="admin-secondary-button" id="servico-add-cancel">Cancelar</button>
                   </div>
                 </div>
-                <button type="button" class="admin-secondary-button" id="servico-edit-button" hidden>Gerenciar lista</button>
+                <div class="admin-inline-actions" style="margin-top:8px;">
+                  <button type="button" class="admin-secondary-button" id="servico-edit-button">Gerenciar lista</button>
+                </div>
                 <p class="admin-feedback" id="servico-feedback" aria-live="polite"></p>
               </div>
 
@@ -355,12 +358,21 @@
             </section>
 
             <section class="admin-subsection admin-editor-section" data-editor-section="tags">
-              <div hidden>
-                <input class="admin-input" id="tag-search" type="search">
-                <div id="tag-results"></div>
+              <div class="admin-subsection-heading">
+                <div>
+                  <h3>Tags do projeto</h3>
+                  <p class="admin-copy">Clique para marcar ou remover na ficha atual.</p>
+                </div>
               </div>
 
-              <div class="admin-subsection-heading">
+              <label class="admin-field">
+                <span class="admin-label">Buscar tag</span>
+                <input class="admin-input" id="tag-search" type="search" placeholder="amarelo, vermelho, fantasia...">
+              </label>
+
+              <div class="admin-tag-picker" id="tag-results"></div>
+
+              <div class="admin-subsection-heading" style="margin-top:24px;">
                 <div>
                   <h3>Taxonomia</h3>
                   <p class="admin-copy">Crie, renomeie ou exclua tags globalmente.</p>
@@ -622,6 +634,6 @@
 
   <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
   <script src="backend.config.js?v=20260331c"></script>
-  <script src="admin.js?v=20260408b"></script>
+  <script src="admin.js?v=20260408c"></script>
 </body>
 </html>

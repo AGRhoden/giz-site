@@ -309,6 +309,8 @@ select {
   display: grid;
   gap: 18px;
   align-self: start;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
 }
 
 .admin-content-sidebar {
