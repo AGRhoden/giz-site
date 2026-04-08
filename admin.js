@@ -1535,7 +1535,9 @@
     if (!chip || chip.disabled) return;
     var project = getSelectedProject();
     if (!project) return;
-    var ativos = project.servico ? project.servico.split(",").map(function(s) { return s.trim(); }) : [];
+    // Read active state from DOM — not from project.servico which may be stale
+    var ativos = Array.prototype.slice.call(servicoChips.querySelectorAll(".admin-chip.is-active[data-servico]"))
+      .map(function(c) { return c.dataset.servico; });
     var tipo = chip.dataset.servico;
     if (ativos.indexOf(tipo) !== -1) {
       ativos = ativos.filter(function(s) { return s !== tipo; });
