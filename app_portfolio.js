@@ -1623,7 +1623,8 @@ function normalizePortfolioIntroPanel() {
   });
 
   if (notes[0]) {
-    notes[0].classList.add("static-page-intro");
+    notes[0].classList.remove("small-note");
+    notes[0].classList.add("static-page-subtitle");
     introTitle.insertAdjacentElement("afterend", notes[0]);
   }
 
