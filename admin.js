@@ -4189,9 +4189,7 @@
     if (!String(project.title || "").trim() || project.title === project.slug) issues.push("Título");
     if (!String(project.client || "").trim()) issues.push("Editora");
     if (!String(project.project_type || "").trim()) issues.push("Tipo");
-    if (!String(project.servico || "").trim()) issues.push("Execução");
     if (!project.sort_year) issues.push("Ano");
-    if (!(state.projectTagsByProject[project.id] || []).length) issues.push("Tags");
     return issues;
   }
 
