@@ -1543,6 +1543,9 @@
       ativos.push(tipo);
     }
     var novoValor = ativos.join(",");
+    // Optimistic UI: mark chip immediately before async PATCH
+    project.servico = novoValor || null;
+    syncServicoChips(novoValor);
     patchServico(project, novoValor);
   }
 
@@ -1596,10 +1599,15 @@
     .then(function(r) { return r.json(); })
     .then(function(items) {
       if (items && items.length) replaceProject(items[0]);
-      syncServicoChips(novoValor);
+      renderServicoChips();
       renderProjectList();
     })
-    .catch(function() { servicoFeedback.textContent = "Erro ao salvar."; });
+    .catch(function() {
+      // Revert optimistic update
+      project.servico = project.servico || null;
+      renderServicoChips();
+      servicoFeedback.textContent = "Erro ao salvar.";
+    });
   }
 
   // ── Dossiê vinculado ──────────────────────────────────────────────────────
