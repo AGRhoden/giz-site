@@ -1540,19 +1540,16 @@
     if (!chip || chip.disabled) return;
     var project = getSelectedProject();
     if (!project) return;
-    // Read active state from DOM — not from project.servico which may be stale
-    var ativos = Array.prototype.slice.call(servicoChips.querySelectorAll(".admin-chip.is-active[data-servico]"))
-      .map(function(c) { return c.dataset.servico; });
     var tipo = chip.dataset.servico;
+    var ativos = (project.servico || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean);
     if (ativos.indexOf(tipo) !== -1) {
       ativos = ativos.filter(function(s) { return s !== tipo; });
     } else {
       ativos.push(tipo);
     }
-    var novoValor = ativos.join(",");
-    // Optimistic UI: mark chip and pill immediately before async PATCH
-    project.servico = novoValor || null;
-    syncServicoChips(novoValor);
+    var novoValor = ativos.join(",") || null;
+    project.servico = novoValor;
+    renderServicoChips();
     renderProjectList();
     patchServico(project, novoValor);
   }
@@ -1606,7 +1603,12 @@
     })
     .then(function(r) { return r.json(); })
     .then(function(items) {
-      if (items && items.length) replaceProject(items[0]);
+      if (items && items.length) {
+        // Preserve servico in case API response omits it
+        var updated = items[0];
+        if (updated.servico === undefined) updated.servico = novoValor;
+        replaceProject(updated);
+      }
       renderServicoChips();
       renderProjectList();
     })
