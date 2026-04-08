@@ -1515,8 +1515,7 @@
           '<span class="admin-chip-x" data-delete-servico="' + escapeHtml(tipo) + '" title="Remover da lista">×</span>' +
           '</button>';
       }
-      return '<button class="admin-chip ' + (isActive ? 'is-active' : '') + '" type="button"' +
-        (!project ? ' disabled' : '') + ' data-servico="' + escapeHtml(tipo) + '">' +
+      return '<button class="admin-chip ' + (isActive ? 'is-active' : '') + '" type="button" data-servico="' + escapeHtml(tipo) + '">' +
         escapeHtml(tipo) + '</button>';
     }).join("");
   }
