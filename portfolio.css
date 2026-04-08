@@ -761,7 +761,6 @@ button {
 
 .panel-inner-portfolio-intro {
   text-align: center;
-  min-height: 440px;
 }
 
 .portfolio-intro-title {
@@ -876,11 +875,10 @@ button {
 }
 
 .project-pairs-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
-  max-width: 80%;
-  margin: 0 auto;
 }
 
 .project-pair-card {
@@ -894,7 +892,7 @@ button {
 }
 
 .project-pair-thumb {
-  width: 100%;
+  width: 80px;
   height: auto;
   object-fit: contain;
   display: block;
