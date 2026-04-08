@@ -62,7 +62,6 @@
   var checklistSummary = document.getElementById("checklist-summary");
   var checklistList = document.getElementById("checklist-list");
   var flagSummary = document.getElementById("flag-summary");
-  var flagReviewText = document.getElementById("flag-review-text");
   var flagFutureFeature = document.getElementById("flag-future-feature");
   var tagSearch = document.getElementById("tag-search");
   var tagResults = document.getElementById("tag-results");
@@ -2239,8 +2238,6 @@
           state.projects.push(project);
           state.projectTagsByProject[project.id] = [];
           state.imagesByProject[project.id] = [];
-          uploads.push(upsertEditorialFlag(project.id, "review_text", "Revisar texto"));
-
           var group = findGroupBySlug(createdCandidates, project.slug);
           if (group) {
             group.files.forEach(function (entry) {
@@ -2271,19 +2268,6 @@
         var createdProjects = result.createdProjects;
         var overwrittenProjects = result.overwrittenProjects;
 
-        createdProjects.forEach(function (project) {
-          if (!state.editorialFlagsByProject[project.id]) {
-            state.editorialFlagsByProject[project.id] = [];
-          }
-          if (!hasEditorialFlag(project.id, "review_text")) {
-            state.editorialFlagsByProject[project.id].push({
-              project_id: project.id,
-              flag_key: "review_text",
-              flag_label: "Revisar texto",
-              is_public: false
-            });
-          }
-        });
 
         if (createdProjects.length) {
           state.selectedProjectId = createdProjects[0].id;
@@ -4068,8 +4052,8 @@
     if (!project) return;
 
     var input = event.target;
-    var flagKey = input.id === "flag-review-text" ? "review_text" : "future_feature";
-    var flagLabel = flagKey === "review_text" ? "Revisar texto" : "Destaque futuro";
+    var flagKey = "future_feature";
+    var flagLabel = "Destaque futuro";
 
     setSaveState("Atualizando flag...");
 
@@ -4182,10 +4166,6 @@
   function renderProjectFlagPills(projectId) {
     var pills = [];
 
-    if (hasEditorialFlag(projectId, "review_text")) {
-      pills.push('<span class="admin-status-pill is-review-flag">Texto</span>');
-    }
-
     if (hasEditorialFlag(projectId, "future_feature")) {
       pills.push('<span class="admin-status-pill is-future-flag">Futuro</span>');
     }
@@ -4200,12 +4180,6 @@
 
   function renderEditorialFlagSummary(projectId) {
     var pills = [];
-
-    if (hasEditorialFlag(projectId, "review_text")) {
-      pills.push('<span class="admin-status-pill is-review-flag">Texto em revisão</span>');
-    } else {
-      pills.push('<span class="admin-status-pill is-approved-flag">Texto aprovado</span>');
-    }
 
     if (hasEditorialFlag(projectId, "future_feature")) {
       pills.push('<span class="admin-status-pill is-future-flag">Destaque futuro</span>');
