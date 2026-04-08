@@ -269,6 +269,7 @@
     if (e.key === "Enter") handleServicoAdd();
   });
   servicoEditButton.addEventListener("click", function() {
+    console.log("[servico] edit button clicked, mode was:", servicoEditMode);
     servicoEditMode = !servicoEditMode;
     servicoAddForm.hidden = !servicoEditMode;
     servicoEditButton.textContent = servicoEditMode ? "Concluir" : "Gerenciar lista";
@@ -1528,6 +1529,7 @@
   }
 
   function handleServicoChipClick(event) {
+    console.log("[servico] click fired, target:", event.target, "editMode:", servicoEditMode);
     // Delete chip type from global list
     var deleteBtn = event.target.closest("[data-delete-servico]");
     if (deleteBtn) {
