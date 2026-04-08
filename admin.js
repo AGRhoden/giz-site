@@ -1597,6 +1597,7 @@
     .then(function(items) {
       if (items && items.length) replaceProject(items[0]);
       syncServicoChips(novoValor);
+      renderProjectList();
     })
     .catch(function() { servicoFeedback.textContent = "Erro ao salvar."; });
   }
@@ -3092,6 +3093,7 @@
         }
         renderTagResults();
         renderBatchTagResults();
+        renderProjectList();
       });
   }
 
@@ -3116,6 +3118,7 @@
         });
         renderTagResults();
         renderBatchTagResults();
+        renderProjectList();
         setSaveState("Tag removida");
       })
       .catch(function () {
