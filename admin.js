@@ -1545,9 +1545,10 @@
       ativos.push(tipo);
     }
     var novoValor = ativos.join(",");
-    // Optimistic UI: mark chip immediately before async PATCH
+    // Optimistic UI: mark chip and pill immediately before async PATCH
     project.servico = novoValor || null;
     syncServicoChips(novoValor);
+    renderProjectList();
     patchServico(project, novoValor);
   }
 
