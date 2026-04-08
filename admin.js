@@ -4198,7 +4198,9 @@
   function renderReadinessPill(project) {
     var issues = getReadinessIssues(project);
     if (!issues.length) return "";
-    return '<span class="admin-status-pill is-review-flag" title="Pendente: ' + escapeHtml(issues.join(", ")) + '">Revisar</span>';
+    return issues.map(function (issue) {
+      return '<span class="admin-status-pill is-review-flag">' + escapeHtml(issue) + '</span>';
+    }).join("");
   }
 
   function handleCheckReadiness() {

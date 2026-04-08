@@ -772,6 +772,7 @@ select {
 .admin-status-pill.is-review-flag {
   background: #fff0e1;
   color: #9a4700;
+  padding: 4px 7px;
 }
 
 .admin-status-pill.is-approved-flag {
