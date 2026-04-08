@@ -1502,6 +1502,9 @@
 
   function renderServicoChips() {
     var project = getSelectedProject();
+    if (!servicoEditMode) {
+      servicoAddForm.hidden = true;
+    }
     var ativos = project && project.servico ? project.servico.split(",").map(function(s) { return s.trim(); }) : [];
     var tipos = getServicoTypes();
     servicoChips.innerHTML = tipos.map(function(tipo) {
@@ -2530,7 +2533,14 @@
         },
         body: JSON.stringify({ servico: novoValor || null })
       }).then(function(r) { return r.json(); }).then(function(items) {
-        if (items && items.length) replaceProject(items[0]);
+        if (items && items.length) {
+          var updated = items[0];
+          if (updated.servico === undefined) updated.servico = novoValor || null;
+          replaceProject(updated);
+        }
+        project.servico = novoValor || null;
+        renderProjectList();
+        renderServicoChips();
       });
     }).filter(Boolean);
 
