@@ -1432,16 +1432,8 @@ function activateViewerZoom() {
 }
 
 function zoomStart() {
-  const image = document.getElementById("imgZoom");
   const lens = document.getElementById("lens");
-
-  if (!image || !lens) return;
-
-  lens.style.display = "block";
-
-  const zoomFactor = 2.2;
-  lens.style.backgroundImage = `url(${image.src})`;
-  lens.style.backgroundSize = `${image.clientWidth * zoomFactor}px ${image.clientHeight * zoomFactor}px`;
+  if (lens) lens.style.display = "block";
 }
 
 function zoomEnd() {
@@ -1464,16 +1456,18 @@ function zoomMove(event) {
     return;
   }
 
-  lens.style.display = "block";
+  const zoomFactor = 2.2;
+  // Recalculate from getBoundingClientRect() on every move — avoids
+  // the clientWidth=0 bug when image was just injected via innerHTML.
+  lens.style.backgroundImage = `url(${image.src})`;
+  lens.style.backgroundSize = `${imageRect.width * zoomFactor}px ${imageRect.height * zoomFactor}px`;
 
-  const lensWidth = lens.offsetWidth;
-  const lensHeight = lens.offsetHeight;
   const lensInnerWidth = lens.clientWidth;
   const lensInnerHeight = lens.clientHeight;
-  const zoomFactor = 2.2;
   const backgroundX = x * zoomFactor - lensInnerWidth / 2;
   const backgroundY = y * zoomFactor - lensInnerHeight / 2;
 
+  lens.style.display = "block";
   lens.style.left = `${event.clientX}px`;
   lens.style.top = `${event.clientY}px`;
   lens.style.backgroundPosition = `${-backgroundX}px ${-backgroundY}px`;
