@@ -46,8 +46,8 @@ window.GIZ_PORTFOLIO_CONFIG = {
       description: "Uma entrada mais lúdica e visual para descobrir relações no acervo."
     },
     {
-      id: "tipos",
-      label: "Tipos",
+      id: "formato",
+      label: "Formato",
       source: "tipo",
       mode: "value",
       selectionOperator: "or",

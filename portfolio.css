@@ -283,6 +283,27 @@ button {
   color: var(--color-accent);
 }
 
+.destaque-trilha {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
+
+.destaque-sep {
+  opacity: 0.45;
+  margin: 0 0.3em;
+}
+
+.destaque-termo {
+  font-style: italic;
+  color: var(--color-text);
+  opacity: 0.75;
+}
+
+.destaque-titulo {
+  color: var(--color-text);
+  opacity: 0.55;
+}
+
 .project-subtitle-display {
   margin: 6px 0 0 0;
   font-size: clamp(20px, 2.3vw, 27px);

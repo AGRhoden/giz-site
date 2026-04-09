@@ -51,6 +51,7 @@
   var fieldSortYear = document.getElementById("field-sort-year");
 
   var fieldFeatured = document.getElementById("field-featured");
+  var fieldDestaqueLabel = document.getElementById("field-destaque-label");
   var fieldDossieSelect = document.getElementById("field-dossie-select");
   var publicationPill = document.getElementById("publication-pill");
   var publicationState = document.getElementById("publication-state");
@@ -587,7 +588,7 @@
   }
 
   function loadProjects() {
-    fetch(backend.url + "/rest/v1/projects?select=id,slug,title,subtitle,description,client,project_type,status,published_at,sort_year,is_featured,servico&order=title.asc", {
+    fetch(backend.url + "/rest/v1/projects?select=id,slug,title,subtitle,description,client,project_type,status,published_at,sort_year,is_featured,servico,destaque_label&order=title.asc", {
       headers: {
         apikey: backend.anonKey,
         Authorization: "Bearer " + state.token
@@ -1178,6 +1179,7 @@
     fieldStatus.value = project.status || "draft";
     fieldSortYear.value = formatSortYearInput(project.sort_year);
     fieldFeatured.checked = Boolean(project.is_featured);
+    if (fieldDestaqueLabel) fieldDestaqueLabel.value = project.destaque_label || "";
     initQuillDesc().clipboard.dangerouslyPasteHTML(project.description || "");
     syncDossieSelect(project.dossie_id || "");
     state.pendingPairIds = [];
@@ -1998,6 +2000,7 @@
         sort_year: nextSortYear,
         description: quillDesc ? (quillDesc.root.innerHTML || null) : null,
         is_featured: Boolean(fieldFeatured.checked),
+        destaque_label: (fieldDestaqueLabel && fieldDestaqueLabel.value.trim()) || null,
         dossie_id: fieldDossieSelect.value || null,
         published_at: resolvePublishedAt(project, nextStatus)
       })
