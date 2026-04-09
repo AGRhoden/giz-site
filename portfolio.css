@@ -110,7 +110,7 @@ button {
   background: transparent;
   padding: 0;
   margin: 0;
-  cursor: pointer;
+  cursor: default;
   display: block;
   width: 100%;
   text-align: left;
@@ -148,6 +148,7 @@ button {
   transform: translateY(calc(100% - 36px));
   transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
   z-index: 10;
+  cursor: pointer;
 }
 
 .puller-drawer-content-container {
@@ -178,6 +179,8 @@ button {
   align-items: center;
   margin-top: -14px;
   margin-bottom: 12px;
+  opacity: 0.22;
+  transition: opacity 0.4s ease;
 }
 
 .puller-circle::after {
@@ -202,23 +205,26 @@ button {
               transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ── Hover states ────────────────────────────────────────────────── */
+/* ── Hover states (ativados apenas sobre o .puller-drawer) ──────── */
 @media (hover: hover) {
-  .card-container:hover .front-card img {
-    transform: scale(1.04);
-  }
-  .card-container:hover .puller-drawer {
+  .puller-drawer:hover {
     transform: translateY(0);
   }
-  .card-container:hover .puller-drawer-content-container {
+  .puller-drawer:hover .puller-drawer-content-container {
     transform: translateY(0);
   }
-  .card-container:hover .puller-circle::after {
+  .puller-drawer:hover .puller-circle {
+    opacity: 1;
+  }
+  .puller-drawer:hover .puller-circle::after {
     transform: translateY(-2px) rotate(135deg);
   }
-  .card-container:hover .oficios-content {
+  .puller-drawer:hover .oficios-content {
     opacity: 1;
     transform: translateY(0);
+  }
+  .card-container:has(.puller-drawer:hover) .front-card img {
+    transform: scale(1.04);
   }
 }
 
