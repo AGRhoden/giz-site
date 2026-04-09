@@ -1014,6 +1014,7 @@ function renderGrid() {
     card.dataset.projectIndex = String(index);
     card.setAttribute("role", "listitem");
     card.setAttribute("aria-label", `Abrir projeto ${project.titulo}`);
+    if (project.thumb) card.style.setProperty("--thumb", `url("${project.thumb}")`);
 
     const front = document.createElement("div");
     front.className = "grid-card-front";
@@ -1039,13 +1040,18 @@ function renderGrid() {
     }
 
     if (project.servico) {
-      const overlay = document.createElement("div");
-      overlay.className = "grid-card-overlay";
-      const overlayText = document.createElement("span");
-      overlayText.className = "grid-card-overlay-text";
-      overlayText.textContent = project.servico;
-      overlay.appendChild(overlayText);
-      front.appendChild(overlay);
+      const items = project.servico.split(",")
+        .map((s) => s.trim()).filter(Boolean)
+        .map((s) => s.charAt(0).toUpperCase() + s.slice(1));
+      if (items.length) {
+        const overlay = document.createElement("div");
+        overlay.className = "grid-card-overlay";
+        const overlayText = document.createElement("span");
+        overlayText.className = "grid-card-overlay-text";
+        overlayText.innerHTML = items.join("<br>");
+        overlay.appendChild(overlayText);
+        front.appendChild(overlay);
+      }
     }
 
     card.appendChild(front);
