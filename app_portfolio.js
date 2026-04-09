@@ -1015,8 +1015,11 @@ function renderGrid() {
     card.setAttribute("role", "listitem");
     card.setAttribute("aria-label", `Abrir projeto ${project.titulo}`);
 
-    const front = document.createElement("div");
-    front.className = "grid-card-front";
+    const container = document.createElement("div");
+    container.className = "card-container";
+
+    const frontCard = document.createElement("div");
+    frontCard.className = "front-card";
 
     if (project.thumb) {
       const image = document.createElement("img");
@@ -1024,10 +1027,10 @@ function renderGrid() {
       image.alt = project.titulo;
       image.loading = "lazy";
       image.decoding = "async";
-      front.classList.add("loading");
-      image.addEventListener("load", () => front.classList.remove("loading"), { once: true });
-      image.addEventListener("error", () => front.classList.remove("loading"), { once: true });
-      front.appendChild(image);
+      frontCard.classList.add("loading");
+      image.addEventListener("load", () => frontCard.classList.remove("loading"), { once: true });
+      image.addEventListener("error", () => frontCard.classList.remove("loading"), { once: true });
+      frontCard.appendChild(image);
     } else {
       const placeholder = document.createElement("div");
       placeholder.className = "grid-thumb-placeholder";
@@ -1035,25 +1038,37 @@ function renderGrid() {
       title.className = "grid-thumb-title";
       title.textContent = project.titulo || "Projeto sem imagem";
       placeholder.appendChild(title);
-      front.appendChild(placeholder);
+      frontCard.appendChild(placeholder);
     }
+
+    container.appendChild(frontCard);
 
     if (project.servico) {
       const items = project.servico.split(",")
         .map((s) => s.trim()).filter(Boolean)
         .map((s) => s.charAt(0).toUpperCase() + s.slice(1));
       if (items.length) {
-        const overlay = document.createElement("div");
-        overlay.className = "grid-card-overlay";
-        const overlayText = document.createElement("span");
-        overlayText.className = "grid-card-overlay-text";
-        overlayText.innerHTML = items.join("<br>");
-        overlay.appendChild(overlayText);
-        front.appendChild(overlay);
+        const drawer = document.createElement("div");
+        drawer.className = "puller-drawer";
+
+        const contentContainer = document.createElement("div");
+        contentContainer.className = "puller-drawer-content-container";
+
+        const circle = document.createElement("div");
+        circle.className = "puller-circle";
+
+        const oficios = document.createElement("div");
+        oficios.className = "oficios-content";
+        oficios.innerHTML = items.join("<br>");
+
+        contentContainer.appendChild(circle);
+        contentContainer.appendChild(oficios);
+        drawer.appendChild(contentContainer);
+        container.appendChild(drawer);
       }
     }
 
-    card.appendChild(front);
+    card.appendChild(container);
 
     elements.grid.appendChild(card);
   });
@@ -1085,15 +1100,19 @@ function buildAlbumSecretCard(photo) {
   card.dataset.albumSecret = "true";
   card.setAttribute("aria-label", photo.legenda || "Projeto");
 
-  const front = document.createElement("div");
-  front.className = "grid-card-front";
+  const container = document.createElement("div");
+  container.className = "card-container";
+
+  const frontCard = document.createElement("div");
+  frontCard.className = "front-card";
   const img = document.createElement("img");
   img.src = photo.url;
   img.alt = photo.legenda || "";
   img.loading = "lazy";
-  front.appendChild(img);
+  frontCard.appendChild(img);
 
-  card.appendChild(front);
+  container.appendChild(frontCard);
+  card.appendChild(container);
   return card;
 }
 
