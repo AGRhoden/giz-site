@@ -1015,8 +1015,8 @@ function renderGrid() {
     card.setAttribute("role", "listitem");
     card.setAttribute("aria-label", `Abrir projeto ${project.titulo}`);
 
-    const front = document.createElement("div");
-    front.className = "grid-card-front";
+    const imageDiv = document.createElement("div");
+    imageDiv.className = "grid-card-image";
 
     if (project.thumb) {
       const image = document.createElement("img");
@@ -1024,10 +1024,10 @@ function renderGrid() {
       image.alt = project.titulo;
       image.loading = "lazy";
       image.decoding = "async";
-      front.classList.add("loading");
-      image.addEventListener("load", () => front.classList.remove("loading"), { once: true });
-      image.addEventListener("error", () => front.classList.remove("loading"), { once: true });
-      front.appendChild(image);
+      imageDiv.classList.add("loading");
+      image.addEventListener("load", () => imageDiv.classList.remove("loading"), { once: true });
+      image.addEventListener("error", () => imageDiv.classList.remove("loading"), { once: true });
+      imageDiv.appendChild(image);
     } else {
       const placeholder = document.createElement("div");
       placeholder.className = "grid-thumb-placeholder";
@@ -1035,25 +1035,22 @@ function renderGrid() {
       title.className = "grid-thumb-title";
       title.textContent = project.titulo || "Projeto sem imagem";
       placeholder.appendChild(title);
-      front.appendChild(placeholder);
+      imageDiv.appendChild(placeholder);
     }
+
+    card.appendChild(imageDiv);
 
     if (project.servico) {
       const items = project.servico.split(",")
         .map((s) => s.trim()).filter(Boolean)
         .map((s) => s.charAt(0).toUpperCase() + s.slice(1));
       if (items.length) {
-        const overlay = document.createElement("div");
-        overlay.className = "grid-card-overlay";
-        const overlayText = document.createElement("span");
-        overlayText.className = "grid-card-overlay-text";
-        overlayText.innerHTML = items.join("<br>");
-        overlay.appendChild(overlayText);
-        front.appendChild(overlay);
+        const oficio = document.createElement("div");
+        oficio.className = "grid-card-oficio";
+        oficio.innerHTML = items.join("<br>");
+        card.appendChild(oficio);
       }
     }
-
-    card.appendChild(front);
 
     elements.grid.appendChild(card);
   });
@@ -1085,15 +1082,15 @@ function buildAlbumSecretCard(photo) {
   card.dataset.albumSecret = "true";
   card.setAttribute("aria-label", photo.legenda || "Projeto");
 
-  const front = document.createElement("div");
-  front.className = "grid-card-front";
+  const imageDiv = document.createElement("div");
+  imageDiv.className = "grid-card-image";
   const img = document.createElement("img");
   img.src = photo.url;
   img.alt = photo.legenda || "";
   img.loading = "lazy";
-  front.appendChild(img);
+  imageDiv.appendChild(img);
 
-  card.appendChild(front);
+  card.appendChild(imageDiv);
   return card;
 }
 
