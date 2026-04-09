@@ -112,28 +112,12 @@ button {
   margin: 0;
   cursor: pointer;
   display: block;
-  position: relative;
-  transition: transform 0.4s ease;
-}
-
-.grid-card::before {
-  content: "";
-  position: absolute;
-  inset: -5px;
-  z-index: 0;
-  background: var(--thumb, transparent) center / cover no-repeat;
-  filter: blur(14px) brightness(1.6) saturate(1.4);
-  opacity: 0;
-  transition: opacity 0.4s ease;
-  border-radius: 2px;
+  transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 @media (hover: hover) {
   .grid-card:hover {
     transform: scale(1.02);
-  }
-  .grid-card:hover::before {
-    opacity: 0.85;
   }
   .grid-card:hover .grid-card-overlay {
     opacity: 1;
@@ -142,7 +126,6 @@ button {
 
 .grid-card-front {
   position: relative;
-  z-index: 1;
   overflow: hidden;
 }
 
@@ -151,7 +134,9 @@ button {
   inset: 0;
   background: none;
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
   padding: 10px;
   opacity: 0;
   transition: opacity 0.4s ease;
@@ -161,11 +146,11 @@ button {
 .grid-card-overlay-text {
   font-size: 10px;
   color: rgba(255, 255, 255, 0.95);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   line-height: 1.7;
-  text-transform: uppercase;
+  text-align: center;
   background: rgba(0, 0, 0, 0.65);
-  padding: 6px 9px;
+  padding: 6px 10px;
   border-radius: 2px;
 }
 

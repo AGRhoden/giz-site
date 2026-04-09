@@ -1014,7 +1014,6 @@ function renderGrid() {
     card.dataset.projectIndex = String(index);
     card.setAttribute("role", "listitem");
     card.setAttribute("aria-label", `Abrir projeto ${project.titulo}`);
-    if (project.thumb) card.style.setProperty("--thumb", `url("${project.thumb}")`);
 
     const front = document.createElement("div");
     front.className = "grid-card-front";
