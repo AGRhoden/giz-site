@@ -2313,7 +2313,9 @@ function formatLabel(value) {
   return normalized
     .replaceAll("-", " ")
     .replaceAll("_", " ")
-    .replace(/\b\p{L}/gu, (character) => character.toUpperCase());
+    .split(" ")
+    .map((word) => word.length ? word[0].toUpperCase() + word.slice(1) : "")
+    .join(" ");
 }
 
 function escapeHtml(value) {
