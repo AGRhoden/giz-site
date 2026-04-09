@@ -169,11 +169,22 @@
                   <div class="admin-batch-step-head">
                     <span class="admin-step-kicker">3</span>
                     <div>
-                      <h3>Execução</h3>
-                      <p class="admin-copy">Clique para marcar ou remover serviços dos projetos selecionados.</p>
+                      <h3>Ofício</h3>
+                      <p class="admin-copy">Clique para marcar ou remover ofícios dos projetos selecionados.</p>
                     </div>
                   </div>
                   <div class="admin-tag-picker" id="batch-servico-results"></div>
+
+                  <div class="admin-inline-form admin-tag-create-inline">
+                    <label class="admin-field">
+                      <span class="admin-label">Novo ofício</span>
+                      <input class="admin-input" id="batch-oficio-new" type="text" placeholder="Nome do ofício">
+                    </label>
+                    <div class="admin-inline-actions">
+                      <button class="admin-btn admin-btn--sm" id="batch-oficio-add">Adicionar</button>
+                    </div>
+                    <p class="admin-inline-feedback" id="batch-oficio-feedback"></p>
+                  </div>
                 </div>
 
                 <div class="admin-batch-step">
@@ -618,6 +629,6 @@
 
   <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
   <script src="backend.config.js?v=20260331c"></script>
-  <script src="admin.js?v=20260409a"></script>
+  <script src="admin.js?v=20260409b"></script>
 </body>
 </html>

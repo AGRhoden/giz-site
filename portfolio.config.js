@@ -56,13 +56,13 @@ window.GIZ_PORTFOLIO_CONFIG = {
       description: "Percorra o acervo por formato: livros, HQs, revistas e outras frentes."
     },
     {
-      id: "execucao",
-      label: "Execução",
+      id: "oficio",
+      label: "Ofício",
       source: "servico",
       mode: "csv",
       selectionOperator: "or",
-      summary: "Por serviço executado",
-      description: "Filtre pelo tipo de serviço realizado em cada projeto."
+      summary: "Por ofício realizado",
+      description: "Filtre pelo ofício realizado em cada projeto."
     },
   ],
   tagSets: {

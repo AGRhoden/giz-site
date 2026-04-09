@@ -229,6 +229,7 @@
   batchTagSearch.addEventListener("input", renderBatchTagResults);
   batchTagResults.addEventListener("click", handleBatchTagToggle);
   batchServicoResults.addEventListener("click", handleBatchServicoToggle);
+  document.getElementById("batch-oficio-add").addEventListener("click", handleBatchOficioAdd);
   batchPublisherResults.addEventListener("click", handleBatchPublisherChipClick);
   batchSelectVisibleButton.addEventListener("click", handleSelectVisibleProjects);
   batchClearSelectionButton.addEventListener("click", clearBatchSelection);
@@ -1051,7 +1052,7 @@
       .filter(Boolean);
   }
 
-  // Tags e Execução: usa seleção em lote se houver, senão cai para o projeto aberto no editor.
+  // Tags e Ofício: usa seleção em lote se houver, senão cai para o projeto aberto no editor.
   function getWorkingProjectList() {
     var batch = getBatchSelectedProjects();
     if (batch.length) return batch;
@@ -2315,7 +2316,7 @@
     var tipos = getServicoTypes();
 
     if (!selectedProjects.length) {
-      batchServicoResults.innerHTML = '<p class="admin-inline-empty">Abra ou selecione um projeto para editar execução.</p>';
+      batchServicoResults.innerHTML = '<p class="admin-inline-empty">Abra ou selecione um projeto para editar ofício.</p>';
       return;
     }
 
@@ -2380,7 +2381,36 @@
     Promise.all(jobs).then(function() {
       renderBatchServicoResults();
     }).catch(function() {
-      setBatchFeedback("Erro ao aplicar execução em lote.", true);
+      setBatchFeedback("Erro ao aplicar ofício em lote.", true);
+    });
+  }
+
+  function handleBatchOficioAdd() {
+    var input = document.getElementById("batch-oficio-new");
+    var feedback = document.getElementById("batch-oficio-feedback");
+    var valor = String(input ? input.value : "").trim();
+    if (!valor) { if (feedback) { feedback.textContent = "Digite o nome do ofício."; feedback.classList.add("is-error"); } return; }
+    var tipos = getServicoTypes();
+    if (tipos.indexOf(valor) !== -1) { if (feedback) { feedback.textContent = "Ofício já existe."; feedback.classList.add("is-error"); } return; }
+    var novosTipos = tipos.concat([valor]);
+    if (!state.siteConfig) state.siteConfig = createDefaultSiteConfig();
+    if (!state.siteConfig.labels) state.siteConfig.labels = {};
+    state.siteConfig.labels.servico_types = novosTipos;
+    fetch(backend.url + "/rest/v1/site_config", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "resolution=merge-duplicates,return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify([serializeSiteConfigForSave()])
+    }).then(function(r) { return r.json(); }).then(function() {
+      if (input) input.value = "";
+      if (feedback) { feedback.textContent = "Ofício \"" + valor + "\" adicionado."; feedback.classList.remove("is-error"); }
+      renderBatchServicoResults();
+    }).catch(function() {
+      if (feedback) { feedback.textContent = "Erro ao salvar."; feedback.classList.add("is-error"); }
     });
   }
 
@@ -4135,7 +4165,7 @@
     if (!String(project.client || "").trim()) issues.push("Editora");
     if (!String(project.project_type || "").trim()) issues.push("Tipo");
     if (!project.sort_year) issues.push("Ano");
-    if (!String(project.servico || "").trim()) issues.push("Execução");
+    if (!String(project.servico || "").trim()) issues.push("Ofício");
     if (!(state.projectTagsByProject[project.id] || []).length) issues.push("Tags");
     return issues;
   }
