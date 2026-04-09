@@ -51,15 +51,7 @@
   var fieldSortYear = document.getElementById("field-sort-year");
 
   var fieldFeatured = document.getElementById("field-featured");
-  var servicoChips = document.getElementById("servico-chips");
-  var servicoEditButton = document.getElementById("servico-edit-button");
-  var servicoAddForm = document.getElementById("servico-add-form");
-  var servicoNewInput = document.getElementById("servico-new-input");
-  var servicoAddConfirm = document.getElementById("servico-add-confirm");
-  var servicoAddCancel = document.getElementById("servico-add-cancel");
-  var servicoFeedback = document.getElementById("servico-feedback");
   var fieldDossieSelect = document.getElementById("field-dossie-select");
-  var servicoEditMode = false;
   var publicationPill = document.getElementById("publication-pill");
   var publicationState = document.getElementById("publication-state");
   var publicationDate = document.getElementById("publication-date");
@@ -244,8 +236,6 @@
   batchConvertDraftsButton.addEventListener("click", handleConvertIncompleteToDraft);
   batchApplyPublisherButton.addEventListener("click", handleBatchPublisherApply);
   batchClearPublisherButton.addEventListener("click", handleBatchPublisherClear);
-  if (flagReviewText) flagReviewText.addEventListener("change", handleEditorialFlagChange);
-  if (flagFutureFeature) flagFutureFeature.addEventListener("change", handleEditorialFlagChange);
   pairSearch.addEventListener("input", renderPairResults);
   pairResults.addEventListener("click", handlePairCandidateToggle);
   pairConnectButton.addEventListener("click", handleAddPairs);
@@ -256,27 +246,6 @@
   fieldClientSelect.addEventListener("change", handlePublisherSelectionChange);
   fieldClientCustom.addEventListener("input", syncCurrentPublicationChecklist);
   fieldSortYear.addEventListener("input", handleSortYearInput);
-  servicoChips.addEventListener("click", handleServicoChipClick);
-  servicoAddCancel.addEventListener("click", function() {
-    servicoEditMode = false;
-    servicoAddForm.hidden = true;
-    servicoNewInput.value = "";
-    servicoEditButton.textContent = "Gerenciar lista";
-    renderServicoChips();
-  });
-  servicoAddConfirm.addEventListener("click", handleServicoAdd);
-  servicoNewInput.addEventListener("keydown", function(e) {
-    if (e.key === "Enter") handleServicoAdd();
-  });
-  servicoEditButton.addEventListener("click", function() {
-    console.log("[servico] edit button clicked, mode was:", servicoEditMode);
-    servicoEditMode = !servicoEditMode;
-    servicoAddForm.hidden = !servicoEditMode;
-    servicoEditButton.textContent = servicoEditMode ? "Concluir" : "Gerenciar lista";
-    if (servicoEditMode) servicoNewInput.focus();
-    if (!servicoEditMode) servicoNewInput.value = "";
-    renderServicoChips();
-  });
   siteConfigForm.addEventListener("click", handleSiteConfigClick);
   siteConfigForm.addEventListener("input", handleSiteConfigInput);
   siteConfigSaveButton.addEventListener("click", handleSiteConfigSave);
@@ -1182,7 +1151,6 @@
     state.editorSection = button.getAttribute("data-editor-tab") || "details";
     renderEditorTabs();
     if (state.editorSection === "tags") renderTagResults();
-    if (state.editorSection === "details") renderServicoChips();
   }
 
   function renderEditor() {
@@ -1200,11 +1168,6 @@
     setHidden(editorForm, false);
     setHidden(mediaUploadForm, false);
     renderEditorTabs();
-    // Reset servico edit mode when switching projects
-    servicoEditMode = false;
-    servicoAddForm.hidden = true;
-    servicoNewInput.value = "";
-    servicoEditButton.textContent = "Gerenciar lista";
     editorTitle.textContent = project.title;
     fieldTitle.value = project.title || "";
     fieldSubtitle.value = project.subtitle || "";
@@ -1215,7 +1178,6 @@
     fieldSortYear.value = formatSortYearInput(project.sort_year);
     fieldFeatured.checked = Boolean(project.is_featured);
     initQuillDesc().clipboard.dangerouslyPasteHTML(project.description || "");
-    renderServicoChips();
     syncDossieSelect(project.dossie_id || "");
     state.pendingPairIds = [];
     updatePublicationPanel(project);
@@ -1494,134 +1456,6 @@
   // ── Serviço executado ─────────────────────────────────────────────────────
   function getServicoTypes() {
     return (state.siteConfig && state.siteConfig.labels && state.siteConfig.labels.servico_types) || [];
-  }
-
-  function getServicoValue() {
-    var active = Array.prototype.slice.call(servicoChips.querySelectorAll(".admin-chip.is-active[data-servico]"));
-    return active.map(function(c) { return c.dataset.servico; }).join(",") || null;
-  }
-
-  function renderServicoChips() {
-    var project = getSelectedProject();
-    if (!servicoEditMode) {
-      servicoAddForm.hidden = true;
-    }
-    var ativos = project && project.servico ? project.servico.split(",").map(function(s) { return s.trim(); }) : [];
-    var tipos = getServicoTypes();
-    servicoChips.innerHTML = tipos.map(function(tipo) {
-      var isActive = ativos.indexOf(tipo) !== -1;
-      if (servicoEditMode) {
-        return '<button class="admin-chip admin-chip-deletable" type="button" data-servico="' + escapeHtml(tipo) + '">' +
-          escapeHtml(tipo) +
-          '<span class="admin-chip-x" data-delete-servico="' + escapeHtml(tipo) + '" title="Remover da lista">×</span>' +
-          '</button>';
-      }
-      return '<button class="admin-chip ' + (isActive ? 'is-active' : '') + '" type="button" data-servico="' + escapeHtml(tipo) + '">' +
-        escapeHtml(tipo) + '</button>';
-    }).join("");
-  }
-
-  function syncServicoChips(servico) {
-    var ativos = servico ? servico.split(",").map(function(s) { return s.trim(); }) : [];
-    Array.prototype.forEach.call(servicoChips.querySelectorAll(".admin-chip[data-servico]"), function(chip) {
-      chip.classList.toggle("is-active", ativos.indexOf(chip.dataset.servico) !== -1);
-    });
-  }
-
-  function handleServicoChipClick(event) {
-    console.log("[servico] click fired, target:", event.target, "editMode:", servicoEditMode);
-    // Delete chip type from global list
-    var deleteBtn = event.target.closest("[data-delete-servico]");
-    if (deleteBtn) {
-      var tipo = deleteBtn.dataset.deleteServico;
-      var tipos = getServicoTypes().filter(function(t) { return t !== tipo; });
-      saveServicoTypes(tipos);
-      return;
-    }
-    // Toggle chip for current project
-    if (servicoEditMode) return;
-    var chip = event.target.closest(".admin-chip[data-servico]");
-    if (!chip || chip.disabled) return;
-    var project = getSelectedProject();
-    if (!project) return;
-    var tipo = chip.dataset.servico;
-    var ativos = (project.servico || "").split(",").map(function(s) { return s.trim(); }).filter(Boolean);
-    if (ativos.indexOf(tipo) !== -1) {
-      ativos = ativos.filter(function(s) { return s !== tipo; });
-    } else {
-      ativos.push(tipo);
-    }
-    var novoValor = ativos.join(",") || null;
-    project.servico = novoValor;
-    renderServicoChips();
-    renderProjectList();
-    patchServico(project, novoValor);
-  }
-
-  function handleServicoAdd() {
-    var nome = servicoNewInput.value.trim();
-    if (!nome) return;
-    var tipos = getServicoTypes();
-    if (tipos.indexOf(nome) !== -1) {
-      servicoFeedback.textContent = "Serviço já existe.";
-      return;
-    }
-    tipos = tipos.concat([nome]);
-    saveServicoTypes(tipos, function() {
-      servicoAddForm.hidden = true;
-      servicoNewInput.value = "";
-    });
-  }
-
-  function saveServicoTypes(tipos, callback) {
-    if (!state.siteConfig.labels) state.siteConfig.labels = {};
-    state.siteConfig.labels.servico_types = tipos;
-    fetch(backend.url + "/rest/v1/site_config?key=eq.main", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: backend.anonKey,
-        Authorization: "Bearer " + state.token
-      },
-      body: JSON.stringify({ labels: state.siteConfig.labels })
-    })
-    .then(function() {
-      renderServicoChips();
-      servicoFeedback.textContent = "Lista atualizada.";
-      setTimeout(function() { servicoFeedback.textContent = ""; }, 2000);
-      if (callback) callback();
-    })
-    .catch(function() { servicoFeedback.textContent = "Erro ao salvar lista."; });
-  }
-
-  function patchServico(project, novoValor) {
-    fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(project.id), {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-        apikey: backend.anonKey,
-        Authorization: "Bearer " + state.token
-      },
-      body: JSON.stringify({ servico: novoValor || null })
-    })
-    .then(function(r) { return r.json(); })
-    .then(function(items) {
-      if (items && items.length) {
-        // Preserve servico in case API response omits it
-        var updated = items[0];
-        if (updated.servico === undefined) updated.servico = novoValor;
-        replaceProject(updated);
-      }
-      renderServicoChips();
-      renderProjectList();
-    })
-    .catch(function() {
-      // Revert optimistic update
-      project.servico = project.servico || null;
-      renderServicoChips();
-      servicoFeedback.textContent = "Erro ao salvar.";
-    });
   }
 
   // ── Dossiê vinculado ──────────────────────────────────────────────────────
@@ -2163,7 +1997,6 @@
         sort_year: nextSortYear,
         description: quillDesc ? (quillDesc.root.innerHTML || null) : null,
         is_featured: Boolean(fieldFeatured.checked),
-        servico: getServicoValue(),
         dossie_id: fieldDossieSelect.value || null,
         published_at: resolvePublishedAt(project, nextStatus)
       })
@@ -2541,7 +2374,6 @@
         }
         project.servico = novoValor || null;
         renderProjectList();
-        renderServicoChips();
       });
     }).filter(Boolean);
 
