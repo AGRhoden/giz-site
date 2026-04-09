@@ -1015,9 +1015,6 @@ function renderGrid() {
     card.setAttribute("role", "listitem");
     card.setAttribute("aria-label", `Abrir projeto ${project.titulo}`);
 
-    const inner = document.createElement("div");
-    inner.className = "grid-card-inner";
-
     const front = document.createElement("div");
     front.className = "grid-card-front";
 
@@ -1041,34 +1038,17 @@ function renderGrid() {
       front.appendChild(placeholder);
     }
 
-    const back = document.createElement("div");
-    back.className = "grid-card-back";
-
-    if (project.imagens[1]) {
-      const backBg = document.createElement("img");
-      backBg.className = "grid-back-bg";
-      backBg.src = project.imagens[1];
-      backBg.alt = "";
-      backBg.setAttribute("aria-hidden", "true");
-      back.appendChild(backBg);
-    }
-
-    const backTitle = document.createElement("strong");
-    backTitle.className = "grid-back-title";
-    backTitle.textContent = project.titulo;
-
-    back.appendChild(backTitle);
-
     if (project.servico) {
-      const backService = document.createElement("span");
-      backService.className = "grid-back-service";
-      backService.textContent = formatLabel(project.servico);
-      back.appendChild(backService);
+      const overlay = document.createElement("div");
+      overlay.className = "grid-card-overlay";
+      const overlayText = document.createElement("span");
+      overlayText.className = "grid-card-overlay-text";
+      overlayText.textContent = project.servico;
+      overlay.appendChild(overlayText);
+      front.appendChild(overlay);
     }
 
-    inner.appendChild(front);
-    inner.appendChild(back);
-    card.appendChild(inner);
+    card.appendChild(front);
 
     elements.grid.appendChild(card);
   });
@@ -1100,10 +1080,6 @@ function buildAlbumSecretCard(photo) {
   card.dataset.albumSecret = "true";
   card.setAttribute("aria-label", photo.legenda || "Projeto");
 
-  const inner = document.createElement("div");
-  inner.className = "grid-card-inner";
-
-  // Frente: thumb da capa fake — idêntica às outras capas
   const front = document.createElement("div");
   front.className = "grid-card-front";
   const img = document.createElement("img");
@@ -1112,27 +1088,7 @@ function buildAlbumSecretCard(photo) {
   img.loading = "lazy";
   front.appendChild(img);
 
-  // Verso: mesma imagem em 0.3 opacity + legenda como título (igual projeto sem segundo still)
-  const back = document.createElement("div");
-  back.className = "grid-card-back";
-
-  const backBg = document.createElement("img");
-  backBg.className = "grid-back-bg";
-  backBg.src = photo.url;
-  backBg.alt = "";
-  backBg.setAttribute("aria-hidden", "true");
-  back.appendChild(backBg);
-
-  if (photo.legenda) {
-    const backTitle = document.createElement("strong");
-    backTitle.className = "grid-back-title";
-    backTitle.textContent = photo.legenda;
-    back.appendChild(backTitle);
-  }
-
-  inner.appendChild(front);
-  inner.appendChild(back);
-  card.appendChild(inner);
+  card.appendChild(front);
   return card;
 }
 
