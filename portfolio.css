@@ -179,7 +179,7 @@ button {
   align-items: center;
   margin-top: -14px;
   margin-bottom: 12px;
-  opacity: 0.22;
+  opacity: 0;
   transition: opacity 0.4s ease;
 }
 
@@ -205,16 +205,24 @@ button {
               transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* ── Hover states (ativados apenas sobre o .puller-drawer) ──────── */
+/* ── Hover states ────────────────────────────────────────────────── */
 @media (hover: hover) {
+  /* Nível 1 — cursor em qualquer parte do thumb:
+     zoom interno + revela círculo/seta apenas */
+  .card-container:hover .front-card img {
+    transform: scale(1.04);
+  }
+  .card-container:hover .puller-circle {
+    opacity: 1;
+  }
+
+  /* Nível 2 — cursor sobre o drawer/seta:
+     abre a gaveta com todo o parallax */
   .puller-drawer:hover {
     transform: translateY(0);
   }
   .puller-drawer:hover .puller-drawer-content-container {
     transform: translateY(0);
-  }
-  .puller-drawer:hover .puller-circle {
-    opacity: 1;
   }
   .puller-drawer:hover .puller-circle::after {
     transform: translateY(-2px) rotate(135deg);
@@ -222,9 +230,6 @@ button {
   .puller-drawer:hover .oficios-content {
     opacity: 1;
     transform: translateY(0);
-  }
-  .card-container:has(.puller-drawer:hover) .front-card img {
-    transform: scale(1.04);
   }
 }
 
