@@ -12,9 +12,9 @@ window.GIZ_PORTFOLIO_CONFIG = {
     {
       id: "destaques",
       label: "Destaques",
-      source: "destaque",
+      source: "destaqueLabel",
       mode: "value",
-      fixedOptions: ["destaque"],
+      selectionOperator: "or",
       summary: "Seleção curada",
       description: "Comece pelos projetos que sintetizam melhor a linguagem do estúdio."
     },

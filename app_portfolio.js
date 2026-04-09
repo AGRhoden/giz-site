@@ -1719,14 +1719,6 @@ function renderPortfolioOverview() {
   `;
 }
 
-function renderDestaqueTrail(project) {
-  if (!project.isFeatured) return "";
-  if (!project.destaqueLabel) return '<p class="project-badge">Destaque</p>';
-  const termo = escapeHtml(project.destaqueLabel);
-  const titulo = escapeHtml(project.titulo);
-  return `<p class="project-badge destaque-trilha">Destaque <span class="destaque-sep">›</span> <span class="destaque-termo">${termo}</span> <span class="destaque-sep">›</span> <span class="destaque-titulo">${titulo}</span></p>`;
-}
-
 function renderProjectPanel() {
   setPanelMode("project");
   const project = state.currentProject;
@@ -1734,7 +1726,7 @@ function renderProjectPanel() {
   const descText = rawDesc.replace(/<[^>]+>/g, "").trim();
   const description = descText === "Texto em construção" ? "" : rawDesc;
   const descriptionClass = "project-description";
-  const featuredBadge = renderDestaqueTrail(project);
+  const featuredBadge = project.isFeatured ? '<p class="project-badge">Destaque</p>' : "";
   const subtitle = project.subtitulo
     ? `<p class="project-subtitle-display">${escapeHtml(project.subtitulo)}</p>`
     : "";
