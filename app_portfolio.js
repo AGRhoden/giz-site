@@ -48,6 +48,7 @@ const elements = {
 const state = {
   projects: [],
   shuffled: [],
+  servicoTypes: [],
   filtered: [],
   loadFailed: false,
   currentPage: CONFIG.defaultPageId || "inicio",
@@ -469,9 +470,27 @@ function handleLeftClick(event) {
 
 }
 
+async function loadSiteConfig() {
+  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
+  const url = new URL("/rest/v1/site_config", BACKEND_CONFIG.url);
+  url.searchParams.set("select", "labels");
+  url.searchParams.set("key", "eq.main");
+  url.searchParams.set("limit", "1");
+  const res = await fetch(url.toString(), {
+    headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` }
+  });
+  if (!res.ok) return;
+  const items = await res.json();
+  const types = items?.[0]?.labels?.servico_types;
+  if (Array.isArray(types)) state.servicoTypes = types.map((t) => String(t).trim()).filter(Boolean);
+}
+
 async function loadProjects() {
   try {
-    const payload = await loadProjectsFromSupabase();
+    const [payload] = await Promise.all([
+      loadProjectsFromSupabase(),
+      loadSiteConfig().catch(() => {})
+    ]);
     if (!Array.isArray(payload)) {
       throw new Error("A fonte de dados do portfólio não retornou uma lista de projetos.");
     }
@@ -1904,6 +1923,13 @@ function getCriterionOptions(criterion) {
   const values = Array.isArray(criterion.fixedOptions) && criterion.fixedOptions.length
     ? criterion.fixedOptions.map((value) => cleanString(value)).filter(Boolean)
     : collectCriterionCatalog(criterion, includeSet, excludeSet);
+
+  if (criterion.id === "oficio" && state.servicoTypes.length) {
+    state.servicoTypes.forEach((t) => {
+      const v = cleanString(t);
+      if (v && !values.includes(v)) values.push(v);
+    });
+  }
 
   selectedValues.forEach((value) => {
     if (!values.includes(value)) {
