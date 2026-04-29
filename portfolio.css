@@ -2154,3 +2154,77 @@ button.project-tag-link:hover {
   margin-top: 106px;
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   TIPOGRAFIA EQUALIZADA — sem bold, hierarquia simétrica
+   Hierarquia: título (300) → subtítulo (400) → texto (400)
+   Tags e filtros seguem o mesmo padrão
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --weight-medium: 500;
+  --weight-bold:   400;
+  --font-size-criterion: 20px;
+}
+
+/* Títulos de projeto — alinhar com páginas estáticas (300) */
+.panel-inner-project .titulo-principal {
+  font-weight: 300;
+}
+
+/* Subtítulo de projeto — leve (300) */
+.project-subtitle-display {
+  font-weight: 300;
+}
+
+/* Descrição de projeto — texto corrido (400) */
+.project-description {
+  font-weight: var(--weight-regular);
+}
+
+/* Título do dossiê — sem bold */
+.dv-title {
+  font-weight: 300;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════
+   FIO COLORIDO NAS PÁGINAS ESTÁTICAS
+   Cada página recebe --page-accent via style="" no wrapper HTML.
+   Cores do vocabulário do próprio acervo.
+   início → #2f8c66 (verde)  quem → #7c5ea7 (roxo)  contato → #b14a42 (vermelho)
+   ══════════════════════════════════════════════════════════════════ */
+
+.static-page-title {
+  position: relative;
+  padding-bottom: 16px;
+  margin-bottom: 6px;
+}
+
+.static-page-title::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 1px;
+  background: var(--page-accent, transparent);
+}
+
+/* Âncora para a página Início (sem h1 — logo está no espaço 270px) */
+.static-inicio-anchor {
+  height: 106px;
+  position: relative;
+}
+
+.static-inicio-anchor::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px;
+  height: 1px;
+  background: var(--page-accent, transparent);
+}
+
