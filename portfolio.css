@@ -2126,3 +2126,31 @@ button.project-tag-link:hover {
   height: auto;
 }
 
+/* ── Logo no menu ──────────────────────────────────────────────────── */
+
+.menu {
+  position: relative;
+}
+
+.menu-logo {
+  position: absolute;
+  left: 24px;
+  height: 22px;
+  width: auto;
+  display: block;
+  opacity: 0.85;
+}
+
+@media (max-width: 760px) {
+  .menu-logo {
+    height: 18px;
+    left: 16px;
+  }
+}
+
+/* ── Página Início: margem para manter posição do texto ────────────── */
+
+.static-page-intro--inicio {
+  margin-top: 106px;
+}
+
