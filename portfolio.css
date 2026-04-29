@@ -2110,3 +2110,19 @@ button.project-tag-link:hover {
 .album-fullscreen-close:hover { color: #fff; }
 
 .album-fullscreen-open { overflow: hidden; }
+
+/* ── Logo GIZ (página Início) ─────────────────────────────────────── */
+
+.giz-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.giz-logo {
+  display: block;
+  max-width: 180px;
+  width: 100%;
+  height: auto;
+}
+
