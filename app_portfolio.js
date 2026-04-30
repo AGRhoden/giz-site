@@ -611,8 +611,7 @@ function buildDossieListHtml(dossies) {
         <span class="dossie-card-read-more">Leia mais</span>
       </div>
     </button>`;
-  }).join("
-");
+  }).join("\n");
 
   const prevDisabled = page === 0 ? " disabled" : "";
   const nextDisabled = page >= totalPages - 1 ? " disabled" : "";
