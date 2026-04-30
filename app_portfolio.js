@@ -584,7 +584,7 @@ const DOSSIE_PAGE_SIZE = 3;
 
 function buildDossieListHtml(dossies) {
   if (!dossies.length) {
-    return `<div class="panel-inner panel-inner-static panel-inner-static-shell">
+    return `<div class="panel-inner panel-inner-static panel-inner-static-shell" style="--page-accent: #d7b645;">
   <h1 class="static-page-title">Dossiê</h1>
   <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
   <p class="small-note">Em breve.</p>
@@ -611,7 +611,8 @@ function buildDossieListHtml(dossies) {
         <span class="dossie-card-read-more">Leia mais</span>
       </div>
     </button>`;
-  }).join("\n");
+  }).join("
+");
 
   const prevDisabled = page === 0 ? " disabled" : "";
   const nextDisabled = page >= totalPages - 1 ? " disabled" : "";
@@ -621,7 +622,7 @@ function buildDossieListHtml(dossies) {
     <button type="button" class="dossie-cards-arrow" data-action="dossie-list-next"${nextDisabled} aria-label="Próximos">&#8594;</button>
   </div>` : "";
 
-  return `<div class="panel-inner panel-inner-static panel-inner-static-shell">
+  return `<div class="panel-inner panel-inner-static panel-inner-static-shell" style="--page-accent: #d7b645;">
   <h1 class="static-page-title">Dossiê</h1>
   <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
   <div class="dossie-cards-wrap">
@@ -1604,6 +1605,7 @@ function normalizePortfolioIntroPanel() {
   if (!panelInner) return;
 
   panelInner.classList.add("panel-inner-static", "panel-inner-static-shell", "panel-inner-portfolio-intro");
+  panelInner.style.setProperty("--page-accent", "#3f6ea8");
 
   const legacyLabel = panelInner.querySelector(".portfolio-intro-label");
   const legacyKicker = panelInner.querySelector(".panel-kicker");
