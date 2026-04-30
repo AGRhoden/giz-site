@@ -2228,3 +2228,23 @@ button.project-tag-link:hover {
   background: var(--page-accent, transparent);
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   FIO DO INÍCIO: altura alinhada com título 32px + padding 16px = 54px
+   ══════════════════════════════════════════════════════════════════ */
+
+.static-inicio-anchor {
+  height: 54px;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   MENU: fio colorido por página (text-decoration-color do item ativo)
+   Cores do mesmo vocabulário dos fios nas páginas:
+   início → verde  portfólio → azul  quem → roxo  contato → vermelho  dossiê → amarelo
+   ══════════════════════════════════════════════════════════════════ */
+
+[data-page-id="inicio"].ativo    { text-decoration-color: #2f8c66; }
+[data-page-id="portfolio"].ativo { text-decoration-color: #3f6ea8; }
+[data-page-id="quem"].ativo      { text-decoration-color: #7c5ea7; }
+[data-page-id="contato"].ativo   { text-decoration-color: #b14a42; }
+[data-page-id="dossie"].ativo    { text-decoration-color: #d7b645; }
+
