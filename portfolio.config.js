@@ -16,7 +16,7 @@ window.GIZ_PORTFOLIO_CONFIG = {
       mode: "value",
       selectionOperator: "or",
       summary: "Seleção curada",
-      description: "Comece pelos projetos que sintetizam melhor a linguagem do estúdio."
+      description: "Os melhores projetos da casa, destacados e comentados em Dossiê."
     },
     {
       id: "editoras",
@@ -25,7 +25,7 @@ window.GIZ_PORTFOLIO_CONFIG = {
       mode: "value",
       selectionOperator: "or",
       summary: "Navegação por catálogo",
-      description: "Percorra o acervo pelas casas editoriais e seus conjuntos."
+      description: "Que nossas parcerias sejam tão duradouras quanto os livros que fazemos."
     },
     {
       id: "temas",
@@ -34,7 +34,7 @@ window.GIZ_PORTFOLIO_CONFIG = {
       mode: "list",
       excludeSet: "colorTags",
       summary: "Assuntos e linguagens",
-      description: "Cruze temas, técnicas e atmosferas sem perder o contexto."
+      description: "Projetos de continuidade, coleções, autores, e outros temas divertidos."
     },
     {
       id: "cores",
@@ -43,17 +43,17 @@ window.GIZ_PORTFOLIO_CONFIG = {
       mode: "list",
       includeSet: "colorTags",
       summary: "Percurso cromático",
-      description: "Uma entrada mais lúdica e visual para descobrir relações no acervo."
+      description: "Explore os projetos navegando por seus tons dominantes."
     },
     {
-      id: "formato",
-      label: "Formato",
+      id: "genero",
+      label: "Gênero",
       source: "tipo",
       mode: "value",
       selectionOperator: "or",
       fixedOptions: ["livro", "hq", "revista", "especial", "outros"],
       summary: "Formatos editoriais",
-      description: "Percorra o acervo por formato: livros, HQs, revistas e outras frentes."
+      description: "Explore o acervo pelo tipo de projeto."
     },
     {
       id: "oficio",
@@ -62,33 +62,26 @@ window.GIZ_PORTFOLIO_CONFIG = {
       mode: "csv",
       selectionOperator: "or",
       summary: "Por ofício realizado",
-      description: "Filtre pelo ofício realizado em cada projeto."
+      description: "As pratas da casa, as jóias da coroa. O que fazemos de melhor."
     },
   ],
   tagSets: {
     colorTags: [
-      "preto",
-      "branco",
-      "cinza",
-      "grafite",
-      "verde",
-      "azul",
-      "turquesa",
-      "vermelho",
-      "vinho",
-      "amarelo",
-      "ocre",
-      "laranja",
-      "rosa",
-      "roxo",
-      "marrom",
-      "bege",
-      "creme",
-      "dourado",
+      "claros",
+      "dourados",
+      "beges",
+      "ocres",
+      "vermelhos",
+      "violetas",
+      "azuis",
+      "verdes",
+      "terrosos",
+      "escuros",
       "prata"
     ]
   },
   labels: {
+    "logos-intrinseca": "Logos Intrínseca",
     ilustracoes: "Ilustrações",
     "projeto-grafico": "Projeto gráfico",
     infantil: "Infantil",
@@ -96,24 +89,16 @@ window.GIZ_PORTFOLIO_CONFIG = {
     lettering: "Lettering",
     mitologia: "Mitologia",
     gaiman: "Gaiman",
-    preto: "Preto",
-    branco: "Branco",
-    cinza: "Cinza",
-    grafite: "Grafite",
-    verde: "Verde",
-    azul: "Azul",
-    turquesa: "Turquesa",
-    vermelho: "Vermelho",
-    vinho: "Vinho",
-    amarelo: "Amarelo",
-    ocre: "Ocre",
-    laranja: "Laranja",
-    rosa: "Rosa",
-    roxo: "Roxo",
-    marrom: "Marrom",
-    bege: "Bege",
-    creme: "Creme",
-    dourado: "Dourado",
+    claros: "Claros",
+    dourados: "Dourados",
+    beges: "Beges",
+    ocres: "Ocres",
+    vermelhos: "Vermelhos",
+    violetas: "Violetas",
+    azuis: "Azuis",
+    verdes: "Verdes",
+    terrosos: "Terrosos",
+    escuros: "Escuros",
     prata: "Prata",
     destaque: "Destaques",
     livro: "Livros",
