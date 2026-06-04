@@ -2448,3 +2448,54 @@ button.project-tag-link:hover {
   justify-content: center;
   margin-top: 24px;
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   [C] Subtítulo do projeto: espaço fixo mesmo quando vazio
+   ══════════════════════════════════════════════════════════════════ */
+
+.project-subtitle-display {
+  min-height: 1.2em;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   [D1] Linha de ofícios: 2pt menor, mesma cor do contexto
+   ══════════════════════════════════════════════════════════════════ */
+
+.project-servico-line {
+  margin: 6px 0 0 0;
+  font-size: 10px;
+  line-height: 1.45;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   [F] Pair thumbnails: microzoom no hover
+   ══════════════════════════════════════════════════════════════════ */
+
+.project-pair-card {
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.project-pair-thumb {
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.project-pair-card:hover .project-pair-thumb {
+  transform: scale(1.07);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   Coluna esquerda: ocultar scroll quando viewer está ativo
+   (a barra de 4px criava linha de separação desnecessária)
+   ══════════════════════════════════════════════════════════════════ */
+
+.left:has(.viewer-shell:not([hidden])) {
+  overflow-y: hidden;
+}
