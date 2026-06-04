@@ -2248,3 +2248,162 @@ button.project-tag-link:hover {
 [data-page-id="contato"].ativo   { text-decoration-color: #b14a42; }
 [data-page-id="dossie"].ativo    { text-decoration-color: #d7b645; }
 
+
+
+/* ══════════════════════════════════════════════════════════════════
+   CHIPS DO PORTFÓLIO: stroke cinza → preto no hover, gap 10px
+   ══════════════════════════════════════════════════════════════════ */
+
+.portfolio-botao {
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+  transition: border-color 0.15s ease;
+}
+
+.portfolio-botao:hover {
+  border-color: var(--color-text);
+}
+
+/* X de filtro ativo: sem border */
+.acao-icone.limpar {
+  border: none;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CRITÉRIO: nome 2pt maior, descrição abaixo
+   ══════════════════════════════════════════════════════════════════ */
+
+.criterio-titulo {
+  font-size: 22px;
+}
+
+.criterio-descricao {
+  font-size: var(--font-size-note);
+  color: var(--color-muted);
+  text-align: center;
+  margin-top: 6px;
+  line-height: 1.4;
+  max-width: 32ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DOSSIÊ: setas com animação orgânica (12px, ease-in-out)
+   ══════════════════════════════════════════════════════════════════ */
+
+@keyframes nudge-right {
+  0%, 100% { transform: translateX(0); }
+  55%       { transform: translateX(10px); }
+}
+
+@keyframes nudge-left {
+  0%, 100% { transform: translateX(0); }
+  55%       { transform: translateX(-10px); }
+}
+
+.dossie-cards-arrow[data-action="dossie-list-next"]:not([disabled]) {
+  animation: nudge-right 2s ease-in-out infinite;
+}
+
+.dossie-cards-arrow[data-action="dossie-list-prev"]:not([disabled]) {
+  animation: nudge-left 2s ease-in-out infinite;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CONTATO: layout dos contatos
+   ══════════════════════════════════════════════════════════════════ */
+
+.static-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-top: 24px;
+  text-align: left;
+}
+
+.contact-person {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-name {
+  margin: 0;
+  font-size: var(--font-size-note);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  color: var(--color-text);
+}
+
+.contact-link {
+  font-size: var(--font-size-note);
+  color: var(--color-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+
+.contact-link:hover {
+  color: var(--color-text);
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   DOSSIÊ: navegação inferior (setas + topo)
+   ══════════════════════════════════════════════════════════════════ */
+
+.dossie-bottom-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 56px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-line);
+}
+
+.dossie-bottom-arrow {
+  appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--color-muted);
+  padding: 8px;
+  transition: color 0.15s;
+  line-height: 1;
+}
+
+.dossie-bottom-arrow:hover:not([disabled]) {
+  color: var(--color-text);
+}
+
+.dossie-bottom-arrow[disabled] {
+  opacity: 0.2;
+  cursor: default;
+}
+
+.dossie-bottom-arrow--next:not([disabled]) {
+  animation: nudge-right 2s ease-in-out infinite;
+}
+
+.dossie-bottom-arrow--prev:not([disabled]) {
+  animation: nudge-left 2s ease-in-out infinite;
+}
+
+.dossie-topo-btn {
+  appearance: none;
+  background: none;
+  border: 1px solid var(--color-line);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+  padding: 5px 16px;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.dossie-topo-btn:hover {
+  border-color: var(--color-text);
+  color: var(--color-text);
+}
