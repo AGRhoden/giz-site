@@ -2407,3 +2407,34 @@ button.project-tag-link:hover {
   border-color: var(--color-text);
   color: var(--color-text);
 }
+
+
+/* ══════════════════════════════════════════════════════════════════
+   CORREÇÕES
+   ══════════════════════════════════════════════════════════════════ */
+
+/* Chips: revert — borda preta original, border-radius 8px, gap já era 10px */
+.portfolio-botao {
+  border: 1px solid var(--color-text);
+  border-radius: 8px;
+  transition: none;
+}
+
+.portfolio-botao:hover {
+  border-color: var(--color-text);
+}
+
+/* X de filtro ativo (clear-filters): sem borda */
+.panel-button[data-action="clear-filters"] {
+  border: none;
+  padding: 4px 8px;
+}
+
+/* Contato: centralizado */
+.static-contacts {
+  text-align: center;
+}
+
+.contact-person {
+  align-items: center;
+}
