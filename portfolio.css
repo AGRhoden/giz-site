@@ -2438,3 +2438,13 @@ button.project-tag-link:hover {
 .contact-person {
   align-items: center;
 }
+
+
+/* [data-portfolio-buttons]: gap entre os chips injetados dinamicamente */
+[data-portfolio-buttons] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 24px;
+}
