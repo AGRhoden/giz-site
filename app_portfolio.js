@@ -1728,10 +1728,9 @@ function renderProjectPanel() {
   const description = descText === "Texto em construção" ? "" : rawDesc;
   const descriptionClass = "project-description";
   const featuredBadge = project.isFeatured ? '<p class="project-badge">Destaque</p>' : "";
-  const subtitle = project.subtitulo
-    ? `<p class="project-subtitle-display">${escapeHtml(project.subtitulo)}</p>`
-    : "";
+  const subtitle = `<p class="project-subtitle-display">${project.subtitulo ? escapeHtml(project.subtitulo) : "\u00A0"}</p>`;
   const context = renderProjectContextLine(project);
+  const servico = renderProjectServicoLine(project);
   const tags = renderClickableTags(project);
   const pairs = renderProjectPairs(project.pares);
 
@@ -1741,9 +1740,9 @@ function renderProjectPanel() {
       <h1 class="titulo-principal">${escapeHtml(project.titulo)}</h1>
       ${subtitle}
       ${context}
+      ${servico}
       ${description ? `<div class="${descriptionClass}">${description}</div>` : ""}
       ${pairs}
-      ${tags}
     </div>
   `;
 }
@@ -1752,8 +1751,6 @@ function renderProjectContextLine(project) {
   const items = [
     project.cliente ? formatLabel(project.cliente) : "",
     project.ano,
-    project.servico ? formatLabel(project.servico) : "",
-    project.tipo && project.tipo !== "livro" ? formatLabel(project.tipo) : "",
   ].filter(Boolean);
 
   if (!items.length) {
@@ -1761,6 +1758,13 @@ function renderProjectContextLine(project) {
   }
 
   return `<p class="project-context-line">${escapeHtml(items.join(" • "))}</p>`;
+}
+
+function renderProjectServicoLine(project) {
+  if (!project.servico) return "";
+  const items = project.servico.split(",").map((s) => s.trim()).filter(Boolean);
+  if (!items.length) return "";
+  return `<p class="project-servico-line">${escapeHtml(items.join(" • "))}</p>`;
 }
 
 function renderProjectPairs(pairs) {
