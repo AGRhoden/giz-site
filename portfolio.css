@@ -2506,3 +2506,31 @@ button.project-tag-link:hover {
   text-transform: none;
   letter-spacing: 0.04em;
 }
+
+
+/* Dossiê bottom nav: siblings com título (mesmo padrão do topo) */
+.dossie-bottom-sibling {
+  font-family: var(--font-body);
+  font-size: var(--font-size-note);
+  color: var(--color-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  max-width: 40%;
+  text-align: left;
+  line-height: 1.3;
+  transition: color 0.15s;
+}
+
+.dossie-bottom-sibling--next {
+  text-align: right;
+}
+
+.dossie-bottom-sibling:hover {
+  color: var(--color-text);
+}
+
+span.dossie-bottom-sibling {
+  pointer-events: none;
+}
