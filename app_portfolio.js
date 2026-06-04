@@ -579,7 +579,7 @@ function buildDossieListHtml(dossies) {
   if (!dossies.length) {
     return `<div class="panel-inner panel-inner-static panel-inner-static-shell" style="--page-accent: #d7b645;">
   <h1 class="static-page-title">Dossiê</h1>
-  <p class="small-note static-page-subtitle">Processos que constroem projetos extraordinários. Histórias que contam o que o leitor não vê.</p>
+  <p class="small-note static-page-subtitle">Processos que constroem projetos extraordinários.<br>Histórias que contam o que o leitor não vê.</p>
   <p class="small-note">Em breve.</p>
 </div>`;
   }
@@ -616,7 +616,7 @@ function buildDossieListHtml(dossies) {
 
   return `<div class="panel-inner panel-inner-static panel-inner-static-shell" style="--page-accent: #d7b645;">
   <h1 class="static-page-title">Dossiê</h1>
-  <p class="small-note static-page-subtitle">Processos que constroem projetos extraordinários. Histórias que contam o que o leitor não vê.</p>
+  <p class="small-note static-page-subtitle">Processos que constroem projetos extraordinários.<br>Histórias que contam o que o leitor não vê.</p>
   <div class="dossie-cards-wrap">
     ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-prev"${prevDisabled} aria-label="Anteriores">&#8592;</button>` : ""}
     <div class="dossie-cards-grid">${cards}</div>
