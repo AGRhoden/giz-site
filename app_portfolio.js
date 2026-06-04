@@ -10,28 +10,21 @@ const FALLBACK_PROJECT_MESSAGE = "Imagem do projeto indisponível no momento.";
 const ENABLE_HOVER_ZOOM = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
 const LABEL_OVERRIDES = {
   permanencia: "Permanência",
-  intrinseca: "Intrínseca"
+  intrinseca: "Intrínseca",
+  "logos-intrinseca": "Logos Intrínseca"
 };
 const COLOR_SWATCHES = {
-  preto: "#17110f",
-  branco: "#f6f1e8",
-  cinza: "#9b948d",
-  grafite: "#47413d",
-  verde: "#2f8c66",
-  azul: "#3f6ea8",
-  turquesa: "#4eb5b7",
-  vermelho: "#b14a42",
-  vinho: "#74394d",
-  amarelo: "#d7b645",
-  ocre: "#b78435",
-  laranja: "#d86f36",
-  rosa: "#cf8aa0",
-  roxo: "#7c5ea7",
-  marrom: "#7a5a42",
-  bege: "#cab28b",
-  creme: "#ede1c8",
-  dourado: "#c4a24b",
-  prata: "#b7bcc4"
+  claros:    "#f0ede4",
+  dourados:  "#c4a24b",
+  beges:     "#cab28b",
+  ocres:     "#b78435",
+  vermelhos: "#b14a42",
+  violetas:  "#7c5ea7",
+  azuis:     "#3f6ea8",
+  verdes:    "#2f8c66",
+  terrosos:  "#7a5a42",
+  escuros:   "#17110f",
+  prata:     "#b7bcc4"
 };
 
 const elements = {
@@ -586,7 +579,7 @@ function buildDossieListHtml(dossies) {
   if (!dossies.length) {
     return `<div class="panel-inner panel-inner-static panel-inner-static-shell" style="--page-accent: #d7b645;">
   <h1 class="static-page-title">Dossiê</h1>
-  <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
+  <p class="small-note static-page-subtitle">O trabalho invisível que constrói projetos extraordinários.</p>
   <p class="small-note">Em breve.</p>
 </div>`;
   }
@@ -623,7 +616,7 @@ function buildDossieListHtml(dossies) {
 
   return `<div class="panel-inner panel-inner-static panel-inner-static-shell" style="--page-accent: #d7b645;">
   <h1 class="static-page-title">Dossiê</h1>
-  <p class="small-note static-page-subtitle">Bastidores, processo e histórias por trás dos projetos.</p>
+  <p class="small-note static-page-subtitle">O trabalho invisível que constrói projetos extraordinários.</p>
   <div class="dossie-cards-wrap">
     ${totalPages > 1 ? `<button type="button" class="dossie-cards-arrow" data-action="dossie-list-prev"${prevDisabled} aria-label="Anteriores">&#8592;</button>` : ""}
     <div class="dossie-cards-grid">${cards}</div>
@@ -698,6 +691,11 @@ function renderDossieDetail(dossie) {
         </div>
         ${carouselHtml}
         ${conteudo ? `<div class="dv-conteudo">${conteudo}</div>` : ""}
+        <div class="dossie-bottom-nav">
+          <button type="button" class="dossie-bottom-arrow dossie-bottom-arrow--prev" data-action="dossie-bottom-prev" aria-label="Dossiê anterior"${!prevDossie ? " disabled" : ""}>←</button>
+          <button type="button" class="dossie-topo-btn" data-action="dossie-topo" aria-label="Voltar ao topo">Topo</button>
+          <button type="button" class="dossie-bottom-arrow dossie-bottom-arrow--next" data-action="dossie-bottom-next" aria-label="Próximo dossiê"${!nextDossie ? " disabled" : ""}>→</button>
+        </div>
       </div>
     </div>
   `;
@@ -748,6 +746,15 @@ function renderDossieDetail(dossie) {
   });
   elements.dossieView.querySelector("[data-action='dossie-next']")?.addEventListener("click", () => {
     if (nextDossie) { state.currentDossie = nextDossie; renderDossieDetail(nextDossie); }
+  });
+  elements.dossieView.querySelector("[data-action='dossie-bottom-prev']")?.addEventListener("click", () => {
+    if (prevDossie) { state.currentDossie = prevDossie; renderDossieDetail(prevDossie); }
+  });
+  elements.dossieView.querySelector("[data-action='dossie-bottom-next']")?.addEventListener("click", () => {
+    if (nextDossie) { state.currentDossie = nextDossie; renderDossieDetail(nextDossie); }
+  });
+  elements.dossieView.querySelector("[data-action='dossie-topo']")?.addEventListener("click", () => {
+    elements.dossieView.scrollTo({ top: 0, behavior: "smooth" });
   });
 
   if (slides.length > 1) initDossieCarousel();
@@ -1830,6 +1837,7 @@ function renderFilterPanel() {
           <div class="criterio-titulo">${escapeHtml(criterion?.label || "Critério")}</div>
           <button type="button" class="criterio-arrow" data-action="criterion-next" aria-label="Próximo critério">▶</button>
         </div>
+        ${criterion?.description ? `<p class="criterio-descricao">${escapeHtml(criterion.description)}</p>` : ""}
       </div>
 
       <div class="ativos">
