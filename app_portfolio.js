@@ -656,6 +656,7 @@ function renderDossieDetail(dossie) {
   })() : "";
 
   const lang = state.dossieLang || "pt";
+  const topoLabel = { pt: "Topo", en: "Top", es: "Arriba" }[lang] || "Topo";
   const titulo = getDossieLocalized(dossie, "titulo");
   const conteudo = getDossieLocalized(dossie, "conteudo");
 
@@ -665,10 +666,10 @@ function renderDossieDetail(dossie) {
   const nextDossie = currentIndex < DOSSIES.length - 1 ? DOSSIES[currentIndex + 1] : null;
 
   const prevBtn = prevDossie
-    ? `<button type="button" class="dv-sibling dv-sibling--prev" data-action="dossie-prev">← ${escapeHtml(prevDossie.titulo)}</button>`
+    ? `<button type="button" class="dv-sibling dv-sibling--prev" data-action="dossie-prev">← ${escapeHtml(getDossieLocalized(prevDossie, "titulo"))}</button>`
     : `<span class="dv-sibling dv-sibling--prev"></span>`;
   const nextBtn = nextDossie
-    ? `<button type="button" class="dv-sibling dv-sibling--next" data-action="dossie-next">${escapeHtml(nextDossie.titulo)} →</button>`
+    ? `<button type="button" class="dv-sibling dv-sibling--next" data-action="dossie-next">${escapeHtml(getDossieLocalized(nextDossie, "titulo"))} →</button>`
     : `<span class="dv-sibling dv-sibling--next"></span>`;
 
   elements.dossieView.innerHTML = `
@@ -692,9 +693,15 @@ function renderDossieDetail(dossie) {
         ${carouselHtml}
         ${conteudo ? `<div class="dv-conteudo">${conteudo}</div>` : ""}
         <div class="dossie-bottom-nav">
-          <button type="button" class="dossie-bottom-arrow dossie-bottom-arrow--prev" data-action="dossie-bottom-prev" aria-label="Dossiê anterior"${!prevDossie ? " disabled" : ""}>←</button>
-          <button type="button" class="dossie-topo-btn" data-action="dossie-topo" aria-label="Voltar ao topo">Topo</button>
-          <button type="button" class="dossie-bottom-arrow dossie-bottom-arrow--next" data-action="dossie-bottom-next" aria-label="Próximo dossiê"${!nextDossie ? " disabled" : ""}>→</button>
+          ${prevDossie
+            ? `<button type="button" class="dossie-bottom-sibling dossie-bottom-sibling--prev" data-action="dossie-bottom-prev">← ${escapeHtml(getDossieLocalized(prevDossie, "titulo"))}</button>`
+            : `<span class="dossie-bottom-sibling dossie-bottom-sibling--prev"></span>`
+          }
+          <button type="button" class="dossie-topo-btn" data-action="dossie-topo">${topoLabel}</button>
+          ${nextDossie
+            ? `<button type="button" class="dossie-bottom-sibling dossie-bottom-sibling--next" data-action="dossie-bottom-next">${escapeHtml(getDossieLocalized(nextDossie, "titulo"))} →</button>`
+            : `<span class="dossie-bottom-sibling dossie-bottom-sibling--next"></span>`
+          }
         </div>
       </div>
     </div>
@@ -734,6 +741,13 @@ function renderDossieDetail(dossie) {
       elements.dossieView.querySelectorAll(".dv-lang-btn").forEach((b) => {
         b.classList.toggle("is-active", b.dataset.lang === newLang);
       });
+      // Atualizar bottom nav na troca de idioma
+      const _bottomPrev = elements.dossieView.querySelector("[data-action='dossie-bottom-prev']");
+      const _bottomNext = elements.dossieView.querySelector("[data-action='dossie-bottom-next']");
+      const _bottomTopo = elements.dossieView.querySelector("[data-action='dossie-topo']");
+      if (prevDossie && _bottomPrev) _bottomPrev.textContent = "← " + getDossieLocalized(prevDossie, "titulo");
+      if (nextDossie && _bottomNext) _bottomNext.textContent = getDossieLocalized(nextDossie, "titulo") + " →";
+      if (_bottomTopo) _bottomTopo.textContent = { pt: "Topo", en: "Top", es: "Arriba" }[newLang] || "Topo";
     });
   });
 
@@ -742,16 +756,16 @@ function renderDossieDetail(dossie) {
   document.body.classList.add("dossie-view-open");
 
   elements.dossieView.querySelector("[data-action='dossie-prev']")?.addEventListener("click", () => {
-    if (prevDossie) { state.currentDossie = prevDossie; renderDossieDetail(prevDossie); }
+    if (prevDossie) { state.currentDossie = prevDossie; renderDossieDetail(prevDossie); elements.dossieView.scrollTop = 0; }
   });
   elements.dossieView.querySelector("[data-action='dossie-next']")?.addEventListener("click", () => {
-    if (nextDossie) { state.currentDossie = nextDossie; renderDossieDetail(nextDossie); }
+    if (nextDossie) { state.currentDossie = nextDossie; renderDossieDetail(nextDossie); elements.dossieView.scrollTop = 0; }
   });
   elements.dossieView.querySelector("[data-action='dossie-bottom-prev']")?.addEventListener("click", () => {
-    if (prevDossie) { state.currentDossie = prevDossie; renderDossieDetail(prevDossie); }
+    if (prevDossie) { state.currentDossie = prevDossie; renderDossieDetail(prevDossie); elements.dossieView.scrollTop = 0; }
   });
   elements.dossieView.querySelector("[data-action='dossie-bottom-next']")?.addEventListener("click", () => {
-    if (nextDossie) { state.currentDossie = nextDossie; renderDossieDetail(nextDossie); }
+    if (nextDossie) { state.currentDossie = nextDossie; renderDossieDetail(nextDossie); elements.dossieView.scrollTop = 0; }
   });
   elements.dossieView.querySelector("[data-action='dossie-topo']")?.addEventListener("click", () => {
     elements.dossieView.scrollTo({ top: 0, behavior: "smooth" });
