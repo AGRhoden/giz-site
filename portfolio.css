@@ -2499,3 +2499,10 @@ button.project-tag-link:hover {
 .left:has(.viewer-shell:not([hidden])) {
   overflow-y: hidden;
 }
+
+
+/* D1 — corrige: remove uppercase, mantém caixa alta e baixa original */
+.project-servico-line {
+  text-transform: none;
+  letter-spacing: 0.04em;
+}
