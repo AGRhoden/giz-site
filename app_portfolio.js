@@ -871,6 +871,7 @@ function normalizeProject(item) {
     destaque: item?.is_featured ? "destaque" : "",
     isFeatured: Boolean(item?.is_featured),
     destaqueLabel: cleanString(item?.destaque_label),
+    dossieId: cleanString(item?.dossie_id),
     tags,
     thumb,
     imagens: images,
@@ -1747,6 +1748,17 @@ function renderProjectPanel() {
   const servico = renderProjectServicoLine(project);
   const tags = renderClickableTags(project);
   const pairs = renderProjectPairs(project.pares);
+  const dossieRef = (() => {
+    if (!project.dossieId) return "";
+    const d = DOSSIES.find((x) => x.id === project.dossieId);
+    if (!d) return "";
+    const titulo = getDossieLocalized(d, "titulo");
+    return `<div class="project-dossie-ref">
+      <p>Este projeto é mencionado no Dossiê
+        <button type="button" class="project-dossie-ref-link" data-action="open-dossie" data-dossie-id="${escapeAttribute(d.id)}">${escapeHtml(titulo)}</button>.
+      </p>
+    </div>`;
+  })();
 
   elements.panel.innerHTML = `
     <div class="panel-inner panel-inner-project">
@@ -1757,6 +1769,7 @@ function renderProjectPanel() {
       ${servico}
       ${description ? `<div class="${descriptionClass}">${description}</div>` : ""}
       ${pairs}
+      ${dossieRef}
     </div>
   `;
 }
