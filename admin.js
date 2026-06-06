@@ -265,6 +265,7 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
   filterNewLabel.addEventListener("keydown", function(e) { if (e.key === "Enter") handleFilterAdd(); });
   siteFilterFields.addEventListener("click", handleFilterDelete);
 
+  setupPageTextWorkspace();
   setupDossieWorkspace();
 
   boot();
@@ -378,6 +379,10 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
       setHidden(section, !isActive);
     });
 
+    if (state.workspace === "content") {
+      var _psel = document.getElementById("page-text-select");
+      loadPageText(_psel ? _psel.value : "quem_somos");
+    }
     if (state.workspace === "dossie") {
       renderDossieWorkspace();
     }
@@ -1544,6 +1549,13 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
     document.querySelectorAll(".dossie-lang-tab").forEach(function(btn) {
       btn.classList.toggle("is-active", btn.dataset.lang === lang);
     });
+  }
+
+  function setupPageTextWorkspace() {
+    var saveBtn = document.getElementById("page-text-save-button");
+    var sel = document.getElementById("page-text-select");
+    if (saveBtn) saveBtn.addEventListener("click", savePageText);
+    if (sel) sel.addEventListener("change", function() { loadPageText(this.value); });
   }
 
   function setupDossieWorkspace() {
