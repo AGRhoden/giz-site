@@ -117,6 +117,7 @@
   var quillPage = null;
   var quillDesc = null;
   var quillDossie = null;
+  var quillPagina = null;
 
   function initQuillPage() {
     if (quillPage) return quillPage;
@@ -131,7 +132,8 @@
   }
   function initQuillDossie() {
     if (quillDossie) return quillDossie;
-    quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+    quillPagina = new Quill("#page-text-quill-editor", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
     return quillDossie;
   }
   var siteConfigFeedback = document.getElementById("site-config-feedback");
@@ -1462,6 +1464,42 @@
   }
 
   // ── Dossiê vinculado ──────────────────────────────────────────────────────
+
+  function loadPageText(pageId) {
+    if (!backend.url || !backend.anonKey) return;
+    var url = backend.url + "/rest/v1/page_texts?page_id=eq." + encodeURIComponent(pageId) + "&limit=1";
+    fetch(url, { headers: { apikey: backend.anonKey, Authorization: "Bearer " + backend.anonKey } })
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        var content = (rows && rows[0] && rows[0].conteudo) || "";
+        if (quillPagina) quillPagina.root.innerHTML = content;
+      })
+      .catch(function(e) { console.error("Erro ao carregar texto de página:", e); });
+  }
+
+  function savePageText() {
+    if (!backend.url || !backend.anonKey) return;
+    var pageId = document.getElementById("page-text-select") && document.getElementById("page-text-select").value;
+    var conteudo = quillPagina ? quillPagina.root.innerHTML : "";
+    var fb = document.getElementById("page-text-feedback");
+    if (fb) fb.textContent = "Salvando…";
+    fetch(backend.url + "/rest/v1/page_texts?page_id=eq." + encodeURIComponent(pageId), {
+      method: "PATCH",
+      headers: {
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + backend.anonKey,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal"
+      },
+      body: JSON.stringify({ conteudo: conteudo, updated_at: new Date().toISOString() })
+    })
+    .then(function(r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      if (fb) { fb.textContent = "Salvo."; fb.style.color = ""; setTimeout(function() { if (fb) fb.textContent = ""; }, 2500); }
+    })
+    .catch(function(e) { if (fb) { fb.textContent = "Erro ao salvar: " + e.message; fb.style.color = "red"; } });
+  }
+
   function loadDossies() {
     return fetch(backend.url + "/rest/v1/dossies?select=id,titulo,conteudo,titulo_en,conteudo_en,titulo_es,conteudo_es,media,projeto_id,criado_em,atualizado_em&order=titulo.asc", {
       headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
