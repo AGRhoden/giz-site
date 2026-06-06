@@ -2588,3 +2588,26 @@ span.dossie-bottom-sibling {
     opacity: 1;
   }
 }
+
+
+/* ── Setas dossiê: nudge preservando translateY(-50%) ─────────── */
+@keyframes nudge-right {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  60%       { transform: translateY(-50%) translateX(10px); }
+}
+@keyframes nudge-left {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  60%       { transform: translateY(-50%) translateX(-10px); }
+}
+
+/* ── Descrição da trilha no filtro ────────────────────────────── */
+.criterio-descricao {
+  font-size: var(--font-size-note);
+  color: var(--color-muted);
+  text-align: center;
+  margin: 6px 0 0;
+  line-height: 1.5;
+  max-width: 30ch;
+  margin-left: auto;
+  margin-right: auto;
+}
