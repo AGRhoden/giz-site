@@ -1898,7 +1898,6 @@ function renderFilterPanel() {
         <div class="criterio-nav">
           <button type="button" class="criterio-arrow" data-action="criterion-previous" aria-label="Critério anterior">◀</button>
           <div class="criterio-titulo">${escapeHtml(criterion?.label || "Critério")}</div>
-          ${criterion?.description ? `<p class="criterio-descricao">${escapeHtml(criterion.description)}</p>` : ""}
           <button type="button" class="criterio-arrow" data-action="criterion-next" aria-label="Próximo critério">▶</button>
         </div>
         ${criterion?.description ? `<p class="criterio-descricao">${escapeHtml(criterion.description)}</p>` : ""}
