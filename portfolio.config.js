@@ -81,7 +81,6 @@ window.GIZ_PORTFOLIO_CONFIG = {
     ]
   },
   labels: {
-    "logos-intrinseca": "Logos Intrínseca",
     ilustracoes: "Ilustrações",
     "projeto-grafico": "Projeto gráfico",
     infantil: "Infantil",
