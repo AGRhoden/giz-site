@@ -95,6 +95,28 @@ function buildDefaultSiteSettings() {
   };
 }
 
+
+async function loadPageTexts() {
+  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
+  try {
+    const res = await fetch(
+      new URL("/rest/v1/page_texts?select=page_id,conteudo", BACKEND_CONFIG.url).toString(),
+      { headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` } }
+    );
+    if (!res.ok) return;
+    const rows = await res.json();
+    const PAGE_ACCENT = { quem_somos: "#7c5ea7" };
+    rows.forEach((row) => {
+      if (!row.conteudo || !row.conteudo.trim()) return;
+      const pageId = row.page_id.replace(/_/g, "-").replace("quem-somos", "quem");
+      const accent = PAGE_ACCENT[row.page_id] || "transparent";
+      SITE_PANEL_OVERRIDES[pageId] = `<div class="panel-inner-static-shell" style="--page-accent:${accent};">${row.conteudo}</div>`;
+    });
+  } catch (e) {
+    console.error("Erro ao carregar textos de página:", e);
+  }
+}
+
 async function loadSiteSettings() {
   if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) {
     return;
@@ -208,7 +230,7 @@ async function initialize() {
   await loadSiteSettings();
   renderMenu();
   updateMenu();
-  await Promise.all([loadProjects(), loadTagLabels(), preloadStaticPanels(), loadDossies(), loadAlbumPhotos()]);
+  await Promise.all([loadProjects(), loadTagLabels(), preloadStaticPanels(), loadDossies(), loadAlbumPhotos(), loadPageTexts()]);
   if (state.loadFailed) return;
   applyFilters();
   renderGrid();
