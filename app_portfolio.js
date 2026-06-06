@@ -1084,6 +1084,17 @@ function renderGrid() {
 
     container.appendChild(frontCard);
 
+    if (project.isFeatured) {
+      const badge = document.createElement("div");
+      badge.className = "badge-destaque";
+      badge.setAttribute("aria-label", "Destaque");
+      badge.innerHTML = `<svg width="24" height="38" viewBox="0 0 24 38" fill="none" aria-hidden="true">
+        <path d="M0 0 H24 V29 L12 38 L0 29 Z" fill="currentColor"/>
+        <text x="12" y="15" text-anchor="middle" dominant-baseline="middle" fill="white" font-size="12" font-weight="600" font-family="sans-serif">D</text>
+      </svg>`;
+      container.appendChild(badge);
+    }
+
     if (project.servico) {
       const items = project.servico.split(",")
         .map((s) => s.trim()).filter(Boolean)
@@ -1742,7 +1753,7 @@ function renderProjectPanel() {
   const descText = rawDesc.replace(/<[^>]+>/g, "").trim();
   const description = descText === "Texto em construção" ? "" : rawDesc;
   const descriptionClass = "project-description";
-  const featuredBadge = project.isFeatured ? '<p class="project-badge">Destaque</p>' : "";
+  const featuredBadge = "";
   const subtitle = `<p class="project-subtitle-display">${project.subtitulo ? escapeHtml(project.subtitulo) : "\u00A0"}</p>`;
   const context = renderProjectContextLine(project);
   const servico = renderProjectServicoLine(project);
@@ -1762,7 +1773,6 @@ function renderProjectPanel() {
 
   elements.panel.innerHTML = `
     <div class="panel-inner panel-inner-project">
-      ${featuredBadge}
       <h1 class="titulo-principal">${escapeHtml(project.titulo)}</h1>
       ${subtitle}
       ${context}
