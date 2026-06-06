@@ -521,6 +521,31 @@
                 <p class="admin-feedback" id="site-config-feedback" aria-live="polite"></p>
               </form>
             </details>
+
+            <details class="admin-card admin-collapsible" style="margin-top:16px;">
+              <summary class="admin-collapsible-summary">
+                <div>
+                  <h2>Textos de página</h2>
+                  <p class="admin-copy">Conteúdo HTML das páginas estáticas. Suporta texto, imagens e formatação rica.</p>
+                </div>
+              </summary>
+              <div class="admin-inline-form">
+                <label class="admin-field">
+                  <span class="admin-label">Página</span>
+                  <select class="admin-input" id="page-text-select">
+                    <option value="quem_somos">Quem somos</option>
+                  </select>
+                </label>
+                <div class="admin-field">
+                  <span class="admin-label">Conteúdo</span>
+                  <div id="page-text-quill-editor" style="min-height:260px;"></div>
+                </div>
+              </div>
+              <div class="admin-inline-actions" style="margin-top:16px;">
+                <button class="admin-button" type="button" id="page-text-save-button">Salvar texto</button>
+              </div>
+              <p class="admin-feedback" id="page-text-feedback" aria-live="polite"></p>
+            </details>
           </section>
         </section>
       </section>
