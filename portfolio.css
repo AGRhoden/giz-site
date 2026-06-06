@@ -2567,3 +2567,24 @@ span.dossie-bottom-sibling {
 .project-dossie-ref-link:hover {
   color: var(--color-accent);
 }
+
+
+/* ── Ribbon badge "D" no grid — aparece no hover com os ofícios ── */
+.badge-destaque {
+  position: absolute;
+  top: 0;
+  left: 15px;
+  width: 24px;
+  height: 38px;
+  color: var(--color-accent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 11;
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .card-container:hover .badge-destaque {
+    opacity: 1;
+  }
+}
