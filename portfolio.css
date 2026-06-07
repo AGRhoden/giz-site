@@ -460,6 +460,32 @@ button {
   user-select: none;
 }
 
+.viewer-spread {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  max-height: calc(100vh - var(--viewer-control-safe-space) - 64px);
+  max-width: 88%;
+  margin: auto;
+  cursor: none;
+  touch-action: pan-y;
+}
+
+.viewer-spread-page {
+  display: block;
+  height: auto;
+  max-height: calc(100vh - var(--viewer-control-safe-space) - 64px);
+  width: 50%;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+.viewer-spread-page--blank {
+  background: #ffffff;
+  visibility: hidden;
+}
+
 @keyframes viewer-slide-left {
   from { opacity: 0; transform: translateX(32px); }
   to   { opacity: 1; transform: translateX(0); }

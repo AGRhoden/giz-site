@@ -2319,7 +2319,9 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
       var publicUrl = buildPublicMediaUrl(image.storage_path);
       var label = image.kind === "thumb"
         ? "Thumb"
-        : "Imagem " + String(Number(image.sort_order || 0) + 1).padStart(2, "0");
+        : image.kind === "interior"
+          ? "Miolo — pág. " + String(Number(image.sort_order || 0)).padStart(3, "0")
+          : "Imagem " + String(Number(image.sort_order || 0) + 1).padStart(2, "0");
       return '' +
         '<article class="admin-media-item">' +
           '<img class="admin-media-preview" src="' + escapeHtml(publicUrl) + '" alt="' + escapeHtml(image.alt_text || "") + '">' +
@@ -3508,7 +3510,10 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
       .map(function (slug) {
         var group = groupsBySlug[slug];
         group.files.sort(function (left, right) {
-          if (left.kind !== right.kind) return left.kind === "thumb" ? -1 : 1;
+          if (left.kind !== right.kind) {
+            var order = { thumb: 0, gallery: 1, interior: 2 };
+            return (order[left.kind] ?? 1) - (order[right.kind] ?? 1);
+          }
           return left.sortOrder - right.sortOrder;
         });
         return group;
@@ -3523,6 +3528,20 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
   function parseIncomingFilename(filename) {
     var safeName = String(filename || "").trim();
     var extensionless = safeName.replace(/\.[^.]+$/, "");
+
+    // Páginas de miolo: {slug}_p000, {slug}_p001, ... → kind "interior"
+    var pageMatch = extensionless.match(/^(.*?)[-_]p(\d{3})$/i);
+    if (pageMatch) {
+      var pageSlug = sanitizeSlug(pageMatch[1]);
+      if (!pageSlug) return null;
+      var pageNumber = Number(pageMatch[2]);
+      return {
+        slug: pageSlug,
+        kind: "interior",
+        sortOrder: pageNumber
+      };
+    }
+
     var match = extensionless.match(/^(.*?)[-_](thumb|o?\d{1,2})$/i);
     if (!match) return null;
 

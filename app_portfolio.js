@@ -861,6 +861,22 @@ function normalizeProject(item) {
     }).filter(Boolean)
     : [];
 
+  const interiorSource = item?.interior_pages ?? item?.interiorPages;
+  const interiorPages = Array.isArray(interiorSource)
+    ? interiorSource.map((page) => {
+      if (typeof page === "string") return resolveProjectMediaUrl(cleanString(page));
+      return resolveProjectMediaUrl(cleanString(page?.storage_path));
+    }).filter(Boolean)
+    : [];
+
+  // Agrupa páginas de miolo em pares consecutivos para formar spreads (flip)
+  const spreads = [];
+  for (let i = 0; i < interiorPages.length; i += 2) {
+    const left = interiorPages[i];
+    const right = interiorPages[i + 1] || null;
+    if (left) spreads.push([left, right]);
+  }
+
   const thumb = resolveProjectMediaUrl(cleanString(item?.thumb ?? item?.thumb_path)) || images[0] || "";
   const pairSource = item?.pairs;
   const pairs = Array.isArray(pairSource)
@@ -894,6 +910,7 @@ function normalizeProject(item) {
     isFeatured: Boolean(item?.is_featured),
     destaqueLabel: cleanString(item?.destaque_label),
     dossieId: cleanString(item?.dossie_id),
+    spreadsMiolo: spreads,
     tags,
     thumb,
     imagens: images,
@@ -1301,6 +1318,15 @@ function createPairFocusSlugs(project) {
   return relatedProjects.map((item) => item.slug);
 }
 
+function getViewerSlides(project) {
+  if (!project) return [];
+  const slides = (project.imagens || []).map((src) => ({ type: "single", src }));
+  (project.spreadsMiolo || []).forEach(([left, right]) => {
+    slides.push({ type: "spread", left, right });
+  });
+  return slides;
+}
+
 function renderViewer(slideDir) {
   if (!state.currentProject || state.leftMode === "grid") {
     elements.viewerShell.hidden = true;
@@ -1313,9 +1339,9 @@ function renderViewer(slideDir) {
   elements.viewerShell.hidden = false;
 
   const project = state.currentProject;
-  const images = project.imagens;
+  const slides = getViewerSlides(project);
 
-  if (!images.length) {
+  if (!slides.length) {
     elements.viewerShell.innerHTML = `
       <div class="viewer-empty">
         <div class="viewer-empty-inner">
@@ -1328,23 +1354,36 @@ function renderViewer(slideDir) {
     return;
   }
 
-  const imageCount = images.length;
-  const currentImage = images[state.currentImageIndex] || images[0];
+  const slideCount = slides.length;
+  const currentSlide = slides[state.currentImageIndex] || slides[0];
   const disableZoomClass = ENABLE_HOVER_ZOOM ? "" : " viewer-no-zoom";
+
+  const mediaMarkup = currentSlide.type === "spread"
+    ? `
+      <div class="viewer-spread" id="imgZoom" data-action="open-fullscreen">
+        <img class="viewer-spread-page" src="${escapeAttribute(currentSlide.left)}" alt="${escapeAttribute(project.titulo)}" draggable="false">
+        ${currentSlide.right
+          ? `<img class="viewer-spread-page" src="${escapeAttribute(currentSlide.right)}" alt="${escapeAttribute(project.titulo)}" draggable="false">`
+          : `<div class="viewer-spread-page viewer-spread-page--blank" aria-hidden="true"></div>`}
+      </div>
+    `
+    : `
+      <img
+        class="viewer-media"
+        id="imgZoom"
+        src="${escapeAttribute(currentSlide.src)}"
+        alt="${escapeAttribute(project.titulo)}"
+        draggable="false"
+        data-action="open-fullscreen"
+      >
+    `;
 
   elements.viewerShell.innerHTML = `
     <div class="viewer${disableZoomClass}">
       <div class="viewer-stage" id="viewer-stage">
-        <img
-          class="viewer-media"
-          id="imgZoom"
-          src="${escapeAttribute(currentImage)}"
-          alt="${escapeAttribute(project.titulo)}"
-          draggable="false"
-          data-action="open-fullscreen"
-        >
+        ${mediaMarkup}
         <div class="zoom-lens" id="lens" aria-hidden="true"></div>
-        ${renderViewerNavigation(imageCount)}
+        ${renderViewerNavigation(slideCount)}
       </div>
 
       <button
@@ -1366,17 +1405,17 @@ function renderViewer(slideDir) {
     }
   }
 
-  if (ENABLE_HOVER_ZOOM) {
+  if (ENABLE_HOVER_ZOOM && currentSlide.type !== "spread") {
     activateViewerZoom();
   }
 
 }
 
-function renderViewerNavigation(totalImages) {
-  if (totalImages <= 1) return "";
+function renderViewerNavigation(totalSlides) {
+  if (totalSlides <= 1) return "";
 
   const previousDisabled = state.currentImageIndex === 0;
-  const nextDisabled = state.currentImageIndex >= totalImages - 1;
+  const nextDisabled = state.currentImageIndex >= totalSlides - 1;
 
   return `
     <div class="viewer-nav" aria-label="Navegação entre imagens">
@@ -1387,7 +1426,7 @@ function renderViewerNavigation(totalImages) {
         aria-label="Imagem anterior"
       >◀</button>
       <div class="viewer-dots" aria-hidden="true">
-        ${Array.from({ length: totalImages }, (_, index) => {
+        ${Array.from({ length: totalSlides }, (_, index) => {
           return `<span class="viewer-dot${index === state.currentImageIndex ? " ativo" : ""}"></span>`;
         }).join("")}
       </div>
@@ -1411,7 +1450,7 @@ function getMobileFs() {
   el.hidden = true;
   el.innerHTML = `
     <button class="mobile-fs-close" data-action="close-fullscreen" aria-label="Fechar">✕</button>
-    <img class="mobile-fs-img" src="" alt="" draggable="false">
+    <div class="mobile-fs-media"></div>
     <div class="mobile-fs-dots"></div>
   `;
   document.body.appendChild(el);
@@ -1437,14 +1476,27 @@ function getMobileFs() {
 }
 
 function renderMobileFs(el) {
-  const images = state.currentProject.imagens;
-  const img = el.querySelector(".mobile-fs-img");
-  img.src = images[state.currentImageIndex];
-  img.alt = state.currentProject.titulo;
+  const project = state.currentProject;
+  const slides = getViewerSlides(project);
+  const slide = slides[state.currentImageIndex] || slides[0];
+  const media = el.querySelector(".mobile-fs-media");
+
+  if (slide?.type === "spread") {
+    media.innerHTML = `
+      <div class="viewer-spread mobile-fs-spread">
+        <img class="viewer-spread-page" src="${escapeAttribute(slide.left)}" alt="${escapeAttribute(project.titulo)}" draggable="false">
+        ${slide.right
+          ? `<img class="viewer-spread-page" src="${escapeAttribute(slide.right)}" alt="${escapeAttribute(project.titulo)}" draggable="false">`
+          : `<div class="viewer-spread-page viewer-spread-page--blank" aria-hidden="true"></div>`}
+      </div>
+    `;
+  } else {
+    media.innerHTML = `<img class="mobile-fs-img" src="${escapeAttribute(slide?.src || "")}" alt="${escapeAttribute(project.titulo)}" draggable="false">`;
+  }
 
   const dots = el.querySelector(".mobile-fs-dots");
-  if (images.length > 1) {
-    dots.innerHTML = Array.from({ length: images.length }, (_, i) =>
+  if (slides.length > 1) {
+    dots.innerHTML = Array.from({ length: slides.length }, (_, i) =>
       `<span class="viewer-dot${i === state.currentImageIndex ? " ativo" : ""}"></span>`
     ).join("");
   } else {
@@ -1466,7 +1518,7 @@ function closeMobileFullscreen() {
 
 function fsMobileNext() {
   if (!state.currentProject) return;
-  if (state.currentImageIndex >= state.currentProject.imagens.length - 1) return;
+  if (state.currentImageIndex >= getViewerSlides(state.currentProject).length - 1) return;
   state.currentImageIndex++;
   renderMobileFs(getMobileFs());
 }
@@ -1489,7 +1541,7 @@ function goToPreviousImage(slideDir) {
 
 function goToNextImage(slideDir) {
   if (!state.currentProject) return;
-  if (state.currentImageIndex >= state.currentProject.imagens.length - 1) return;
+  if (state.currentImageIndex >= getViewerSlides(state.currentProject).length - 1) return;
   state.currentImageIndex += 1;
   renderViewer(slideDir || "left");
 }
