@@ -2124,8 +2124,31 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
     var duplicateTitles = [];
     var seenTitleKeys = {};
 
+    var existingSlugList = Object.keys(existingProjectsBySlug);
+
     grouped.items.forEach(function (item) {
       var titleKey = normalizeTitleKey(buildProvisionalTitle(item.slug));
+
+      // Grupos compostos só por páginas de miolo (_pXXX) cujo slug não bate
+      // exatamente com nenhum projeto existente: o PDF de miolo pode ter nome
+      // de arquivo diferente do PDF de capa. Em vez de criar um projeto novo,
+      // anexamos essas páginas ao projeto existente cujo slug seja prefixo
+      // (ou tenha como prefixo) o slug do grupo.
+      var isInteriorOnly = item.files.length > 0 && item.files.every(function (entry) {
+        return entry.kind === "interior";
+      });
+      if (isInteriorOnly && !existingSlugs[item.slug]) {
+        var matchedSlug = existingSlugList
+          .filter(function (existingSlug) {
+            return existingSlug.indexOf(item.slug) === 0 || item.slug.indexOf(existingSlug) === 0;
+          })
+          .sort(function (a, b) { return a.length - b.length; })[0];
+
+        if (matchedSlug) {
+          overwriteCandidates.push({ slug: matchedSlug, files: item.files });
+          return;
+        }
+      }
 
       if (existingSlugs[item.slug]) {
         if (shouldOverwrite) {
@@ -3507,6 +3530,38 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
         kind: parsed.kind,
         sortOrder: parsed.sortOrder
       });
+    });
+
+    // Páginas de miolo (_pXXX) podem vir de um PDF com nome de arquivo diferente do
+    // PDF de capa, gerando um slug ligeiramente distinto (ex.: "vendeia-ilustrado"
+    // vs "vendeia"). Se um grupo contém SOMENTE páginas de miolo, tentamos anexá-lo
+    // ao grupo de capa cujo slug seja prefixo (ou tenha como prefixo) o slug do
+    // grupo de miolo — assim os dois formam um único projeto, em vez de dois.
+    var allSlugs = Object.keys(groupsBySlug);
+    allSlugs.forEach(function (slug) {
+      var group = groupsBySlug[slug];
+      if (!group) return;
+      var isInteriorOnly = group.files.length > 0 && group.files.every(function (entry) {
+        return entry.kind === "interior";
+      });
+      if (!isInteriorOnly) return;
+
+      var candidates = allSlugs.filter(function (otherSlug) {
+        if (otherSlug === slug || !groupsBySlug[otherSlug]) return false;
+        var otherGroup = groupsBySlug[otherSlug];
+        var hasCoverFiles = otherGroup.files.some(function (entry) {
+          return entry.kind !== "interior";
+        });
+        if (!hasCoverFiles) return false;
+        return otherSlug.indexOf(slug) === 0 || slug.indexOf(otherSlug) === 0;
+      });
+      candidates.sort(function (a, b) { return a.length - b.length; });
+      var host = candidates[0];
+
+      if (host) {
+        groupsBySlug[host].files = groupsBySlug[host].files.concat(group.files);
+        delete groupsBySlug[slug];
+      }
     });
 
     var items = Object.keys(groupsBySlug)
