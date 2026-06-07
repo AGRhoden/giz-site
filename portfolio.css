@@ -498,33 +498,33 @@ button {
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* Page turn: anima apenas a página que "chega" ao virar, girando sobre
-   a dobra central (lombada) — não o spread inteiro. Avançar (fwd) gira
-   a página da direita a partir da lombada; voltar (back) gira a página
-   da esquerda a partir da lombada, no sentido inverso. */
+/* Page turn: anima apenas a página que "chega" ao virar — como uma folha
+   de livro aberto sendo virada sobre a lombada (eixo = centro do spread).
+   Avançar: a página da direita parte aberta/estendida para a extrema
+   direita e gira em direção à esquerda, assentando sobre a lombada.
+   Voltar: espelho — a página da esquerda parte estendida para a extrema
+   esquerda e gira em direção à direita, assentando sobre a lombada. */
 @keyframes viewer-page-turn-fwd {
-  0%   { opacity: 0.55; transform: perspective(1700px) rotateY(-92deg); filter: brightness(0.65); }
+  0%   { opacity: 0.55; transform: perspective(1700px) rotateY(78deg);  filter: brightness(0.65); }
   60%  { opacity: 0.9;  filter: brightness(0.85); }
-  100% { opacity: 1;    transform: perspective(1700px) rotateY(0deg); filter: brightness(1); }
+  100% { opacity: 1;    transform: perspective(1700px) rotateY(0deg);   filter: brightness(1); }
 }
 @keyframes viewer-page-turn-back {
-  0%   { opacity: 0.55; transform: perspective(1700px) rotateY(92deg); filter: brightness(0.65); }
+  0%   { opacity: 0.55; transform: perspective(1700px) rotateY(-78deg); filter: brightness(0.65); }
   60%  { opacity: 0.9;  filter: brightness(0.85); }
-  100% { opacity: 1;    transform: perspective(1700px) rotateY(0deg); filter: brightness(1); }
+  100% { opacity: 1;    transform: perspective(1700px) rotateY(0deg);   filter: brightness(1); }
 }
 .viewer-page-turn-fwd {
   animation: viewer-page-turn-fwd 0.46s cubic-bezier(0.22, 0.61, 0.36, 1);
-  /* Pivô na borda externa (direita) — a página entra da direita para a
-     esquerda, em direção à lombada, como uma folha sendo virada. */
-  transform-origin: right center;
+  /* Pivô na lombada (borda esquerda da página direita) — eixo central do spread. */
+  transform-origin: left center;
   position: relative;
   z-index: 2;
 }
 .viewer-page-turn-back {
   animation: viewer-page-turn-back 0.46s cubic-bezier(0.22, 0.61, 0.36, 1);
-  /* Pivô na borda externa (esquerda) — a página entra da esquerda para a
-     direita, em direção à lombada, no sentido inverso. */
-  transform-origin: left center;
+  /* Pivô na lombada (borda direita da página esquerda) — eixo central do spread. */
+  transform-origin: right center;
   position: relative;
   z-index: 2;
 }
