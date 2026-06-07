@@ -477,6 +477,8 @@ button {
   height: auto;
   max-height: calc(100vh - var(--viewer-control-safe-space) - 64px);
   width: 50%;
+  box-sizing: border-box;
+  border: 1px solid rgba(0, 0, 0, 0.16);
   -webkit-user-drag: none;
   user-select: none;
 }
@@ -494,6 +496,24 @@ button {
   from { opacity: 0; transform: translateX(-32px); }
   to   { opacity: 1; transform: translateX(0); }
 }
+
+@keyframes viewer-flip-left {
+  from { opacity: 0.35; transform: perspective(1800px) rotateY(38deg); }
+  to   { opacity: 1;    transform: perspective(1800px) rotateY(0deg); }
+}
+@keyframes viewer-flip-right {
+  from { opacity: 0.35; transform: perspective(1800px) rotateY(-38deg); }
+  to   { opacity: 1;    transform: perspective(1800px) rotateY(0deg); }
+}
+.viewer-flip-left {
+  animation: viewer-flip-left 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: left center;
+}
+.viewer-flip-right {
+  animation: viewer-flip-right 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: right center;
+}
+
 .viewer-slide-left  { animation: viewer-slide-left  0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 .viewer-slide-right { animation: viewer-slide-right 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
 

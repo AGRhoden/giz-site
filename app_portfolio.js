@@ -1400,8 +1400,13 @@ function renderViewer(slideDir) {
   if (slideDir) {
     const img = document.getElementById("imgZoom");
     if (img) {
-      img.classList.add("viewer-slide-" + slideDir);
-      img.addEventListener("animationend", () => img.classList.remove("viewer-slide-" + slideDir), { once: true });
+      // Spreads de miolo recebem efeito de "virar página" (flip 3D);
+      // demais imagens mantêm o slide simples já existente.
+      const animClass = currentSlide.type === "spread"
+        ? "viewer-flip-" + slideDir
+        : "viewer-slide-" + slideDir;
+      img.classList.add(animClass);
+      img.addEventListener("animationend", () => img.classList.remove(animClass), { once: true });
     }
   }
 
