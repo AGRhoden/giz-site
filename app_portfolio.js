@@ -1399,20 +1399,10 @@ function renderViewer(slideDir) {
 
   if (slideDir) {
     const target = document.getElementById("imgZoom");
-    if (target && currentSlide.type === "spread") {
-      // Anima só a página que "vira" sobre a lombada (dobra central) —
-      // não o spread inteiro, que pareceria uma tábua bascular.
-      // Avançar (slideDir "left"): a página da direita gira a partir da lombada.
-      // Voltar (slideDir "right"): a página da esquerda gira a partir da lombada,
-      // no sentido inverso — comportamento simétrico de um livro real.
-      const pages = target.querySelectorAll(".viewer-spread-page");
-      const turningPage = slideDir === "left" ? pages[1] : pages[0];
-      const turnClass = slideDir === "left" ? "viewer-page-turn-fwd" : "viewer-page-turn-back";
-      if (turningPage) {
-        turningPage.classList.add(turnClass);
-        turningPage.addEventListener("animationend", () => turningPage.classList.remove(turnClass), { once: true });
-      }
-    } else if (target) {
+    if (target) {
+      // Transição simples (mesma usada nas capas) — um flip 3D fiel a um
+      // livro real exigiria biblioteca dedicada (frente/verso da página,
+      // física de curvatura), fora do escopo desta ferramenta.
       target.classList.add("viewer-slide-" + slideDir);
       target.addEventListener("animationend", () => target.classList.remove("viewer-slide-" + slideDir), { once: true });
     }
