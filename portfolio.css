@@ -485,6 +485,11 @@ button {
 }
 
 .viewer-spread-page--blank {
+  /* Mantém a mesma proporção das páginas reais (geradas em 960×1360 pelo
+     processador de miolo, ~14×21) — sem isso, o spread ímpar final encolhe,
+     pois uma div vazia não tem dimensão intrínseca para equilibrar o flex. */
+  aspect-ratio: 960 / 1360;
+  height: auto;
   background: #ffffff;
   visibility: hidden;
 }
