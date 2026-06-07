@@ -514,13 +514,17 @@ button {
 }
 .viewer-page-turn-fwd {
   animation: viewer-page-turn-fwd 0.46s cubic-bezier(0.22, 0.61, 0.36, 1);
-  transform-origin: left center;
+  /* Pivô na borda externa (direita) — a página entra da direita para a
+     esquerda, em direção à lombada, como uma folha sendo virada. */
+  transform-origin: right center;
   position: relative;
   z-index: 2;
 }
 .viewer-page-turn-back {
   animation: viewer-page-turn-back 0.46s cubic-bezier(0.22, 0.61, 0.36, 1);
-  transform-origin: right center;
+  /* Pivô na borda externa (esquerda) — a página entra da esquerda para a
+     direita, em direção à lombada, no sentido inverso. */
+  transform-origin: left center;
   position: relative;
   z-index: 2;
 }

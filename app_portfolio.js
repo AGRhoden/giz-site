@@ -1418,7 +1418,7 @@ function renderViewer(slideDir) {
     }
   }
 
-  if (ENABLE_HOVER_ZOOM && currentSlide.type !== "spread") {
+  if (ENABLE_HOVER_ZOOM) {
     activateViewerZoom();
   }
 
@@ -1580,17 +1580,43 @@ function zoomEnd() {
   if (lens) lens.style.display = "none";
 }
 
+function getZoomTarget(event) {
+  const root = document.getElementById("imgZoom");
+  if (!root) return null;
+
+  // Spread de miolo: a lupa segue a página (imagem) que está sob o cursor.
+  if (root.classList.contains("viewer-spread")) {
+    const pages = root.querySelectorAll("img.viewer-spread-page");
+    for (const page of pages) {
+      const rect = page.getBoundingClientRect();
+      if (
+        event.clientX >= rect.left && event.clientX <= rect.right &&
+        event.clientY >= rect.top && event.clientY <= rect.bottom
+      ) {
+        return { src: page.src, rect };
+      }
+    }
+    return null;
+  }
+
+  return { src: root.src, rect: root.getBoundingClientRect() };
+}
+
 function zoomMove(event) {
-  const image = document.getElementById("imgZoom");
   const lens = document.getElementById("lens");
+  if (!lens) return;
 
-  if (!image || !lens) return;
+  const target = getZoomTarget(event);
+  if (!target) {
+    zoomEnd();
+    return;
+  }
 
-  const imageRect = image.getBoundingClientRect();
-  const x = event.clientX - imageRect.left;
-  const y = event.clientY - imageRect.top;
+  const { src, rect } = target;
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
 
-  if (x < 0 || y < 0 || x > imageRect.width || y > imageRect.height) {
+  if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
     zoomEnd();
     return;
   }
@@ -1598,8 +1624,8 @@ function zoomMove(event) {
   const zoomFactor = 2.2;
   // Recalculate from getBoundingClientRect() on every move — avoids
   // the clientWidth=0 bug when image was just injected via innerHTML.
-  lens.style.backgroundImage = `url(${image.src})`;
-  lens.style.backgroundSize = `${imageRect.width * zoomFactor}px ${imageRect.height * zoomFactor}px`;
+  lens.style.backgroundImage = `url(${src})`;
+  lens.style.backgroundSize = `${rect.width * zoomFactor}px ${rect.height * zoomFactor}px`;
 
   const lensInnerWidth = lens.clientWidth;
   const lensInnerHeight = lens.clientHeight;
