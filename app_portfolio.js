@@ -1398,15 +1398,23 @@ function renderViewer(slideDir) {
   `;
 
   if (slideDir) {
-    const img = document.getElementById("imgZoom");
-    if (img) {
-      // Spreads de miolo recebem efeito de "virar página" (flip 3D);
-      // demais imagens mantêm o slide simples já existente.
-      const animClass = currentSlide.type === "spread"
-        ? "viewer-flip-" + slideDir
-        : "viewer-slide-" + slideDir;
-      img.classList.add(animClass);
-      img.addEventListener("animationend", () => img.classList.remove(animClass), { once: true });
+    const target = document.getElementById("imgZoom");
+    if (target && currentSlide.type === "spread") {
+      // Anima só a página que "vira" sobre a lombada (dobra central) —
+      // não o spread inteiro, que pareceria uma tábua bascular.
+      // Avançar (slideDir "left"): a página da direita gira a partir da lombada.
+      // Voltar (slideDir "right"): a página da esquerda gira a partir da lombada,
+      // no sentido inverso — comportamento simétrico de um livro real.
+      const pages = target.querySelectorAll(".viewer-spread-page");
+      const turningPage = slideDir === "left" ? pages[1] : pages[0];
+      const turnClass = slideDir === "left" ? "viewer-page-turn-fwd" : "viewer-page-turn-back";
+      if (turningPage) {
+        turningPage.classList.add(turnClass);
+        turningPage.addEventListener("animationend", () => turningPage.classList.remove(turnClass), { once: true });
+      }
+    } else if (target) {
+      target.classList.add("viewer-slide-" + slideDir);
+      target.addEventListener("animationend", () => target.classList.remove("viewer-slide-" + slideDir), { once: true });
     }
   }
 

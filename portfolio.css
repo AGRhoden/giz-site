@@ -468,6 +468,8 @@ button {
   max-height: calc(100vh - var(--viewer-control-safe-space) - 64px);
   max-width: 88%;
   margin: auto;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  box-sizing: border-box;
   cursor: none;
   touch-action: pan-y;
 }
@@ -478,7 +480,6 @@ button {
   max-height: calc(100vh - var(--viewer-control-safe-space) - 64px);
   width: 50%;
   box-sizing: border-box;
-  border: 1px solid rgba(0, 0, 0, 0.16);
   -webkit-user-drag: none;
   user-select: none;
 }
@@ -497,21 +498,31 @@ button {
   to   { opacity: 1; transform: translateX(0); }
 }
 
-@keyframes viewer-flip-left {
-  from { opacity: 0.35; transform: perspective(1800px) rotateY(38deg); }
-  to   { opacity: 1;    transform: perspective(1800px) rotateY(0deg); }
+/* Page turn: anima apenas a página que "chega" ao virar, girando sobre
+   a dobra central (lombada) — não o spread inteiro. Avançar (fwd) gira
+   a página da direita a partir da lombada; voltar (back) gira a página
+   da esquerda a partir da lombada, no sentido inverso. */
+@keyframes viewer-page-turn-fwd {
+  0%   { opacity: 0.55; transform: perspective(1700px) rotateY(-92deg); filter: brightness(0.65); }
+  60%  { opacity: 0.9;  filter: brightness(0.85); }
+  100% { opacity: 1;    transform: perspective(1700px) rotateY(0deg); filter: brightness(1); }
 }
-@keyframes viewer-flip-right {
-  from { opacity: 0.35; transform: perspective(1800px) rotateY(-38deg); }
-  to   { opacity: 1;    transform: perspective(1800px) rotateY(0deg); }
+@keyframes viewer-page-turn-back {
+  0%   { opacity: 0.55; transform: perspective(1700px) rotateY(92deg); filter: brightness(0.65); }
+  60%  { opacity: 0.9;  filter: brightness(0.85); }
+  100% { opacity: 1;    transform: perspective(1700px) rotateY(0deg); filter: brightness(1); }
 }
-.viewer-flip-left {
-  animation: viewer-flip-left 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+.viewer-page-turn-fwd {
+  animation: viewer-page-turn-fwd 0.46s cubic-bezier(0.22, 0.61, 0.36, 1);
   transform-origin: left center;
+  position: relative;
+  z-index: 2;
 }
-.viewer-flip-right {
-  animation: viewer-flip-right 0.38s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+.viewer-page-turn-back {
+  animation: viewer-page-turn-back 0.46s cubic-bezier(0.22, 0.61, 0.36, 1);
   transform-origin: right center;
+  position: relative;
+  z-index: 2;
 }
 
 .viewer-slide-left  { animation: viewer-slide-left  0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
