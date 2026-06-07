@@ -3397,7 +3397,11 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
 
     fileArray.forEach(function (file) {
       var parsed = parseIncomingFilename(file.name);
-      if (!parsed || parsed.slug !== project.slug) {
+      // Páginas de miolo (_pXXX) são enviadas para o projeto já selecionado no admin —
+      // o nome do PDF de miolo pode divergir do PDF de capa, então não exigimos
+      // que o slug do arquivo bata com o slug do projeto nesse caso.
+      var matchesProject = parsed && (parsed.kind === "interior" || parsed.slug === project.slug);
+      if (!matchesProject) {
         invalidFiles.push(file.name);
       } else {
         validEntries.push({ file: file, kind: parsed.kind, sortOrder: parsed.sortOrder });
