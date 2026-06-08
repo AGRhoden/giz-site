@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.giz.assets</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/python3.13</string>
+        <string>/Users/arte_antonio/Documents/giz-site/tools/pdf_to_assets/watch_daemon.py</string>
+        <string>--interval</string>
+        <string>5</string>
+    </array>
+
+    <!-- Inicia automaticamente no login -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Reinicia se travar -->
+    <key>KeepAlive</key>
+    <true/>
+
+    <!-- Log -->
+    <key>StandardOutPath</key>
+    <string>/Users/arte_antonio/Documents/giz-site/tools/pdf_to_assets/daemon.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/arte_antonio/Documents/giz-site/tools/pdf_to_assets/daemon.log</string>
+
+    <!-- Variáveis de ambiente necessárias -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin</string>
+    </dict>
+</dict>
+</plist>

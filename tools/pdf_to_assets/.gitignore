@@ -1,0 +1,10 @@
+# PDFs de entrada e saída — ficam só local
+input/
+output/
+__pycache__/
+
+# Log do daemon — local
+daemon.log
+
+# Config real (tem paths absolutos do sistema)
+# config.json é versionado — contém formatos calibrados
