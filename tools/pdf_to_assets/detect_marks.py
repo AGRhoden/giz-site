@@ -247,60 +247,62 @@ def calculate_zones(pdf_path, dpi=150, config_format=None, page_mm=None):
 
     def identify_spine(xs):
         """
-        Dado uma lista de 2–4 dobras, identifica o par de lombada (gap menor)
-        e as dobras de orelha (externas, se houver).
+        Identifica lombada e orelhas a partir de N marcas detectadas.
+
+        Estratégia: divide as marcas em grupos separados pelos dois maiores gaps.
+        - Grupo central = lombada (pode ter 2 ou 3 marcas — usa os extremos)
+        - Grupos externos (se existirem) = orelhas
 
         Retorna (spine_left, spine_right, orelha_esq_or_None, orelha_dir_or_None)
         """
         if len(xs) == 2:
             return xs[0], xs[1], None, None
+
+        gaps = [xs[i+1] - xs[i] for i in range(len(xs) - 1)]
+
         if len(xs) == 3:
-            # O par mais próximo é a lombada
-            gaps = [(xs[i+1] - xs[i], i) for i in range(len(xs)-1)]
-            _, best = min(gaps)
-            sl, sr = xs[best], xs[best+1]
+            best = gaps.index(min(gaps))
+            sl, sr = xs[best], xs[best + 1]
             outer = [x for x in xs if x != sl and x != sr]
-            if outer[0] < sl:
-                return sl, sr, outer[0], None
-            else:
-                return sl, sr, None, outer[0]
-        if len(xs) == 4:
-            # Par central = lombada; externos = orelhas
-            return xs[1], xs[2], xs[0], xs[3]
-        return None, None, None, None
+            return (sl, sr, outer[0], None) if outer[0] < sl else (sl, sr, None, outer[0])
+
+        # Para 4+ marcas: divide pelos 2 maiores gaps → grupo central = lombada
+        sorted_gaps = sorted(enumerate(gaps), key=lambda t: t[1], reverse=True)
+        cut1, cut2 = sorted(i for i, _ in sorted_gaps[:2])
+        # cut1 e cut2 são os índices onde ocorrem os dois maiores saltos
+        # Grupo central: xs[cut1+1 .. cut2]
+        spine_group = xs[cut1 + 1: cut2 + 1]
+        left_group  = xs[:cut1 + 1]
+        right_group = xs[cut2 + 1:]
+
+        spine_left  = spine_group[0]
+        spine_right = spine_group[-1]
+        orelha_esq  = left_group[-1]  if left_group  else None
+        orelha_dir  = right_group[0]  if right_group else None
+
+        return spine_left, spine_right, orelha_esq, orelha_dir
 
     page_px = int(round(page_mm / 25.4 * dpi)) if page_mm else None
 
     if len(fold_xs) >= 2:
         spine_left, spine_right, orelha_esq, orelha_dir = identify_spine(fold_xs)
 
-        # Borda esquerda do verso: orelha_esq (exclui a orelha) ou page_mm ou trim_left
+        # Borda esquerda do verso
         if orelha_esq is not None:
-            verso_left = orelha_esq
+            verso_left = orelha_esq        # orelha detectada → exclui orelha
         elif page_px:
             verso_left = spine_left - page_px
         else:
-            result["zonas"] = None
-            result["warning"] = (
-                "Marcas de lombada detectadas mas orelha esquerda não encontrada; "
-                "largura de página desconhecida. Use calibrate.py ou nomeie o arquivo "
-                "com o formato (ex: '14x21')."
-            )
-            return result
+            verso_left = trim_px["left"]   # sem orelha detectada → usa borda do trim
+                                           # (correto para capas duras sem orelha)
 
-        # Borda direita da frente: orelha_dir (exclui a orelha) ou page_mm ou trim_right
+        # Borda direita da frente
         if orelha_dir is not None:
-            frente_right = orelha_dir
+            frente_right = orelha_dir      # orelha detectada → exclui orelha
         elif page_px:
             frente_right = spine_right + page_px
         else:
-            result["zonas"] = None
-            result["warning"] = (
-                "Marcas de lombada detectadas mas orelha direita não encontrada; "
-                "largura de página desconhecida. Use calibrate.py ou nomeie o arquivo "
-                "com o formato (ex: '14x21')."
-            )
-            return result
+            frente_right = trim_px["right"]  # sem orelha → usa borda do trim
 
         result["zonas"] = {
             "frente":        (spine_right, trim_px["top"], frente_right, trim_px["bottom"]),
@@ -311,17 +313,31 @@ def calculate_zones(pdf_path, dpi=150, config_format=None, page_mm=None):
         spine_right = fold_xs[0]
         if page_px:
             result["zonas"] = {
-                "frente":        (spine_right,           trim_px["top"], spine_right + page_px, trim_px["bottom"]),
-                "verso_lombada": (spine_right - page_px, trim_px["top"], spine_right,           trim_px["bottom"]),
+                "frente":        (spine_right,             trim_px["top"], spine_right + page_px, trim_px["bottom"]),
+                "verso_lombada": (spine_right - page_px,   trim_px["top"], spine_right,           trim_px["bottom"]),
             }
         else:
-            result["zonas"] = None
-            result["warning"] = (
-                "Apenas uma marca detectada; largura de página desconhecida. "
-                "Use calibrate.py para salvar este formato."
-            )
+            # Dobra única: frente = direita da dobra, verso+lombada = esquerda
+            result["zonas"] = {
+                "frente":        (spine_right,        trim_px["top"], trim_px["right"], trim_px["bottom"]),
+                "verso_lombada": (trim_px["left"],    trim_px["top"], spine_right,      trim_px["bottom"]),
+            }
+
     else:
-        result["zonas"] = None
-        result["warning"] = "Nenhuma dobra detectada automaticamente. Use calibrate.py."
+        # Nenhuma dobra detectada.
+        # Se o TrimBox for retrato (uma página só), trata como capa simples:
+        # frente = trim completo, sem verso separado.
+        trim_w = trim_px["right"] - trim_px["left"]
+        trim_h = trim_px["bottom"] - trim_px["top"]
+        if trim_h > trim_w:
+            # Página única retrato (miolo avulso, capa simples sem spread)
+            result["zonas"] = {
+                "frente":        (trim_px["left"], trim_px["top"], trim_px["right"], trim_px["bottom"]),
+                "verso_lombada": (trim_px["left"], trim_px["top"], trim_px["right"], trim_px["bottom"]),
+            }
+            result["source"] = "single_page"
+        else:
+            result["zonas"] = None
+            result["warning"] = "Nenhuma dobra detectada. Use calibrate.py para definir as zonas."
 
     return result
