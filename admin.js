@@ -59,7 +59,6 @@
   var checklistSummary = document.getElementById("checklist-summary");
   var checklistList = document.getElementById("checklist-list");
   var flagSummary = document.getElementById("flag-summary");
-  var flagFutureFeature = document.getElementById("flag-future-feature");
   var tagSearch = document.getElementById("tag-search");
   var tagResults = document.getElementById("tag-results");
   var newTagLabel = document.getElementById("new-tag-label");
@@ -114,17 +113,10 @@
 
   // Quill: lazy init — inicializar só quando o container já está visível,
   // pois pickers do Quill 1.x falham quando inicializados dentro de display:none.
-  var quillPage = null;
   var quillDesc = null;
   var quillDossie = null;
   var quillPagina = null;
 
-  function initQuillPage() {
-    if (quillPage) return quillPage;
-    quillPage = new Quill("#site-page-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
-    quillPage.on("text-change", handlePageContentInput);
-    return quillPage;
-  }
   function initQuillDesc() {
     if (quillDesc) return quillDesc;
     quillDesc = new Quill("#field-description-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
@@ -2652,11 +2644,6 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
       return;
     }
 
-  }
-
-  function handlePageContentInput() {
-    if (!state.siteConfig.page_content) state.siteConfig.page_content = {};
-    state.siteConfig.page_content[state.activeSitePageId] = quillPage ? (quillPage.root.innerHTML || "") : "";
   }
 
   function updateSiteNavigationLabel(pageId, value) {

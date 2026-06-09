@@ -2022,6 +2022,55 @@ button.project-tag-link:hover {
 
 /* ── Álbum secreto ──────────────────────────────────────────────────────────── */
 
+/* Flip-card: o grid-card no modo álbum vira no hover */
+.grid-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.45s ease;
+}
+
+.grid-card:hover .grid-card-inner,
+.grid-card:focus-visible .grid-card-inner {
+  transform: rotateY(180deg);
+}
+
+.grid-card-front,
+.grid-card-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.grid-card-front {
+  z-index: 2;
+}
+
+.grid-card-back {
+  transform: rotateY(180deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px;
+}
+
+.grid-back-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.grid-back-title {
+  position: relative;
+  z-index: 1;
+}
+
 /* Verso das fotos do álbum: blur + escurecimento */
 .album-photo-back {
   background: #111;

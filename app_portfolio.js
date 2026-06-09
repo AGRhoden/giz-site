@@ -485,30 +485,22 @@ function handleLeftClick(event) {
 
 }
 
-async function loadSiteConfig() {
-  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
-  const url = new URL("/rest/v1/site_config", BACKEND_CONFIG.url);
-  url.searchParams.set("select", "labels");
-  url.searchParams.set("key", "eq.main");
-  url.searchParams.set("limit", "1");
-  const res = await fetch(url.toString(), {
-    headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` }
-  });
-  if (!res.ok) return;
-  const items = await res.json();
-  const types = items?.[0]?.labels?.servico_types;
+// Extrai servico_types do CONFIG.labels já carregado por loadSiteSettings.
+// Chamado após applySiteSettings ter sido executado.
+function extractServicosFromConfig() {
+  const types = CONFIG.labels?.servico_types;
   if (Array.isArray(types)) state.servicoTypes = types.map((t) => String(t).trim()).filter(Boolean);
 }
 
 async function loadProjects() {
   try {
-    const [payload] = await Promise.all([
-      loadProjectsFromSupabase(),
-      loadSiteConfig().catch(() => {})
-    ]);
+    const payload = await loadProjectsFromSupabase();
     if (!Array.isArray(payload)) {
       throw new Error("A fonte de dados do portfólio não retornou uma lista de projetos.");
     }
+
+    // servico_types já foi carregado por loadSiteSettings/applySiteSettings antes desta chamada
+    extractServicosFromConfig();
 
     state.projects = payload.map(normalizeProject);
     state.shuffled = shuffle([...state.projects]);
@@ -908,7 +900,7 @@ function normalizeProject(item) {
     ano: normalizeProjectYear(item?.ano ?? item?.sort_year),
     destaque: item?.is_featured ? "destaque" : "",
     isFeatured: Boolean(item?.is_featured),
-    destaqueLabel: cleanString(item?.destaque_label),
+    destaqueLabel: cleanString(item?.destaque_label) || (item?.is_featured ? "Destaque" : ""),
     dossieId: cleanString(item?.dossie_id),
     spreadsMiolo: spreads,
     tags,
@@ -1164,9 +1156,11 @@ function renderGrid() {
     elements.grid.appendChild(card);
   });
 
-  // Card secreto do álbum — só no grid inicial (sem filtros, sem critério, sem par em foco)
+  // Card secreto do álbum — só no grid inicial (sem filtros ativos, sem par em foco)
+  // Nota: currentCriterionId nunca é null (sempre aponta pro primeiro filtro) —
+  // a distinção correta é portfolioMode: "intro" = navegando livremente, "criterio" = filtrando.
   const hasActiveFilters = FILTERS.some((c) => (state.filters[c.id] || []).length > 0);
-  if (ALBUM_SECRET_CARD && state.portfolioMode === "intro" && !state.pairFocusSlugs && !hasActiveFilters && !state.currentCriterionId) {
+  if (ALBUM_SECRET_CARD && state.portfolioMode === "intro" && !state.pairFocusSlugs && !hasActiveFilters) {
     const secretCard = buildAlbumSecretCard(ALBUM_SECRET_CARD);
     const children = Array.from(elements.grid.children);
     if (children.length > 0) {
@@ -1856,8 +1850,7 @@ function renderProjectPanel() {
   const descText = rawDesc.replace(/<[^>]+>/g, "").trim();
   const description = descText === "Texto em construção" ? "" : rawDesc;
   const descriptionClass = "project-description";
-  const featuredBadge = "";
-  const subtitle = `<p class="project-subtitle-display">${project.subtitulo ? escapeHtml(project.subtitulo) : "\u00A0"}</p>`;
+  const subtitle =`<p class="project-subtitle-display">${project.subtitulo ? escapeHtml(project.subtitulo) : "\u00A0"}</p>`;
   const context = renderProjectContextLine(project);
   const servico = renderProjectServicoLine(project);
   const tags = renderClickableTags(project);
@@ -1936,36 +1929,6 @@ function renderProjectPairs(pairs) {
   `;
 }
 
-function renderRelatedProjects(project) {
-  const pairSlugs = new Set((project.pares || []).map((p) => p.slug));
-
-  const byCatalog = (() => {
-    if (!project.cliente) return [];
-    return state.projects
-      .filter((p) => p.slug !== project.slug && p.cliente === project.cliente && !pairSlugs.has(p.slug))
-      .slice(0, 4);
-  })();
-
-  if (!byCatalog.length) return "";
-
-  const renderThumbGrid = (items) => `
-    <div class="project-pairs-grid">
-      ${items.map((p) => `
-        <button type="button" class="project-pair-card" data-action="open-project-by-slug" data-project-slug="${escapeAttribute(p.slug)}">
-          ${p.thumb
-            ? `<img class="project-pair-thumb" src="${escapeAttribute(p.thumb)}" alt="${escapeAttribute(p.titulo)}" loading="lazy">`
-            : `<span class="project-pair-placeholder">${escapeHtml(p.titulo)}</span>`
-          }
-        </button>
-      `).join("")}
-    </div>
-  `;
-
-  const sections = [];
-  if (byCatalog.length) sections.push(`<div class="project-related-section"><h3 class="project-pairs-title">Do mesmo catálogo</h3>${renderThumbGrid(byCatalog)}</div>`);
-
-  return `<div class="project-related">${sections.join("")}</div>`;
-}
 
 function renderFilterPanel() {
   setPanelMode("filter");
@@ -2183,11 +2146,6 @@ function getConfigSet(setName) {
   return Array.isArray(values) ? new Set(values) : null;
 }
 
-function renderColorSwatch(value) {
-  const swatch = COLOR_SWATCHES[cleanString(value)];
-  if (!swatch) return "";
-  return `<span class="project-tag-swatch" style="background:${escapeAttribute(swatch)}"></span>`;
-}
 
 function enterCriterion(criterionId) {
   if (!FILTER_BY_ID.has(criterionId)) return;
@@ -2331,34 +2289,6 @@ function filterByTag(criterionId, value) {
   renderPanel();
 }
 
-function renderProjectNavigation(project) {
-  const visible = getVisibleProjects();
-  const currentIndex = visible.findIndex((p) => p.slug === project.slug);
-  if (currentIndex < 0 || visible.length <= 1) return "";
-
-  const hasPrevious = currentIndex > 0;
-  const hasNext = currentIndex < visible.length - 1;
-
-  return `
-    <nav class="project-navigation" aria-label="Navegação entre projetos">
-      <button
-        type="button"
-        class="project-nav-btn${hasPrevious ? "" : " inativo"}"
-        data-action="project-previous"
-        aria-label="Projeto anterior"
-        ${hasPrevious ? "" : "disabled"}
-      >← anterior</button>
-      <span class="project-nav-count">${currentIndex + 1} / ${visible.length}</span>
-      <button
-        type="button"
-        class="project-nav-btn${hasNext ? "" : " inativo"}"
-        data-action="project-next"
-        aria-label="Próximo projeto"
-        ${hasNext ? "" : "disabled"}
-      >próximo →</button>
-    </nav>
-  `;
-}
 
 function renderClickableTags(project) {
   if (!Array.isArray(project.tags) || !project.tags.length) return "";
@@ -2390,38 +2320,6 @@ function renderClickableTags(project) {
 }
 
 
-function renderColorFilterOption(criterionId, option) {
-  const value = typeof option === "string" ? option : option?.value;
-  const count = typeof option === "string" ? null : option?.count;
-  const selected = state.filters[criterionId]?.includes(value);
-  const isDisabled = !selected && Boolean(option?.disabled);
-  const swatchColor = COLOR_SWATCHES[cleanString(value)] || "#ccc";
-
-  const className = [
-    "filtro-swatch-btn",
-    !isDisabled ? "is-available" : "",
-    selected ? "is-selected" : "",
-    isDisabled ? "is-disabled" : ""
-  ].filter(Boolean).join(" ");
-
-  const actionAttribute = selected ? "" : 'data-action="toggle-filter"';
-  const ariaLabel = `${formatLabel(value)}${typeof count === "number" ? ` (${count})` : ""}`;
-
-  return `
-    <button
-      type="button"
-      class="${className}"
-      ${actionAttribute}
-      data-criterion-id="${escapeAttribute(criterionId)}"
-      data-value="${escapeAttribute(value)}"
-      aria-label="${escapeAttribute(ariaLabel)}"
-      ${isDisabled ? "disabled" : ""}
-    >
-      <span class="filtro-swatch-circle" style="background:${escapeAttribute(swatchColor)}"></span>
-      <span class="filtro-swatch-label">${escapeHtml(formatLabel(value))}</span>
-    </button>
-  `;
-}
 
 function renderGridIcon() {
   return `
