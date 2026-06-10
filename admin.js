@@ -900,6 +900,8 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
       return ka.localeCompare(kb, "pt-BR");
     });
 
+    var previousSelectedId = state.selectedProjectId;
+
     if (state.selectedProjectId) {
       var stillVisible = state.filteredProjects.some(function (project) {
         return project.id === state.selectedProjectId;
@@ -913,7 +915,11 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
     renderAlphaBar();
     renderProjectList();
     renderBatchControls();
-    renderEditor();
+    // Evita reconstruir o editor (e o Quill, que rouba o foco) a cada
+    // tecla digitada na busca quando o projeto selecionado não mudou.
+    if (state.selectedProjectId !== previousSelectedId) {
+      renderEditor();
+    }
   }
 
   function clearProjectFilters() {
