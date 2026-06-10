@@ -224,6 +224,8 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
   batchTagSearch.addEventListener("input", renderBatchTagResults);
   batchTagResults.addEventListener("click", handleBatchTagToggle);
   batchServicoResults.addEventListener("click", handleBatchServicoToggle);
+  document.getElementById("project-servico-results").addEventListener("click", handleProjectServicoToggle);
+  document.getElementById("batch-publish-drafts-button").addEventListener("click", handlePublishSelectedDrafts);
   document.getElementById("batch-oficio-add").addEventListener("click", handleBatchOficioAdd);
   batchPublisherResults.addEventListener("click", handleBatchPublisherChipClick);
   batchSelectVisibleButton.addEventListener("click", handleSelectVisibleProjects);
@@ -1151,7 +1153,7 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
     if (!button) return;
     state.editorSection = button.getAttribute("data-editor-tab") || "details";
     renderEditorTabs();
-    if (state.editorSection === "tags") renderTagResults();
+    if (state.editorSection === "tags") { renderTagResults(); renderProjectServicoChips(); }
   }
 
   function renderEditor() {
@@ -1187,6 +1189,7 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
     renderMediaList();
     loadProjectImages(project.id);
     renderTagResults();
+    renderProjectServicoChips();
     renderTagManager();
     renderPairResults();
     renderPairSelectionPreview();
@@ -2379,6 +2382,60 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
           escapeHtml(tag.label) +
         '</button>';
     }).join("");
+  }
+
+  function renderProjectServicoChips() {
+    var container = document.getElementById("project-servico-results");
+    if (!container) return;
+    var project = getSelectedProject();
+    var tipos = getServicoTypes();
+
+    if (!project) {
+      container.innerHTML = '<p class="admin-inline-empty">Abra um projeto para editar ofício.</p>';
+      return;
+    }
+    if (!tipos.length) {
+      container.innerHTML = '<p class="admin-inline-empty">Nenhum tipo de serviço cadastrado ainda.</p>';
+      return;
+    }
+
+    var current = (project.servico || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+    container.innerHTML = tipos.map(function (tipo) {
+      var isActive = current.indexOf(tipo) !== -1;
+      return '<button class="admin-chip' + (isActive ? ' is-active' : '') + '" type="button" data-project-servico="' + escapeHtml(tipo) + '">' + escapeHtml(tipo) + '</button>';
+    }).join("");
+  }
+
+  function handleProjectServicoToggle(event) {
+    var button = event.target.closest("[data-project-servico]");
+    if (!button) return;
+    var tipo = button.getAttribute("data-project-servico");
+    var project = getSelectedProject();
+    if (!tipo || !project) return;
+
+    var current = (project.servico || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
+    var idx = current.indexOf(tipo);
+    if (idx !== -1) current.splice(idx, 1); else current.push(tipo);
+    var novoValor = current.join(",") || null;
+
+    fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(project.id), {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+        apikey: backend.anonKey,
+        Authorization: "Bearer " + state.token
+      },
+      body: JSON.stringify({ servico: novoValor })
+    }).then(function (r) { return r.json(); }).then(function (items) {
+      if (items && items.length) replaceProject(items[0]);
+      project.servico = novoValor;
+      renderProjectServicoChips();
+      renderProjectList();
+      renderBatchServicoResults();
+    }).catch(function () {
+      setSaveState("Erro ao salvar ofício");
+    });
   }
 
   function renderBatchServicoResults() {
@@ -4315,6 +4372,46 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
       }).join("") +
       '</ul>';
     batchConvertDraftsButton.disabled = false;
+  }
+
+  function handlePublishSelectedDrafts() {
+    var selected = getBatchSelectedProjects();
+    var toPublish = selected.filter(function (p) { return p.status === "draft"; });
+
+    if (!toPublish.length) {
+      setBatchFeedback("Nenhum rascunho selecionado para publicar.", true);
+      return;
+    }
+
+    if (!window.confirm("Publicar " + toPublish.length + " projeto(s) marcado(s) como Rascunho?")) return;
+
+    setBatchFeedback("Publicando...", false);
+    var nowIso = new Date().toISOString();
+    var jobs = toPublish.map(function (p) {
+      return fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(p.id), {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: backend.anonKey,
+          Authorization: "Bearer " + state.token
+        },
+        body: JSON.stringify({ status: "published", published_at: p.published_at || nowIso })
+      }).then(function () {
+        p.status = "published";
+        if (!p.published_at) p.published_at = nowIso;
+      });
+    });
+
+    Promise.all(jobs)
+      .then(function () {
+        setBatchFeedback(toPublish.length + " projeto(s) publicado(s).", false);
+        renderProjectList();
+        updatePublicationPanel(getSelectedProject());
+        handleCheckReadiness();
+      })
+      .catch(function () {
+        setBatchFeedback("Erro ao publicar alguns projetos.", true);
+      });
   }
 
   function handleConvertIncompleteToDraft() {
