@@ -890,7 +890,7 @@ quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOL
 
     state.filteredProjects = state.projects.filter(function (project) {
       var matchesStatus = !status || project.status === status;
-      var haystack = normalizeSearchText([project.title, project.slug, project.client, project.project_type].join(" "));
+      var haystack = normalizeSearchText([project.title, project.client, project.project_type].join(" "));
       var matchesQuery = !query || haystack.indexOf(query) !== -1;
       var matchesAlpha = !alphaFilter || getProjectInitial(project) === alphaFilter;
       return matchesStatus && matchesQuery && matchesAlpha;
