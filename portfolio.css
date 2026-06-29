@@ -2269,27 +2269,16 @@ body.page-inicio .panel-logo {
 
 @media (max-width: 760px) {
   .panel-logo {
-    position: fixed;
-    top: auto;
-    left: 0;
-    right: 0;
-    bottom: var(--mobile-panel-height);
+    position: static;
     width: 100%;
     height: auto;
-    padding: 10px 0;
-    background: var(--color-bg);
-    border-top: 1px solid var(--color-line);
+    padding: 24px 0 12px;
     opacity: 1;
     display: none;
-    z-index: 24;
   }
 
   body.page-inicio .panel-logo {
     display: flex;
-  }
-
-  body.page-inicio .left {
-    padding-bottom: calc(var(--mobile-panel-height) + 160px);
   }
 
   .panel-logo img {
