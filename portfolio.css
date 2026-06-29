@@ -2269,20 +2269,7 @@ body.page-inicio .panel-logo {
 
 @media (max-width: 760px) {
   .panel-logo {
-    position: static;
-    width: 100%;
-    height: auto;
-    padding: 24px 0 12px;
-    opacity: 1;
     display: none;
-  }
-
-  body.page-inicio .panel-logo {
-    display: flex;
-  }
-
-  .panel-logo img {
-    height: 132px;
   }
 }
 
@@ -2372,6 +2359,16 @@ body.page-inicio .panel-logo {
 
 .static-inicio-anchor {
   height: 54px;
+}
+
+@media (max-width: 760px) {
+  .static-inicio-anchor {
+    height: 110px;
+    background-image: url('assets/giz-logo.png');
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: auto 80px;
+  }
 }
 
 /* ══════════════════════════════════════════════════════════════════
