@@ -15,7 +15,7 @@
   --color-line: rgba(0, 0, 0, 0.12);
   --color-accent: #16b35f;
   --color-placeholder: #f3f3f0;
-  --menu-height: 60px;
+  --menu-height: 72px;
   --mobile-panel-height: min(34vh, 280px);
   --left-column-center: 25%;
   --viewer-icon-bottom: 42px;
@@ -2216,19 +2216,22 @@ button.project-tag-link:hover {
   position: relative;
 }
 
-.menu-logo {
-  position: absolute;
-  left: 24px;
-  height: 22px;
+/* ── Logo no menu: substitui o item "Início" ──────────────────────────── */
+
+.menu-item-logo {
+  display: flex;
+  align-items: center;
+}
+
+.menu-item-logo-img {
+  height: 48px;
   width: auto;
   display: block;
-  opacity: 0.85;
 }
 
 @media (max-width: 760px) {
-  .menu-logo {
-    height: 18px;
-    left: 16px;
+  .menu-item-logo-img {
+    height: 36px;
   }
 }
 
@@ -2250,7 +2253,7 @@ button.project-tag-link:hover {
 }
 
 .panel-logo img {
-  height: 160px;
+  height: 192px;
   width: auto;
 }
 
@@ -2260,7 +2263,7 @@ body.page-inicio .panel-logo {
 
 @media (max-width: 760px) {
   .panel-logo img {
-    height: 110px;
+    height: 132px;
   }
 }
 

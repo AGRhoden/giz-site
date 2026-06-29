@@ -1017,7 +1017,18 @@ function renderMenu() {
     button.type = "button";
     button.className = "menu-item";
     button.dataset.pageId = page.id;
-    button.textContent = page.label;
+
+    if (page.id === "inicio") {
+      button.classList.add("menu-item-logo");
+      const img = document.createElement("img");
+      img.className = "menu-item-logo-img";
+      img.src = "assets/giz-logo.png";
+      img.alt = page.label;
+      button.appendChild(img);
+    } else {
+      button.textContent = page.label;
+    }
+
     elements.menuNav.appendChild(button);
   });
 }
