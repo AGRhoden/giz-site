@@ -2270,6 +2270,7 @@ body.page-inicio .panel-logo {
 @media (max-width: 760px) {
   .panel-logo {
     position: fixed;
+    top: auto;
     left: 0;
     right: 0;
     bottom: var(--mobile-panel-height);
