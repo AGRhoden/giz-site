@@ -1020,6 +1020,12 @@ function renderMenu() {
 
     if (page.id === "inicio") {
       button.classList.add("menu-item-logo");
+
+      const text = document.createElement("span");
+      text.className = "menu-item-text";
+      text.textContent = page.label;
+      button.appendChild(text);
+
       const img = document.createElement("img");
       img.className = "menu-item-logo-img";
       img.src = "assets/giz-logo.png";

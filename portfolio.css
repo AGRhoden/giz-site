@@ -2216,17 +2216,29 @@ button.project-tag-link:hover {
   position: relative;
 }
 
-/* ── Logo no menu: substitui o item "Início" ──────────────────────────── */
+/* ── Item "Início" no menu: logo nas demais páginas, texto na própria ──── */
 
 .menu-item-logo {
   display: flex;
   align-items: center;
 }
 
+.menu-item-text {
+  display: none;
+}
+
 .menu-item-logo-img {
   height: 48px;
   width: auto;
   display: block;
+}
+
+.menu-item-logo.ativo .menu-item-text {
+  display: inline;
+}
+
+.menu-item-logo.ativo .menu-item-logo-img {
+  display: none;
 }
 
 @media (max-width: 760px) {
