@@ -1623,6 +1623,13 @@ function zoomMove(event) {
 }
 
 function renderPanel() {
+  const showMainLogo = state.currentPage === "inicio"
+    && !state.currentProject
+    && !state.currentDossie
+    && !state.albumMode
+    && !state.albumDiscovered;
+  document.body.classList.toggle("page-inicio", showMainLogo);
+
   if (state.albumDiscovered || state.albumMode) {
     renderAlbumDiscoveryPanel();
     return;
