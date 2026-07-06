@@ -7,7 +7,28 @@
     name="description"
     content="Portfólio da Giz, oficina editorial especializada em livros, revistas e projetos especiais."
   >
-  <title>GIZ - Portfólio</title>
+  <title>GIZ — Oficina Editorial | Livros, Revistas, Pré-impressão</title>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://giz.art.br/">
+  <meta property="og:title" content="GIZ — Oficina Editorial">
+  <meta property="og:description" content="Portfólio da Giz, oficina editorial especializada em livros, revistas e projetos especiais.">
+  <meta property="og:image" content="https://giz.art.br/assets/giz-logo.png">
+
+  <!-- JSON-LD Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "GIZ Oficina Editorial",
+    "url": "https://giz.art.br",
+    "logo": "https://giz.art.br/assets/giz-logo.png",
+    "description": "Oficina editorial especializada em livros, revistas e projetos especiais.",
+    "address": { "@type": "PostalAddress", "addressCountry": "BR" },
+    "sameAs": []
+  }
+  </script>
 
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
   <link rel="stylesheet" href="portfolio.css">
@@ -41,6 +62,9 @@
   </main>
 
   <div id="dossie-view" class="dossie-view" hidden></div>
+
+  <!-- SEO: títulos dos projetos publicados (gerado por tools/seo_build.py) -->
+  <div id="seo-anchor" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
 
   <script src="portfolio.config.js"></script>
   <script src="backend.config.js"></script>
