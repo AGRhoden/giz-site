@@ -1103,6 +1103,10 @@ function renderGrid() {
     card.dataset.projectIndex = String(index);
     card.setAttribute("role", "listitem");
     card.setAttribute("aria-label", `Abrir projeto ${project.titulo}`);
+    const srTitle = document.createElement("span");
+    srTitle.className = "visually-hidden";
+    srTitle.textContent = project.titulo;
+    card.appendChild(srTitle);
 
     const container = document.createElement("div");
     container.className = "card-container";
