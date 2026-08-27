@@ -122,9 +122,58 @@
     quillDesc = new Quill("#field-description-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
     return quillDesc;
   }
+  function makeDossieImageHandler(quill, dossieId) {
+    return function() {
+      var input = document.createElement("input");
+      input.setAttribute("type", "file");
+      input.setAttribute("accept", "image/*");
+      input.click();
+      input.onchange = function() {
+        var file = input.files[0];
+        if (!file) return;
+        var ext = file.name.split(".").pop().toLowerCase();
+        var path = "dossie/" + dossieId + "/" + Date.now() + "." + ext;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var range = quill.getSelection(true);
+          quill.insertEmbed(range.index, "image", e.target.result); // placeholder
+          fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(path), {
+            method: "POST",
+            headers: { "Authorization": "Bearer " + state.token, "Content-Type": file.type, "x-upsert": "true" },
+            body: file
+          }).then(function(r) {
+            if (!r.ok) throw new Error("upload falhou");
+            var publicUrl = buildPublicMediaUrl(path);
+            // substituir o placeholder base64 pela URL pública
+            var delta = quill.getContents();
+            var ops = delta.ops.map(function(op) {
+              if (op.insert && op.insert.image && op.insert.image === e.target.result) {
+                return { insert: { image: publicUrl } };
+              }
+              return op;
+            });
+            quill.setContents({ ops: ops });
+          }).catch(function(err) {
+            alert("Erro ao fazer upload da imagem: " + err.message);
+          });
+        };
+        reader.readAsDataURL(file);
+      };
+    };
+  }
+
   function initQuillDossie() {
     if (quillDossie) return quillDossie;
-quillDossie = new Quill("#dossie-quill-editor", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
+    var dossieId = state.editingDossie ? state.editingDossie.id : "tmp";
+    quillDossie = new Quill("#dossie-quill-editor", {
+      modules: {
+        toolbar: {
+          container: QUILL_TOOLBAR,
+          handlers: { image: function() { makeDossieImageHandler(quillDossie, dossieId)(); } }
+        }
+      },
+      theme: "snow"
+    });
     quillPagina = new Quill("#page-text-quill-editor", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
     return quillDossie;
   }
