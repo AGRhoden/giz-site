@@ -69,6 +69,15 @@ let _swipeTouchStartY = 0;
 document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
   initialize();
+  window.addEventListener("popstate", () => {
+    if (location.pathname.startsWith("/dossie/") && state.currentDossie === null) {
+      const slug = location.pathname.replace(/^\/dossie\//, "").replace(/\/$/, "");
+      const dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === slug);
+      if (dossie) { state.currentDossie = dossie; renderDossieDetail(dossie); }
+    } else if (!location.pathname.startsWith("/dossie/") && state.currentDossie !== null) {
+      closeDossieView();
+    }
+  });
 });
 
 function createEmptyFilters() {
@@ -645,7 +654,13 @@ function getDossieLocalized(dossie, field) {
   return dossie[field + "_" + lang] || dossie[field] || "";
 }
 
+function slugifyDossie(text) {
+  return (text || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
+    .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 function renderDossieDetail(dossie) {
+  history.pushState({ dossie: dossie.id }, "", "/dossie/" + slugifyDossie(dossie.titulo || dossie.titulo_en) + "/");
   const slides = (Array.isArray(dossie.media) ? dossie.media : [])
     .filter((m) => /\.(png|jpe?g|gif|webp|svg)$/i.test(m.storage_path || ""));
 
@@ -794,6 +809,7 @@ function closeDossieView() {
   document.body.classList.remove("dossie-view-open");
   state.currentDossie = null;
   clearInterval(window._dossieCarouselTimer);
+  if (location.pathname.startsWith("/dossie/")) history.pushState({}, "", "/");
 }
 
 function initDossieCarousel() {
