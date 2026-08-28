@@ -1052,7 +1052,7 @@ function renderMenu() {
 
       const img = document.createElement("img");
       img.className = "menu-item-logo-img";
-      img.src = "assets/giz-logo.png";
+      img.src = "/assets/giz-logo.png";
       img.alt = page.label;
       button.appendChild(img);
     } else {
