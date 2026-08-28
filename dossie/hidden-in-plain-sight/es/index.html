@@ -20,34 +20,38 @@
   </script>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
   <style>
-  body {
-    margin: 0;
-    font-family: laca-variable, sans-serif;
-    color: #111;
-    background: #fff;
-    font-size: 16px;
-    line-height: 1.6;
-  }
-  .dp { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-  .dp-back { font-size: 13px; color: #16b35f; text-decoration: none; display: inline-block; margin-bottom: 1.5rem; }
-  .dp-back:hover { text-decoration: underline; }
-  .dp h1 { font-size: 2rem; margin: 0 0 .5rem; line-height: 1.2; }
-  .dp-desc { color: #6f6f6f; margin: 0 0 1.5rem; }
-  .dp hr { border: none; border-top: 1px solid rgba(0,0,0,.12); margin: 0 0 2rem; }
-  .dp-body p { margin: 0 0 1.2em; }
-  .dp-body h2 { font-size: 1.25rem; margin: 2rem 0 .75rem; }
-  .dp-body h3 { font-size: 1.05rem; margin: 1.5rem 0 .5rem; }
-  .dp-body img { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
-  .dp-body blockquote { border-left: 3px solid #16b35f; margin: 1.5rem 0; padding: .5rem 1rem; color: #444; }
+  body{margin:0;font-family:laca-variable,sans-serif;color:#111;background:#fff;font-size:16px;line-height:1.6}
+  .dp{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem}
+  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;display:inline-block;margin-bottom:1.5rem;cursor:pointer;background:none;border:none;padding:0;font-family:inherit}
+  .dp-back:hover{text-decoration:underline}
+  .dp h1{font-size:2rem;margin:0 0 .5rem;line-height:1.2}
+  .dp-desc{color:#6f6f6f;margin:0 0 1.5rem}
+  .dp hr{border:none;border-top:1px solid rgba(0,0,0,.12);margin:0 0 2rem}
+  .dp-body p{margin:0 0 1.2em}
+  .dp-body h2{font-size:1.25rem;margin:2rem 0 .75rem}
+  .dp-body h3{font-size:1.05rem;margin:1.5rem 0 .5rem}
+  .dp-body img{max-width:100%;height:auto;display:block;margin:1.5rem 0}
+  .dp-body blockquote{border-left:3px solid #16b35f;margin:1.5rem 0;padding:.5rem 1rem;color:#444}
 </style>
 </head>
 <body>
   <div class="dp">
-    <a class="dp-back" href="https://giz.art.br/#dossie">← GIZ Dosier</a>
+    <button id="dp-back" class="dp-back">← GIZ Dosier</button>
     <h1>Hidden in plain sight</h1>
     <p class="dp-desc">When a publisher’s logo becomes part of the narrative</p>
     <hr>
     <div class="dp-body"><p><br></p></div>
   </div>
+  
+  <script>
+    document.getElementById('dp-back').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (document.referrer && document.referrer.includes('giz.art.br')) {
+        history.back();
+      } else {
+        location.href = '/';
+      }
+    });
+  </script>
 </body>
 </html>
