@@ -69,11 +69,17 @@ let _swipeTouchStartY = 0;
 document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
   initialize();
-  window.addEventListener("popstate", () => {
-    if (location.pathname.startsWith("/dossie/") && state.currentDossie === null) {
-      const slug = location.pathname.replace(/^\/dossie\//, "").replace(/\/$/, "");
-      const dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === slug);
-      if (dossie) { state.currentDossie = dossie; renderDossieDetail(dossie); }
+  window.addEventListener("popstate", (e) => {
+    if (location.pathname.startsWith("/dossie/")) {
+      const parts = location.pathname.replace(/^\/dossie\//, "").replace(/\/$/, "").split("/");
+      const slugPart = parts[0];
+      const langPart = parts[1] || "pt";
+      const dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === slugPart);
+      if (dossie) {
+        state.dossieLang = langPart;
+        state.currentDossie = dossie;
+        renderDossieDetail(dossie);
+      }
     } else if (!location.pathname.startsWith("/dossie/") && state.currentDossie !== null) {
       closeDossieView();
     }
@@ -770,6 +776,8 @@ function renderDossieDetail(dossie) {
       elements.dossieView.querySelectorAll(".dv-lang-btn").forEach((b) => {
         b.classList.toggle("is-active", b.dataset.lang === newLang);
       });
+      const slugBase = "/dossie/" + slugifyDossie(state.currentDossie.titulo || state.currentDossie.titulo_en) + "/";
+      history.pushState({ dossie: state.currentDossie.id, lang: newLang }, "", newLang === "pt" ? slugBase : slugBase + newLang + "/");
       // Atualizar bottom nav na troca de idioma
       const _bottomPrev = elements.dossieView.querySelector("[data-action='dossie-bottom-prev']");
       const _bottomNext = elements.dossieView.querySelector("[data-action='dossie-bottom-next']");
