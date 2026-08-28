@@ -20,34 +20,38 @@
   </script>
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
   <style>
-  body {
-    margin: 0;
-    font-family: laca-variable, sans-serif;
-    color: #111;
-    background: #fff;
-    font-size: 16px;
-    line-height: 1.6;
-  }
-  .dp { max-width: 720px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-  .dp-back { font-size: 13px; color: #16b35f; text-decoration: none; display: inline-block; margin-bottom: 1.5rem; }
-  .dp-back:hover { text-decoration: underline; }
-  .dp h1 { font-size: 2rem; margin: 0 0 .5rem; line-height: 1.2; }
-  .dp-desc { color: #6f6f6f; margin: 0 0 1.5rem; }
-  .dp hr { border: none; border-top: 1px solid rgba(0,0,0,.12); margin: 0 0 2rem; }
-  .dp-body p { margin: 0 0 1.2em; }
-  .dp-body h2 { font-size: 1.25rem; margin: 2rem 0 .75rem; }
-  .dp-body h3 { font-size: 1.05rem; margin: 1.5rem 0 .5rem; }
-  .dp-body img { max-width: 100%; height: auto; display: block; margin: 1.5rem 0; }
-  .dp-body blockquote { border-left: 3px solid #16b35f; margin: 1.5rem 0; padding: .5rem 1rem; color: #444; }
+  body{margin:0;font-family:laca-variable,sans-serif;color:#111;background:#fff;font-size:16px;line-height:1.6}
+  .dp{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem}
+  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;display:inline-block;margin-bottom:1.5rem;cursor:pointer;background:none;border:none;padding:0;font-family:inherit}
+  .dp-back:hover{text-decoration:underline}
+  .dp h1{font-size:2rem;margin:0 0 .5rem;line-height:1.2}
+  .dp-desc{color:#6f6f6f;margin:0 0 1.5rem}
+  .dp hr{border:none;border-top:1px solid rgba(0,0,0,.12);margin:0 0 2rem}
+  .dp-body p{margin:0 0 1.2em}
+  .dp-body h2{font-size:1.25rem;margin:2rem 0 .75rem}
+  .dp-body h3{font-size:1.05rem;margin:1.5rem 0 .5rem}
+  .dp-body img{max-width:100%;height:auto;display:block;margin:1.5rem 0}
+  .dp-body blockquote{border-left:3px solid #16b35f;margin:1.5rem 0;padding:.5rem 1rem;color:#444}
 </style>
 </head>
 <body>
   <div class="dp">
-    <a class="dp-back" href="https://giz.art.br/#dossie">← GIZ Dossier</a>
+    <button id="dp-back" class="dp-back">← GIZ Dossier</button>
     <h1>Twenty years making books work</h1>
     <p class="dp-desc">The discipline of returning to the desk the day after delivery.</p>
     <hr>
     <div class="dp-body"><h2><strong>The discipline of returning to the desk the day after delivery.</strong></h2><p><br></p><p>In every long editorial trajectory, there comes a point where continuity becomes identity. When we gave up the structure of a full-fledged office, the machinery gave way to something else — a lean operation: just two people, two bodies of experience, with decisions passing straight through the hands of those who sign the work. It was not a break in method; it was a distillation of purpose. To stop being a vendor with an apparatus and become a long-term editorial partner. In place of the old structure, Giz emerged — a four-handed studio that, rather than narrowing its focus, widened it: not this or that, but this and that, and whatever else came.</p><p><br></p><p>A decade later, the result of that instinctive decision is measured less by visibility than by accumulation. Hundreds of titles. Thousands of pages. Books designed not merely to be admired in our portfolios, but to work in circulation — carried in backpacks, read on buses, reviewed by influencers.</p><p>This stance sits closer to craft than to the mythology of authorship. The rhythm is continuous, almost indifferent to milestones. Monday begins again for everyone: for the player who lifted the trophy, for the boxer who took the belt, for the designer who just closed a bestseller. The next day, there is always another title on the desk. While S. was still arriving from China, others were already waiting their turn to begin; when the intense production of the Missal came to an end, the next day brought no pause, but continuity.</p><p><br></p><p>Perhaps this is the least visible aspect of editorial design: the return to normalcy after delivery. No ceremony, no interruption.</p><p>After twenty years with books, what stands out is not a collection of highlights, but permanence. And in reaching this milestone, it is fair to ask what it cost — not to lament the bill, but because work that gives this much of itself deserves, at least once, to be looked at squarely.</p></div>
   </div>
+  
+  <script>
+    document.getElementById('dp-back').addEventListener('click', function(e) {
+      e.preventDefault();
+      if (document.referrer && document.referrer.includes('giz.art.br')) {
+        history.back();
+      } else {
+        location.href = '/';
+      }
+    });
+  </script>
 </body>
 </html>
