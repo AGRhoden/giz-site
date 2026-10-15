@@ -21,9 +21,20 @@
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
   <style>
   body{margin:0;font-family:laca-variable,sans-serif;color:#111;background:#fff;font-size:16px;line-height:1.6}
-  .dp{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem}
-  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;display:inline-block;margin-bottom:1.5rem;background:none;border:none;padding:0}
+  .dp-site-header{border-bottom:1px solid rgba(0,0,0,.08);padding:.7rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+  .dp-site-logo{font-size:1.05rem;font-weight:700;color:#111;text-decoration:none;letter-spacing:.02em}
+  .dp-site-logo em{font-style:normal;color:#16b35f}
+  .dp-site-sub{font-size:11px;color:#aaa;margin-left:.4rem}
+  .dp-site-link{font-size:12px;color:#999;text-decoration:none}
+  .dp-site-link:hover{color:#111}
+  .dp{max-width:720px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
+  .dp-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;background:none;border:none;padding:0}
   .dp-back:hover{text-decoration:underline}
+  .dp-langs{display:flex;gap:.6rem;font-size:12px}
+  .dp-langs a{color:#bbb;text-decoration:none;padding:.1rem .3rem;border-radius:3px}
+  .dp-langs a.dp-lang-active{color:#111;font-weight:600}
+  .dp-langs a:hover{color:#111}
   .dp h1{font-size:2rem;margin:0 0 .5rem;line-height:1.2}
   .dp-desc{color:#6f6f6f;margin:0 0 1.5rem}
   .dp hr{border:none;border-top:1px solid rgba(0,0,0,.12);margin:0 0 2rem}
@@ -32,15 +43,30 @@
   .dp-body h3{font-size:1.05rem;margin:1.5rem 0 .5rem}
   .dp-body img{max-width:100%;height:auto;display:block;margin:1.5rem 0}
   .dp-body blockquote{border-left:3px solid #16b35f;margin:1.5rem 0;padding:.5rem 1rem;color:#444}
+  .dp-body .ql-size-small,.dp-body em.ql-size-small{font-size:.8em;color:#6f6f6f;font-style:normal}
 </style>
 </head>
 <body>
+  <header class="dp-site-header">
+    <div>
+      <a href="/" class="dp-site-logo">GIZ<em>.</em></a><span class="dp-site-sub">Oficina Editorial</span>
+    </div>
+    <a href="/" class="dp-site-link">ver sitio →</a>
+  </header>
   <div class="dp">
-    <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){history.back()}else{location.href='/#dossie'}">← GIZ Dosier</button>
+    <nav class="dp-nav">
+      <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){history.back()}else{location.href='/#dossie'}">← Dosier</button>
+      <div class="dp-langs">
+        <a href="https://giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/" class="">PT</a>
+        <a href="https://giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/en/" class="">EN</a>
+        <a href="https://giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/es/" class="dp-lang-active">ES</a>
+      </div>
+    </nav>
     <h1>Veinte años haciendo funcionar los libros</h1>
     <p class="dp-desc">The discipline of returning to the desk the day after delivery.</p>
     <hr>
     <div class="dp-body"><h2><strong>La disciplina de volver a la mesa al día siguiente de la entrega.</strong></h2><p><br></p><p>En toda trayectoria editorial larga, llega un momento en que la continuidad se convierte en identidad. Cuando renunciamos a la estructura de una oficina completa, la maquinaria cedió paso a otra cosa — una operación austera: solo dos personas, dos cuerpos de experiencia, con las decisiones pasando directamente por las manos de quienes firman el trabajo. No fue una ruptura de método; fue una destilación de propósito. Dejar de ser un proveedor con aparato y convertirse en un socio editorial de largo plazo. En lugar de la vieja estructura, surgió Giz — un estudio de cuatro manos que, en lugar de estrechar su foco, lo amplió: no esto o aquello, sino esto y aquello, y todo lo demás que llegara.</p><p><br></p><p>Una década después, el resultado de esa decisión instintiva se mide menos por la visibilidad que por la acumulación. Cientos de títulos. Miles de páginas. Libros diseñados no para ser admirados en portafolios, sino para funcionar en circulación — llevados en mochilas, leídos en autobuses, reseñados por influencers.</p><p>Esta actitud está más cerca de la artesanía que de la mitología de la autoría. El ritmo es continuo, casi indiferente a los hitos. El lunes vuelve a empezar para todos: para el deportista que levantó el trofeo, para el boxeador que se llevó el cinturón, para el diseñador que acaba de cerrar un bestseller. Al día siguiente, siempre hay otro título sobre la mesa. Mientras S. todavía estaba de camino desde China, otros ya esperaban su turno para comenzar; cuando terminó la intensa producción del Misal, el día siguiente no trajo pausa, sino continuidad.</p><p><br></p><p>Quizá este sea el aspecto menos visible del diseño editorial: el regreso a la normalidad después de la entrega. Sin ceremonia, sin interrupción.</p><p>Después de veinte años con libros, lo que destaca no es una colección de momentos altos, sino la permanencia. Y al alcanzar este hito, es justo preguntarse qué costó — no para lamentar la cuenta, sino porque un trabajo que da tanto de sí merece ser mirado de frente, al menos una vez.</p></div>
   </div>
+  <script>(function(){try{if(sessionStorage.getItem('giz-spa')){var m=location.pathname.match(/^\/dossie\/([^\/]+)/);if(m){sessionStorage.setItem('giz-open',m[1]);var lm=location.pathname.match(/\/(en|es)\/$/);if(lm)sessionStorage.setItem('giz-open-lang',lm[1]);else sessionStorage.removeItem('giz-open-lang');}sessionStorage.removeItem('giz-spa');location.replace('/');}}catch(e){}})()</script>
 </body>
 </html>
