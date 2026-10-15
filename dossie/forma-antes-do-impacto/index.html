@@ -21,9 +21,20 @@
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
   <style>
   body{margin:0;font-family:laca-variable,sans-serif;color:#111;background:#fff;font-size:16px;line-height:1.6}
-  .dp{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem}
-  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;display:inline-block;margin-bottom:1.5rem;background:none;border:none;padding:0}
+  .dp-site-header{border-bottom:1px solid rgba(0,0,0,.08);padding:.7rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+  .dp-site-logo{font-size:1.05rem;font-weight:700;color:#111;text-decoration:none;letter-spacing:.02em}
+  .dp-site-logo em{font-style:normal;color:#16b35f}
+  .dp-site-sub{font-size:11px;color:#aaa;margin-left:.4rem}
+  .dp-site-link{font-size:12px;color:#999;text-decoration:none}
+  .dp-site-link:hover{color:#111}
+  .dp{max-width:720px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
+  .dp-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;background:none;border:none;padding:0}
   .dp-back:hover{text-decoration:underline}
+  .dp-langs{display:flex;gap:.6rem;font-size:12px}
+  .dp-langs a{color:#bbb;text-decoration:none;padding:.1rem .3rem;border-radius:3px}
+  .dp-langs a.dp-lang-active{color:#111;font-weight:600}
+  .dp-langs a:hover{color:#111}
   .dp h1{font-size:2rem;margin:0 0 .5rem;line-height:1.2}
   .dp-desc{color:#6f6f6f;margin:0 0 1.5rem}
   .dp hr{border:none;border-top:1px solid rgba(0,0,0,.12);margin:0 0 2rem}
@@ -32,15 +43,30 @@
   .dp-body h3{font-size:1.05rem;margin:1.5rem 0 .5rem}
   .dp-body img{max-width:100%;height:auto;display:block;margin:1.5rem 0}
   .dp-body blockquote{border-left:3px solid #16b35f;margin:1.5rem 0;padding:.5rem 1rem;color:#444}
+  .dp-body .ql-size-small,.dp-body em.ql-size-small{font-size:.8em;color:#6f6f6f;font-style:normal}
 </style>
 </head>
 <body>
+  <header class="dp-site-header">
+    <div>
+      <a href="/" class="dp-site-logo">GIZ<em>.</em></a><span class="dp-site-sub">Oficina Editorial</span>
+    </div>
+    <a href="/" class="dp-site-link">ver site →</a>
+  </header>
   <div class="dp">
-    <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){history.back()}else{location.href='/#dossie'}">← GIZ Dossiê</button>
+    <nav class="dp-nav">
+      <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){history.back()}else{location.href='/#dossie'}">← Dossiê</button>
+      <div class="dp-langs">
+        <a href="https://giz.art.br/dossie/forma-antes-do-impacto/" class="dp-lang-active">PT</a>
+        <a href="https://giz.art.br/dossie/forma-antes-do-impacto/en/" class="">EN</a>
+        <a href="https://giz.art.br/dossie/forma-antes-do-impacto/es/" class="">ES</a>
+      </div>
+    </nav>
     <h1>Forma antes do impacto</h1>
     <p class="dp-desc">Designing for contemplation at Editora Permanência</p>
     <hr>
     <div class="dp-body"><h1>Projetar para a contemplação na Editora Permanência</h1><p><br></p><p><strong>Antonio Rhoden, designer sênior e diretor de arte</strong></p><p><br></p><p>Numa época em que as capas de livros são cada vez mais elaboradas para reconhecimento imediato, visibilidade algorítmica e atenção decrescente, o trabalho produzido na Editora Permanência, no Brasil, segue uma lógica marcadamente diferente. Sob a direção de arte de Antonio Rhoden, a editora desenvolveu um conjunto de design gráfico que resiste à estética de mercado em favor da coerência intelectual, da disciplina visual e do rigor contemplativo.</p><p>Fundada em 1968 pelo escritor e jornalista católico Gustavo Corção, a Editora Permanência ocupa há muito uma posição singular no mercado editorial brasileiro. Sua missão explicitamente formativa — e não comercial — moldou não apenas seu programa editorial, mas também sua cultura visual. O papel de Rhoden como designer sênior e principal diretor de arte deve ser compreendido dentro desse contexto: design não como persuasão, mas como formação.</p><p><br></p><h2>O design como mediação intelectual</h2><p>Na Permanência, o livro é concebido como objeto espiritual e intelectual antes de ser tratado como produto. Esse princípio governa cada decisão gráfica. As capas não devem resumir ou dramatizar visualmente o conteúdo. Funcionam antes como limiares — estruturas que preparam a atenção do leitor antes que a primeira página seja virada.</p><p>Um exemplo claro é <em>O Reno se Lança no Tibre</em>, obra que examina os conflitos internos do Concílio Vaticano II. Em vez de ilustrar o debate eclesiástico ou o simbolismo arquitetônico romano, a capa emprega uma pintura clássica dramática de martírio, rotacionada e recortada de modo que os corpos colidem diagonalmente pela superfície. A metáfora não é literal nem explicativa, mas estrutural: a violência física torna-se um análogo visual da ruptura teológica e institucional. A imagem não interpreta o argumento — ela situa o leitor dentro de sua tensão.</p><p><br></p><p><img src="https://epinzzvsbyglmztasspa.supabase.co/storage/v1/object/public/project-media/dossie/fabdf38a-f557-4a9a-8bf2-8e8f30b03ee3/img_01.jpg"></p><p><em class="ql-size-small">O Reno se Lança no Tibre</em><span class="ql-size-small">: metáfora consciente e composição cuidadosamente articulada revelam a intenção por trás da construção visual.</span></p><p><br></p><p><br></p><h2>A imagem como sentido, não como decoração</h2><p>As imagens na Permanência nunca são neutras. Extraídas em grande parte da pintura clássica, funcionam como material semântico, e não como elementos decorativos. O recorte é um dos instrumentos mais precisos de Rhoden: figuras são truncadas, gestos isolados, pontos focais parcialmente subtraídos. O objetivo não é a fragmentação estilística, mas a orientação controlada da percepção.</p><p>Em <em>Vendeia 1793 – Uma Família de "Bandidos"</em>, narrativa histórica enraizada na experiência e na memória coletiva, a capa preserva deliberadamente uma composição densa e populosa. Em vez de simplificar a cena em favor da clareza ou do impacto visual, o design mantém sua multiplicidade, conduzindo o olhar por um caminho de leitura estruturado. O espectador é levado a encontrar indivíduos, não abstrações, ecoando a recusa do livro em reduzir a história a conceito. Aqui, o design respeita a complexidade narrativa ao resistir à redução.</p><p><br></p><p><img src="https://epinzzvsbyglmztasspa.supabase.co/storage/v1/object/public/project-media/dossie/fabdf38a-f557-4a9a-8bf2-8e8f30b03ee3/img_02.jpg"></p><p><em class="ql-size-small">Vendée 1793 – Uma Família de "Bandidos"</em><span class="ql-size-small">: a composição devolve rostos à história, recusando-se a reduzi-la a abstração.</span></p><p><br></p><p><br></p><h2>Consistência sem estilo</h2><p>Uma das características definidoras do trabalho de Rhoden é a ausência de uma assinatura estilística fixa. Nenhuma fórmula de layout recorrente. Nenhum sistema ornamental repetido entre títulos. O que unifica o catálogo não é o estilo, mas o critério.</p><p>Isso é especialmente evidente em <em>A Crítica do Amor Puro</em>, talvez a capa mais controversa do catálogo. A imagem — uma pintura expressiva e não clássica de Bernard Bouts — rompe abruptamente com o vocabulário visual renascentista e barroco frequentemente associado à Permanência. Escura, distorcida e psicologicamente carregada, a figura desestabiliza as expectativas de beleza. Ainda assim, a decisão é precisa.</p><p>O livro não é de autoria de Corção, mas examina criticamente seu pensamento. A imagem, produzida por um artista pessoalmente ligado a ele, reflete a severidade intelectual e a resistência que definem tanto o sujeito quanto a tese. A tipografia derivada da própria mão do artista reforça ainda mais esse alinhamento. O resultado pode repelir alguns leitores — mas jamais deturpa a obra.</p><p><br></p><p><img src="https://epinzzvsbyglmztasspa.supabase.co/storage/v1/object/public/project-media/dossie/fabdf38a-f557-4a9a-8bf2-8e8f30b03ee3/img_03.jpg"></p><p><em class="ql-size-small">A Crítica do Amor Puro: </em><span class="ql-size-small">a força perturbadora de Bernard Bouts e a natureza controversa da capa convergem numa escolha visual determinada pela precisão, e não pela convenção.</span></p><p><br></p><h2>Contra o prestígio decorativo</h2><p>Entre as novas editoras que trabalham com material religioso e filosófico igualmente exigente, uma solução visual previsível costuma emergir: molduras ornamentais, emblemas heráldicos, texturas envelhecidas e tipografia codificada como luxo. Essas capas frequentemente alcançam uma aparência de refinamento, mas permanecem intercambiáveis — igualmente plausíveis como rótulos de vinho, ficção histórica ou edições devocionais.</p><p>A direção de Rhoden evita deliberadamente esse caminho. Tais estratégias externalizam o sentido, sinalizando prestígio sem engajar a substância. As capas da Permanência aceitam a tensão visual — até o desconforto — quando exigido pelo texto. O sucesso não é medido pela aprovação imediata, mas pela fidelidade intelectual.</p><p><br></p><p><img src="https://epinzzvsbyglmztasspa.supabase.co/storage/v1/object/public/project-media/dossie/fabdf38a-f557-4a9a-8bf2-8e8f30b03ee3/img_04.jpg"></p><p><span class="ql-size-small">O refinamento não é um figurino visual, mas a consequência da fidelidade ao conteúdo.</span></p><p><br></p><h2>O designer como mediador</h2><p>O papel de Antonio Rhoden na Editora Permanência vai além da execução. Como designer sênior e diretor de arte, atua como mediador entre texto, imagem e leitor. O trabalho pressupõe que o design gráfico carrega responsabilidade: moldar a percepção, disciplinar a atenção e responder proporcionalmente à gravidade das ideias.</p><p>Num ambiente global de design cada vez mais conduzido pela velocidade, pelas tendências e pela diferenciação superficial, o catálogo da Permanência demonstra que o design gráfico ainda pode operar como modo de pensamento.</p><p>Não mais alto.</p><p>Não mais rápido.</p><p>Mas mais fundo.</p><p>Para leitores — e designers — dispostos a se engajar nesses termos, o trabalho propõe um modelo alternativo: o design não como espetáculo, mas como preparação para a compreensão.</p></div>
   </div>
+  <script>(function(){try{if(sessionStorage.getItem('giz-spa')){var m=location.pathname.match(/^\/dossie\/([^\/]+)/);if(m){sessionStorage.setItem('giz-open',m[1]);var lm=location.pathname.match(/\/(en|es)\/$/);if(lm)sessionStorage.setItem('giz-open-lang',lm[1]);else sessionStorage.removeItem('giz-open-lang');}sessionStorage.removeItem('giz-spa');location.replace('/');}}catch(e){}})()</script>
 </body>
 </html>
