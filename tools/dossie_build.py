@@ -134,7 +134,6 @@ def build_page(d, slug, lang):
     <hr>
     {body}
   </div>
-  <script>(function(){{try{{if(sessionStorage.getItem('giz-spa')){{var m=location.pathname.match(/^\/dossie\/([^\/]+)/);if(m){{sessionStorage.setItem('giz-open',m[1]);var lm=location.pathname.match(/\/(en|es)\/$/);if(lm)sessionStorage.setItem('giz-open-lang',lm[1]);else sessionStorage.removeItem('giz-open-lang');}}sessionStorage.removeItem('giz-spa');location.replace('/');}}}}catch(e){{}}}})()</script>
 </body>
 </html>"""
 
