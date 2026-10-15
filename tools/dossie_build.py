@@ -14,16 +14,27 @@ ROOT = os.path.join(HERE, "..")
 DRY_RUN = "--dry-run" in sys.argv
 
 LANG_CONFIG = {
-    "pt": {"html_lang": "pt-BR", "field_titulo": "titulo",    "field_conteudo": "conteudo",    "back_label": "← GIZ Dossiê",  "soon": "Conteúdo em breve."},
-    "en": {"html_lang": "en",    "field_titulo": "titulo_en", "field_conteudo": "conteudo_en", "back_label": "← GIZ Dossier", "soon": "Content coming soon."},
-    "es": {"html_lang": "es",    "field_titulo": "titulo_es", "field_conteudo": "conteudo_es", "back_label": "← GIZ Dosier",  "soon": "Contenido próximamente."},
+    "pt": {"html_lang": "pt-BR", "field_titulo": "titulo",    "field_conteudo": "conteudo",    "back_label": "← Dossiê", "soon": "Conteúdo em breve.",      "site_link": "ver site"},
+    "en": {"html_lang": "en",    "field_titulo": "titulo_en", "field_conteudo": "conteudo_en", "back_label": "← Dossier","soon": "Content coming soon.",    "site_link": "visit site"},
+    "es": {"html_lang": "es",    "field_titulo": "titulo_es", "field_conteudo": "conteudo_es", "back_label": "← Dosier", "soon": "Contenido próximamente.", "site_link": "ver sitio"},
 }
 
 INLINE_CSS = """
   body{margin:0;font-family:laca-variable,sans-serif;color:#111;background:#fff;font-size:16px;line-height:1.6}
-  .dp{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem}
-  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;display:inline-block;margin-bottom:1.5rem;background:none;border:none;padding:0}
+  .dp-site-header{border-bottom:1px solid rgba(0,0,0,.08);padding:.7rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+  .dp-site-logo{font-size:1.05rem;font-weight:700;color:#111;text-decoration:none;letter-spacing:.02em}
+  .dp-site-logo em{font-style:normal;color:#16b35f}
+  .dp-site-sub{font-size:11px;color:#aaa;margin-left:.4rem}
+  .dp-site-link{font-size:12px;color:#999;text-decoration:none}
+  .dp-site-link:hover{color:#111}
+  .dp{max-width:720px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
+  .dp-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;background:none;border:none;padding:0}
   .dp-back:hover{text-decoration:underline}
+  .dp-langs{display:flex;gap:.6rem;font-size:12px}
+  .dp-langs a{color:#bbb;text-decoration:none;padding:.1rem .3rem;border-radius:3px}
+  .dp-langs a.dp-lang-active{color:#111;font-weight:600}
+  .dp-langs a:hover{color:#111}
   .dp h1{font-size:2rem;margin:0 0 .5rem;line-height:1.2}
   .dp-desc{color:#6f6f6f;margin:0 0 1.5rem}
   .dp hr{border:none;border-top:1px solid rgba(0,0,0,.12);margin:0 0 2rem}
@@ -32,6 +43,7 @@ INLINE_CSS = """
   .dp-body h3{font-size:1.05rem;margin:1.5rem 0 .5rem}
   .dp-body img{max-width:100%;height:auto;display:block;margin:1.5rem 0}
   .dp-body blockquote{border-left:3px solid #16b35f;margin:1.5rem 0;padding:.5rem 1rem;color:#444}
+  .dp-body .ql-size-small,.dp-body em.ql-size-small{font-size:.8em;color:#6f6f6f;font-style:normal}
 """
 
 
@@ -73,6 +85,14 @@ def build_page(d, slug, lang):
     )
     body = f'<div class="dp-body">{conteudo}</div>' if conteudo else f'<p style="color:#6f6f6f">{cfg["soon"]}</p>'
     desc_html = f'<p class="dp-desc">{descricao}</p>' if descricao else ""
+    lang_pt_cls  = " dp-lang-active" if lang == "pt" else ""
+    lang_en_cls  = " dp-lang-active" if lang == "en" else ""
+    lang_es_cls  = " dp-lang-active" if lang == "es" else ""
+    back_onclick = (
+        "var r=document.referrer;"
+        "if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){history.back()}"
+        "else{location.href='/#dossie'}"
+    )
     return f"""<!DOCTYPE html>
 <html lang="{cfg['html_lang']}">
 <head>
@@ -94,13 +114,27 @@ def build_page(d, slug, lang):
   <style>{INLINE_CSS}</style>
 </head>
 <body>
+  <header class="dp-site-header">
+    <div>
+      <a href="/" class="dp-site-logo">GIZ<em>.</em></a><span class="dp-site-sub">Oficina Editorial</span>
+    </div>
+    <a href="/" class="dp-site-link">{cfg['site_link']} →</a>
+  </header>
   <div class="dp">
-    <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){{history.back()}}else{{location.href='/#dossie'}}">{cfg['back_label']}</button>
+    <nav class="dp-nav">
+      <button id="dp-back" class="dp-back" onclick="{back_onclick}">{cfg['back_label']}</button>
+      <div class="dp-langs">
+        <a href="{canonical_pt}" class="{lang_pt_cls.strip()}">PT</a>
+        <a href="{canonical_pt}en/" class="{lang_en_cls.strip()}">EN</a>
+        <a href="{canonical_pt}es/" class="{lang_es_cls.strip()}">ES</a>
+      </div>
+    </nav>
     <h1>{titulo}</h1>
     {desc_html}
     <hr>
     {body}
   </div>
+  <script>(function(){{try{{if(sessionStorage.getItem('giz-spa')){{var m=location.pathname.match(/^\/dossie\/([^\/]+)/);if(m){{sessionStorage.setItem('giz-open',m[1]);var lm=location.pathname.match(/\/(en|es)\/$/);if(lm)sessionStorage.setItem('giz-open-lang',lm[1]);else sessionStorage.removeItem('giz-open-lang');}}sessionStorage.removeItem('giz-spa');location.replace('/');}}}}catch(e){{}}}})()</script>
 </body>
 </html>"""
 
