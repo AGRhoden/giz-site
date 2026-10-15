@@ -69,6 +69,11 @@ let _swipeTouchStartY = 0;
 document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
   initialize();
+  // Open dossie section when linked from static standalone page
+  if (window.location.hash === "#dossie") {
+    history.replaceState(null, "", "/");
+    openPage("dossie");
+  }
   window.addEventListener("popstate", (e) => {
     if (location.pathname.startsWith("/dossie/")) {
       const parts = location.pathname.replace(/^\/dossie\//, "").replace(/\/$/, "").split("/");
