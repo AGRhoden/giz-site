@@ -67,6 +67,7 @@ let _swipeTouchStartX = 0;
 let _swipeTouchStartY = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
+  try { sessionStorage.setItem("giz-spa", "1"); } catch (_) {}
   bindEvents();
   initialize();
   // Open dossie section when linked from static standalone page
@@ -255,6 +256,21 @@ async function initialize() {
   applyFilters();
   renderGrid();
   renderPanel();
+  try {
+    const openSlug = sessionStorage.getItem("giz-open");
+    if (openSlug) {
+      const openLang = sessionStorage.getItem("giz-open-lang") || "pt";
+      sessionStorage.removeItem("giz-open");
+      sessionStorage.removeItem("giz-open-lang");
+      const dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === openSlug);
+      if (dossie) {
+        state.dossieLang = openLang;
+        state.currentDossie = dossie;
+        openPage("dossie");
+        renderDossieDetail(dossie);
+      }
+    }
+  } catch (_) {}
 }
 
 function bindEvents() {
