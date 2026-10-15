@@ -22,7 +22,7 @@ LANG_CONFIG = {
 INLINE_CSS = """
   body{margin:0;font-family:laca-variable,sans-serif;color:#111;background:#fff;font-size:16px;line-height:1.6}
   .dp{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem}
-  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;display:inline-block;margin-bottom:1.5rem}
+  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;display:inline-block;margin-bottom:1.5rem;background:none;border:none;padding:0}
   .dp-back:hover{text-decoration:underline}
   .dp h1{font-size:2rem;margin:0 0 .5rem;line-height:1.2}
   .dp-desc{color:#6f6f6f;margin:0 0 1.5rem}
@@ -95,7 +95,7 @@ def build_page(d, slug, lang):
 </head>
 <body>
   <div class="dp">
-    <a class="dp-back" href="{BASE_URL}/#dossie">{cfg['back_label']}</a>
+    <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){{history.back()}}else{{location.href='/'}}">{cfg['back_label']}</button>
     <h1>{titulo}</h1>
     {desc_html}
     <hr>
