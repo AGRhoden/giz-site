@@ -95,7 +95,7 @@ def build_page(d, slug, lang):
 </head>
 <body>
   <div class="dp">
-    <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){{history.back()}}else{{location.href='/'}}">{cfg['back_label']}</button>
+    <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){{history.back()}}else{{location.href='/#dossie'}}">{cfg['back_label']}</button>
     <h1>{titulo}</h1>
     {desc_html}
     <hr>
