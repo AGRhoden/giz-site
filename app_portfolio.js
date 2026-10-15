@@ -255,16 +255,16 @@ async function initialize() {
   applyFilters();
   renderGrid();
   renderPanel();
-  if (location.pathname.startsWith("/dossie/")) {
-    const parts = location.pathname.replace(/^\/dossie\//, "").replace(/\/$/, "").split("/");
-    const slugPart = parts[0];
-    const langPart = parts[1] || "pt";
-    const dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === slugPart);
-    if (dossie) {
-      state.dossieLang = langPart;
-      state.currentDossie = dossie;
+  const _params = new URLSearchParams(location.search);
+  const _openSlug = _params.get("open");
+  const _openLang = _params.get("lang") || "pt";
+  if (_openSlug) {
+    history.replaceState({}, "", "/");
+    const _dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === _openSlug);
+    if (_dossie) {
+      state.dossieLang = _openLang;
       openPage("dossie");
-      renderDossieDetail(dossie);
+      renderDossieDetail(_dossie);
     } else {
       openPage("dossie");
     }
