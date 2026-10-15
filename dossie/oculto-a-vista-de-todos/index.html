@@ -21,9 +21,20 @@
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
   <style>
   body{margin:0;font-family:laca-variable,sans-serif;color:#111;background:#fff;font-size:16px;line-height:1.6}
-  .dp{max-width:720px;margin:0 auto;padding:2rem 1.5rem 4rem}
-  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;display:inline-block;margin-bottom:1.5rem;background:none;border:none;padding:0}
+  .dp-site-header{border-bottom:1px solid rgba(0,0,0,.08);padding:.7rem 1.5rem;display:flex;align-items:center;justify-content:space-between}
+  .dp-site-logo{font-size:1.05rem;font-weight:700;color:#111;text-decoration:none;letter-spacing:.02em}
+  .dp-site-logo em{font-style:normal;color:#16b35f}
+  .dp-site-sub{font-size:11px;color:#aaa;margin-left:.4rem}
+  .dp-site-link{font-size:12px;color:#999;text-decoration:none}
+  .dp-site-link:hover{color:#111}
+  .dp{max-width:720px;margin:0 auto;padding:1.5rem 1.5rem 4rem}
+  .dp-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem}
+  .dp-back{font-size:13px;color:#16b35f;text-decoration:none;cursor:pointer;background:none;border:none;padding:0}
   .dp-back:hover{text-decoration:underline}
+  .dp-langs{display:flex;gap:.6rem;font-size:12px}
+  .dp-langs a{color:#bbb;text-decoration:none;padding:.1rem .3rem;border-radius:3px}
+  .dp-langs a.dp-lang-active{color:#111;font-weight:600}
+  .dp-langs a:hover{color:#111}
   .dp h1{font-size:2rem;margin:0 0 .5rem;line-height:1.2}
   .dp-desc{color:#6f6f6f;margin:0 0 1.5rem}
   .dp hr{border:none;border-top:1px solid rgba(0,0,0,.12);margin:0 0 2rem}
@@ -32,15 +43,30 @@
   .dp-body h3{font-size:1.05rem;margin:1.5rem 0 .5rem}
   .dp-body img{max-width:100%;height:auto;display:block;margin:1.5rem 0}
   .dp-body blockquote{border-left:3px solid #16b35f;margin:1.5rem 0;padding:.5rem 1rem;color:#444}
+  .dp-body .ql-size-small,.dp-body em.ql-size-small{font-size:.8em;color:#6f6f6f;font-style:normal}
 </style>
 </head>
 <body>
+  <header class="dp-site-header">
+    <div>
+      <a href="/" class="dp-site-logo">GIZ<em>.</em></a><span class="dp-site-sub">Oficina Editorial</span>
+    </div>
+    <a href="/" class="dp-site-link">ver site →</a>
+  </header>
   <div class="dp">
-    <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){history.back()}else{location.href='/#dossie'}">← GIZ Dossiê</button>
+    <nav class="dp-nav">
+      <button id="dp-back" class="dp-back" onclick="var r=document.referrer;if(r&&r.indexOf('giz.art.br')!==-1&&r.indexOf('/dossie/')===-1){history.back()}else{location.href='/#dossie'}">← Dossiê</button>
+      <div class="dp-langs">
+        <a href="https://giz.art.br/dossie/oculto-a-vista-de-todos/" class="dp-lang-active">PT</a>
+        <a href="https://giz.art.br/dossie/oculto-a-vista-de-todos/en/" class="">EN</a>
+        <a href="https://giz.art.br/dossie/oculto-a-vista-de-todos/es/" class="">ES</a>
+      </div>
+    </nav>
     <h1>Oculto à vista de todos</h1>
     <p class="dp-desc">When a publisher’s logo becomes part of the narrative</p>
     <hr>
     <div class="dp-body"><h1>Quando o logo da editora se torna parte da narrativa</h1><p><br></p><p>Na maioria dos fluxos de trabalho editoriais, o logo da editora é tratado como uma assinatura corporativa fixa — um carimbo imutável aplicado ao final do processo, posicionado segundo o manual de identidade visual e raramente questionado. Sua função é identificatória, não interpretativa.</p><p>No entanto, numa colaboração de longa data entre a editora brasileira <strong>Giz Imagens e Letras</strong> e a <strong>Editora Intrínseca</strong>, essa convenção foi silenciosamente invertida. Ao longo de múltiplos títulos ao longo de mais de uma década, a marca da editora não foi simplesmente colocada nas capas, mas ativamente reinterpretada como elemento gráfico dentro da própria narrativa visual. O resultado é um caso raro no mercado editorial brasileiro em que a identidade de marca se torna material de design — não restrição.</p><p><br></p><h2>A confiança como condição de design</h2><p>Essa abordagem depende menos da ambição estilística do que da cultura editorial. Transformar uma marca corporativa em componente visual flexível exige algo incomum na edição comercial: confiança sustentada entre editora e designer.</p><p>Nessa parceria, o logo da editora não foi tratado como artefato protegido, mas como elemento vivo, capaz de responder à lógica visual de cada livro. Às vezes isso significava integração sutil — logos parcialmente ocultos em detalhes de ilustração, embutidos em texturas ou absorvidos visualmente por elementos ambientais. Em outros casos, a intervenção era explícita, com a marca redesenhada para compartilhar a mesma linguagem gráfica da tipografia ou da ilustração da capa.</p><p>Esse tipo de liberdade continua incomum porque desafia um reflexo editorial fundamental: o instinto de proteger a consistência de marca por meio da repetição. Aqui, a consistência foi alcançada não pela aparência uniforme, mas por uma compreensão compartilhada da intenção.</p><p><br></p><h2>Primeiros experimentos de integração</h2><p>Um exemplo inicial aparece na edição brasileira de <em>Abraham Lincoln: Caçador de Vampiros</em> (2011). Nessa adaptação, o elemento circular do logo da editora foi incorporado a um motivo de respingo de sangue, aparecendo tanto na capa quanto na lombada. Em vez de se destacar da composição, a marca passou a integrar a atmosfera narrativa, reforçando o tom do livro sem chamar atenção para si como elemento de branding.</p><p>A solução demonstrou um princípio que se repetiria em projetos posteriores: quando tratados com inteligência, elementos de identidade podem reforçar a narrativa em vez de interrompê-la.</p><p><br></p><h2>Tipografia como alinhamento</h2><p>Uma exploração mais sistemática dessa ideia emergiu com as edições brasileiras dos romances de John Green, começando com <em>A Culpa é das Estrelas</em> (2014). Após reconstruir a letragem desenhada à mão característica da capa original, o designer estendeu o mesmo tratamento gráfico em estilo giz ao próprio logo da editora.</p><p>O resultado — internamente chamado de "logo de giz" — criou uma continuidade visual incomum: a marca da editora não aparecia mais como uma certificação externa, mas como parte do mesmo gesto gráfico que definia a capa. Títulos subsequentes de Green continuaram essa lógica, com o logo adaptando-se ao caráter tipográfico específico de cada design, incluindo uma versão em estilo de tinta em <em>Tartarugas Até Lá Embaixo</em>.</p><p>Essa continuidade estabeleceu um sistema visual informal — não pela padronização, mas pelo método: o logo sempre pertenceria ao mesmo mundo gráfico do livro que acompanhava.</p><p><br></p><h2>O logo como participação</h2><p>Outros projetos expandiram esse uso interpretativo da marca. Títulos interativos como <em>Destrua Este Diário</em> e obras relacionadas de Keri Smith ofereceram terreno fértil para experimentação, permitindo que o logo funcionasse quase como um detalhe interativo adicional dentro da estrutura conceitual da capa.</p><p>Em títulos de ficção policial como <em>Manual de Assassinato para Boas Garotas</em>, de Holly Jackson, a exploração se estendeu até a lombada, onde o logo passou a integrar o ritmo compositivo em vez de ser um elemento de encerramento.</p><p><br></p><h2>Além da aplicação de marca</h2><p>O que distingue esse conjunto de trabalhos não é a novidade em si, mas uma disposição disciplinada de tratar cada elemento visível como potencialmente significativo. O logo da editora — normalmente isento de interpretação — tornou-se mais uma oportunidade de alinhamento entre conceito, tipografia e imagem.</p><p>Essa abordagem continua incomum não porque seja tecnicamente complexa, mas porque pressupõe uma relação editorial que raramente existe: em que a identidade de marca é concebida não como proteção, mas como participação.</p><p><br></p><h2>Uma distinção silenciosa</h2><p>No mercado brasileiro, onde o design de capas frequentemente opera sob forte pressão de marketing e aplicações rígidas de marca, essa prática se destaca como uma distinção silenciosa mas significativa. Ela sugere um modelo alternativo em que a identidade visual não compete com a autoria, mas a amplia. Nessas capas, o elemento mais corporativo do livro se torna, paradoxalmente, um de seus detalhes mais humanos: evidência não de controle de marca, mas de confiança editorial.</p></div>
   </div>
+  <script>(function(){try{if(sessionStorage.getItem('giz-spa')){var m=location.pathname.match(/^\/dossie\/([^\/]+)/);if(m){sessionStorage.setItem('giz-open',m[1]);var lm=location.pathname.match(/\/(en|es)\/$/);if(lm)sessionStorage.setItem('giz-open-lang',lm[1]);else sessionStorage.removeItem('giz-open-lang');}sessionStorage.removeItem('giz-spa');location.replace('/');}}catch(e){}})()</script>
 </body>
 </html>
