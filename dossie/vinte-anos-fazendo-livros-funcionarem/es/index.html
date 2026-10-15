@@ -1,1 +1,75 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><script>location.replace('/?open=vinte-anos-fazendo-livros-funcionarem&lang=es')</script></head><body></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="Portfólio da Giz, oficina editorial especializada em livros, revistas e projetos especiais."
+  >
+  <title>GIZ — Oficina Editorial | Livros, Revistas, Pré-impressão</title>
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://giz.art.br/">
+  <meta property="og:title" content="GIZ — Oficina Editorial">
+  <meta property="og:description" content="Portfólio da Giz, oficina editorial especializada em livros, revistas e projetos especiais.">
+  <meta property="og:image" content="https://giz.art.br/assets/giz-logo.png">
+
+  <!-- JSON-LD Organization -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "GIZ Oficina Editorial",
+    "url": "https://giz.art.br",
+    "logo": "https://giz.art.br/assets/giz-logo.png",
+    "description": "Oficina editorial especializada em livros, revistas e projetos especiais.",
+    "address": { "@type": "PostalAddress", "addressCountry": "BR" },
+    "sameAs": []
+  }
+  </script>
+
+  <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
+  <link rel="stylesheet" href="portfolio.css">
+</head>
+<body class="portfolio-page">
+  <main class="layout" aria-label="Portfólio Giz">
+    <section class="left" id="left" aria-label="Grid de projetos e visualização ampliada">
+      <div class="grid-view" id="grid-view">
+        <div class="grid" id="grid" role="list"></div>
+      </div>
+
+      <section
+        class="viewer-shell"
+        id="viewer-shell"
+        aria-label="Visualização do projeto"
+        hidden
+      ></section>
+    </section>
+
+    <aside class="panel" aria-label="Navegação e informações">
+      <nav class="menu" aria-label="Navegação principal">
+        <div class="menu-nav" id="menu-nav"></div>
+      </nav>
+
+      <div class="panel-logo" aria-hidden="true">
+        <img src="/assets/giz-logo.png" alt="" onerror="this.parentElement.style.display='none'">
+      </div>
+
+      <section class="panel-content" id="panel" aria-live="polite"></section>
+    </aside>
+  </main>
+
+  <div id="dossie-view" class="dossie-view" hidden></div>
+
+  <!-- SEO: títulos dos projetos publicados (gerado por tools/seo_build.py) -->
+  <div id="seo-anchor" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"></div>
+
+  <script src="portfolio.config.js"></script>
+  <script src="backend.config.js"></script>
+  <script src="app_portfolio.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a31f4b2f38152446',t:'MTc4Nzg3NzkzMQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>  <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a5643f32b3604e97aef326043558e895"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
