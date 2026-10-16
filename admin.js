@@ -202,7 +202,8 @@
     albumPhotos: [],
     dossieLang: "pt",
     dossieLangTitulo: { pt: "", en: "", es: "" },
-    dossieLangContent: { pt: "", en: "", es: "" }
+    dossieLangContent: { pt: "", en: "", es: "" },
+    dossieLangDescricao: { pt: "", en: "", es: "" }
   };
 
   if (!backend.url || !backend.anonKey) {
@@ -1556,7 +1557,7 @@
   }
 
   function loadDossies() {
-    return fetch(backend.url + "/rest/v1/dossies?select=id,titulo,conteudo,titulo_en,conteudo_en,titulo_es,conteudo_es,media,projeto_id,criado_em,atualizado_em&order=titulo.asc", {
+    return fetch(backend.url + "/rest/v1/dossies?select=id,slug,titulo,conteudo,descricao,titulo_en,conteudo_en,descricao_en,titulo_es,conteudo_es,descricao_es,media,projeto_id,thumb_path,criado_em,atualizado_em&order=titulo.asc", {
       headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
     })
     .then(function(r) { return r.json(); })
@@ -1586,15 +1587,18 @@
 
   function switchDossieLanguage(lang) {
     var tituloEl = document.getElementById("dossie-field-titulo");
+    var descricaoEl = document.getElementById("dossie-field-descricao");
     var currentLang = state.dossieLang || "pt";
     // Salvar valores atuais no estado
     if (tituloEl) state.dossieLangTitulo[currentLang] = tituloEl.value;
     if (quillDossie) state.dossieLangContent[currentLang] = quillDossie.root.innerHTML;
+    if (descricaoEl) state.dossieLangDescricao[currentLang] = descricaoEl.value;
     // Trocar idioma
     state.dossieLang = lang;
     // Restaurar valores do novo idioma
     if (tituloEl) tituloEl.value = state.dossieLangTitulo[lang] || "";
     if (quillDossie) quillDossie.clipboard.dangerouslyPasteHTML(state.dossieLangContent[lang] || "");
+    if (descricaoEl) descricaoEl.value = state.dossieLangDescricao[lang] || "";
     // Atualizar UI das abas
     document.querySelectorAll(".dossie-lang-tab").forEach(function(btn) {
       btn.classList.toggle("is-active", btn.dataset.lang === lang);
@@ -1690,6 +1694,11 @@
       en: dossie ? String(dossie.conteudo_en || "") : "",
       es: dossie ? String(dossie.conteudo_es || "") : ""
     };
+    state.dossieLangDescricao = {
+      pt: dossie ? String(dossie.descricao || "") : "",
+      en: dossie ? String(dossie.descricao_en || "") : "",
+      es: dossie ? String(dossie.descricao_es || "") : ""
+    };
 
     // Preencher campos com idioma PT (ativo por padrão)
     if (tituloEl) tituloEl.value = state.dossieLangTitulo.pt;
@@ -1704,7 +1713,10 @@
     setHidden(mediaSection, !dossie);
 
     var descricaoEl = document.getElementById("dossie-field-descricao");
-    if (descricaoEl) descricaoEl.value = dossie ? (dossie.descricao || "") : "";
+    if (descricaoEl) descricaoEl.value = state.dossieLangDescricao.pt;
+
+    var slugEl = document.getElementById("dossie-field-slug");
+    if (slugEl) slugEl.value = dossie ? (dossie.slug || "") : "";
     updateDossieThumbPreview(dossie ? dossie.thumb_path : null);
 
     if (dossie) {
@@ -1751,6 +1763,8 @@
     var currentLang = state.dossieLang || "pt";
     if (tituloEl) state.dossieLangTitulo[currentLang] = tituloEl.value;
     if (quillDossie) state.dossieLangContent[currentLang] = quillDossie.root.innerHTML;
+    var descricaoEl = document.getElementById("dossie-field-descricao");
+    if (descricaoEl) state.dossieLangDescricao[currentLang] = descricaoEl.value;
 
     var titulo = (state.dossieLangTitulo.pt || "").trim();
     if (!titulo) {
@@ -1758,16 +1772,29 @@
       return;
     }
 
+    // Slug: usa o campo se preenchido; senão gera do título PT (só na criação)
+    var slugEl = document.getElementById("dossie-field-slug");
+    var slugVal = slugEl ? slugEl.value.trim() : "";
+    if (!slugVal) {
+      slugVal = titulo.toLowerCase()
+        .normalize("NFD").replace(/[̀-ͯ]/g, "")
+        .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      if (slugEl) slugEl.value = slugVal;
+    }
+
     var payload = {
-      titulo:      state.dossieLangTitulo.pt || null,
-      conteudo:    state.dossieLangContent.pt || null,
-      titulo_en:   state.dossieLangTitulo.en || null,
-      conteudo_en: state.dossieLangContent.en || null,
-      titulo_es:   state.dossieLangTitulo.es || null,
-      conteudo_es: state.dossieLangContent.es || null,
-      projeto_id:  projetoEl && projetoEl.value ? projetoEl.value : null,
-      descricao:   document.getElementById("dossie-field-descricao") ? (document.getElementById("dossie-field-descricao").value.trim() || null) : null,
-      thumb_path:  state.editingDossie ? (state.editingDossie.thumb_path || null) : null
+      slug:         slugVal,
+      titulo:       state.dossieLangTitulo.pt || null,
+      conteudo:     state.dossieLangContent.pt || null,
+      descricao:    state.dossieLangDescricao.pt || null,
+      titulo_en:    state.dossieLangTitulo.en || null,
+      conteudo_en:  state.dossieLangContent.en || null,
+      descricao_en: state.dossieLangDescricao.en || null,
+      titulo_es:    state.dossieLangTitulo.es || null,
+      conteudo_es:  state.dossieLangContent.es || null,
+      descricao_es: state.dossieLangDescricao.es || null,
+      projeto_id:   projetoEl && projetoEl.value ? projetoEl.value : null,
+      thumb_path:   state.editingDossie ? (state.editingDossie.thumb_path || null) : null
     };
 
     if (feedback) feedback.textContent = "Salvando…";
