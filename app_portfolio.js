@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const parts = location.pathname.replace(/^\/dossie\//, "").replace(/\/$/, "").split("/");
       const slugPart = parts[0];
       const langPart = parts[1] || "pt";
-      const dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === slugPart);
+      const dossie = DOSSIES.find((d) => dossieSlug(d) === slugPart);
       if (dossie) {
         state.dossieLang = langPart;
         state.currentDossie = dossie;
@@ -260,7 +260,7 @@ async function initialize() {
   const _openLang = _params.get("lang") || "pt";
   if (_openSlug) {
     history.replaceState({}, "", "/");
-    const _dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === _openSlug);
+    const _dossie = DOSSIES.find((d) => dossieSlug(d) === _openSlug);
     if (_dossie) {
       state.dossieLang = _openLang;
       openPage("dossie");
@@ -272,7 +272,7 @@ async function initialize() {
     const _parts = location.pathname.replace(/^\/dossie\//, "").replace(/\/$/, "").split("/");
     const _slugPart = _parts[0];
     const _langPart = _parts[1] || "pt";
-    const _dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === _slugPart);
+    const _dossie = DOSSIES.find((d) => dossieSlug(d) === _slugPart);
     if (_dossie) {
       state.dossieLang = _langPart;
       state.currentDossie = _dossie;
@@ -602,7 +602,7 @@ async function loadDossies() {
   if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
   try {
     const response = await fetch(
-      new URL("/rest/v1/dossies?select=id,titulo,conteudo,titulo_en,conteudo_en,titulo_es,conteudo_es,media,projeto_id,descricao,thumb_path&order=criado_em.asc", BACKEND_CONFIG.url).toString(),
+      new URL("/rest/v1/dossies?select=id,slug,titulo,conteudo,titulo_en,conteudo_en,titulo_es,conteudo_es,media,projeto_id,descricao,descricao_en,descricao_es,thumb_path&order=criado_em.asc", BACKEND_CONFIG.url).toString(),
       { headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` } }
     );
     if (!response.ok) return;
@@ -692,13 +692,17 @@ function getDossieLocalized(dossie, field) {
   return dossie[field + "_" + lang] || dossie[field] || "";
 }
 
+function dossieSlug(d) {
+  return d.slug || slugifyDossie(d.titulo || d.titulo_en);
+}
+
 function slugifyDossie(text) {
   return (text || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
     .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
 function renderDossieDetail(dossie) {
-  history.pushState({ dossie: dossie.id }, "", "/dossie/" + slugifyDossie(dossie.titulo || dossie.titulo_en) + "/");
+  history.pushState({ dossie: dossie.id }, "", "/dossie/" + dossieSlug(dossie) + "/");
   const slides = (Array.isArray(dossie.media) ? dossie.media : [])
     .filter((m) => /\.(png|jpe?g|gif|webp|svg)$/i.test(m.storage_path || ""));
 
@@ -808,7 +812,7 @@ function renderDossieDetail(dossie) {
       elements.dossieView.querySelectorAll(".dv-lang-btn").forEach((b) => {
         b.classList.toggle("is-active", b.dataset.lang === newLang);
       });
-      const slugBase = "/dossie/" + slugifyDossie(state.currentDossie.titulo || state.currentDossie.titulo_en) + "/";
+      const slugBase = "/dossie/" + dossieSlug(state.currentDossie) + "/";
       history.pushState({ dossie: state.currentDossie.id, lang: newLang }, "", newLang === "pt" ? slugBase : slugBase + newLang + "/");
       // Atualizar bottom nav na troca de idioma
       const _bottomPrev = elements.dossieView.querySelector("[data-action='dossie-bottom-prev']");
