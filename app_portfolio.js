@@ -268,6 +268,19 @@ async function initialize() {
     } else {
       openPage("dossie");
     }
+  } else if (location.pathname.startsWith("/dossie/")) {
+    const _parts = location.pathname.replace(/^\/dossie\//, "").replace(/\/$/, "").split("/");
+    const _slugPart = _parts[0];
+    const _langPart = _parts[1] || "pt";
+    const _dossie = DOSSIES.find((d) => slugifyDossie(d.titulo || d.titulo_en) === _slugPart);
+    if (_dossie) {
+      state.dossieLang = _langPart;
+      state.currentDossie = _dossie;
+      openPage("dossie");
+      renderDossieDetail(_dossie);
+    } else {
+      openPage("dossie");
+    }
   }
 }
 
