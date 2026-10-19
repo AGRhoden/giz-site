@@ -594,11 +594,14 @@
                     </select>
                   </label>
 
-                  <!-- Abas de idioma -->
-                  <div class="dossie-lang-tabs" id="dossie-lang-tabs">
-                    <button class="dossie-lang-tab is-active" type="button" data-lang="pt">🇧🇷 PT</button>
-                    <button class="dossie-lang-tab" type="button" data-lang="en">🇺🇸 EN</button>
-                    <button class="dossie-lang-tab" type="button" data-lang="es">🇪🇸 ES</button>
+                  <!-- Abas de idioma + botão de tradução -->
+                  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div class="dossie-lang-tabs" id="dossie-lang-tabs">
+                      <button class="dossie-lang-tab is-active" type="button" data-lang="pt">🇧🇷 PT</button>
+                      <button class="dossie-lang-tab" type="button" data-lang="en">🇺🇸 EN</button>
+                      <button class="dossie-lang-tab" type="button" data-lang="es">🇪🇸 ES</button>
+                    </div>
+                    <button class="admin-secondary-button" type="button" id="dossie-translate-button" title="Traduz título, descrição e conteúdo do PT para EN e ES usando IA">✦ Traduzir EN / ES</button>
                   </div>
 
                   <div class="admin-field">
