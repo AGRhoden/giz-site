@@ -1585,6 +1585,66 @@
 
   // ── Dossiê CRUD ──────────────────────────────────────────────────────────────
 
+  var TRANSLATE_WORKER_URL = "https://giz-translate.antonio-g-rhoden.workers.dev";
+
+  async function translateDossieFields() {
+    var feedback = document.getElementById("dossie-form-feedback");
+    var translateBtn = document.getElementById("dossie-translate-button");
+
+    // Salvar estado atual do idioma ativo (PT)
+    var tituloEl = document.getElementById("dossie-field-titulo");
+    var descricaoEl = document.getElementById("dossie-field-descricao");
+    var currentLang = state.dossieLang || "pt";
+    if (tituloEl) state.dossieLangTitulo[currentLang] = tituloEl.value;
+    if (quillDossie) state.dossieLangContent[currentLang] = quillDossie.root.innerHTML;
+    if (descricaoEl) state.dossieLangDescricao[currentLang] = descricaoEl.value;
+
+    var ptTitulo   = state.dossieLangTitulo.pt   || "";
+    var ptDescricao = state.dossieLangDescricao.pt || "";
+    var ptConteudo  = state.dossieLangContent.pt   || "";
+
+    if (!ptTitulo && !ptConteudo) {
+      if (feedback) feedback.textContent = "Preencha pelo menos o título e o conteúdo em português antes de traduzir.";
+      return;
+    }
+
+    if (translateBtn) { translateBtn.disabled = true; translateBtn.textContent = "Traduzindo…"; }
+    if (feedback) feedback.textContent = "";
+
+    try {
+      var res = await fetch(TRANSLATE_WORKER_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ titulo: ptTitulo, descricao: ptDescricao, conteudo: ptConteudo })
+      });
+      if (!res.ok) throw new Error("Worker retornou " + res.status);
+      var t = await res.json();
+      if (t.error) throw new Error(t.error);
+
+      // Aplicar traduções ao estado
+      if (t.titulo_en)   state.dossieLangTitulo["en"]   = t.titulo_en;
+      if (t.titulo_es)   state.dossieLangTitulo["es"]   = t.titulo_es;
+      if (t.descricao_en) state.dossieLangDescricao["en"] = t.descricao_en;
+      if (t.descricao_es) state.dossieLangDescricao["es"] = t.descricao_es;
+      if (t.conteudo_en) state.dossieLangContent["en"]  = t.conteudo_en;
+      if (t.conteudo_es) state.dossieLangContent["es"]  = t.conteudo_es;
+
+      // Se estiver em PT, manter PT visível — senão atualizar campos visíveis
+      if (currentLang !== "pt") {
+        var lang = currentLang;
+        if (tituloEl)   tituloEl.value = state.dossieLangTitulo[lang] || "";
+        if (quillDossie) quillDossie.clipboard.dangerouslyPasteHTML(state.dossieLangContent[lang] || "");
+        if (descricaoEl) descricaoEl.value = state.dossieLangDescricao[lang] || "";
+      }
+
+      if (feedback) feedback.textContent = "✓ Tradução concluída — EN e ES atualizados. Verifique as abas antes de salvar.";
+    } catch (err) {
+      if (feedback) feedback.textContent = "Erro ao traduzir: " + err.message;
+    } finally {
+      if (translateBtn) { translateBtn.disabled = false; translateBtn.textContent = "Traduzir EN / ES"; }
+    }
+  }
+
   function switchDossieLanguage(lang) {
     var tituloEl = document.getElementById("dossie-field-titulo");
     var descricaoEl = document.getElementById("dossie-field-descricao");
@@ -1620,9 +1680,11 @@
     var uploadBtn = document.getElementById("dossie-media-upload-button");
     var langTabs = document.getElementById("dossie-lang-tabs");
 
+    var translateBtn = document.getElementById("dossie-translate-button");
     if (newBtn) newBtn.addEventListener("click", function() { openDossieForm(null); });
     if (cancelBtn) cancelBtn.addEventListener("click", closeDossieForm);
     if (saveBtn) saveBtn.addEventListener("click", saveDossieRecord);
+    if (translateBtn) translateBtn.addEventListener("click", translateDossieFields);
     if (langTabs) {
       langTabs.addEventListener("click", function(e) {
         var btn = e.target.closest(".dossie-lang-tab");
