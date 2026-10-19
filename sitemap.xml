@@ -1,8 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
   <url>
     <loc>https://www.giz.art.br/</loc>
-    <changefreq>weekly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
+
+  <url>
+    <loc>https://www.giz.art.br/dossie/forma-antes-do-impacto/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/forma-antes-do-impacto/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/forma-antes-do-impacto/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/forma-antes-do-impacto/es/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/dossie/forma-antes-do-impacto/en/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/forma-antes-do-impacto/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/forma-antes-do-impacto/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/forma-antes-do-impacto/es/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/dossie/forma-antes-do-impacto/es/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/forma-antes-do-impacto/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/forma-antes-do-impacto/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/forma-antes-do-impacto/es/"/>
+  </url>
+
+  <url>
+    <loc>https://www.giz.art.br/dossie/oculto-a-vista-de-todos/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/es/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/dossie/oculto-a-vista-de-todos/en/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/es/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/dossie/oculto-a-vista-de-todos/es/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/es/"/>
+  </url>
+
+  <url>
+    <loc>https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/es/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/en/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/es/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/es/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/es/"/>
+  </url>
+
+  <url>
+    <loc>https://www.giz.art.br/dossie/o-numero-exato/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/o-numero-exato/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/o-numero-exato/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/o-numero-exato/es/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/dossie/o-numero-exato/en/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/o-numero-exato/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/o-numero-exato/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/o-numero-exato/es/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/dossie/o-numero-exato/es/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/o-numero-exato/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/dossie/o-numero-exato/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/o-numero-exato/es/"/>
+  </url>
+
 </urlset>
