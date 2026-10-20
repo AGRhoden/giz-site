@@ -1587,64 +1587,73 @@
 
   var TRANSLATE_WORKER_URL = "https://giz-translate.antonio-g-rhoden.workers.dev";
 
-  async function translateDossieFields() {
+  // Traduz apenas os campos enviados (titulo, descricao e/ou conteudo).
+  // Chama o Worker somente com o necessário — evita cobranças desnecessárias.
+  async function translateDossieField(field) {
     var feedback = document.getElementById("dossie-form-feedback");
-    var translateBtn = document.getElementById("dossie-translate-button");
-
-    // Salvar estado atual do idioma ativo (PT)
+    var btnId = { titulo: "dossie-translate-titulo", descricao: "dossie-translate-descricao", conteudo: "dossie-translate-conteudo" }[field];
+    var btn = document.getElementById(btnId);
     var tituloEl = document.getElementById("dossie-field-titulo");
     var descricaoEl = document.getElementById("dossie-field-descricao");
+
+    // Salvar estado PT atual antes de ler
     var currentLang = state.dossieLang || "pt";
     if (tituloEl) state.dossieLangTitulo[currentLang] = tituloEl.value;
     if (quillDossie) state.dossieLangContent[currentLang] = quillDossie.root.innerHTML;
     if (descricaoEl) state.dossieLangDescricao[currentLang] = descricaoEl.value;
 
-    var ptTitulo   = state.dossieLangTitulo.pt   || "";
-    var ptDescricao = state.dossieLangDescricao.pt || "";
-    var ptConteudo  = state.dossieLangContent.pt   || "";
+    var payload = {};
+    if (field === "titulo")    payload.titulo    = state.dossieLangTitulo.pt || "";
+    if (field === "descricao") payload.descricao = state.dossieLangDescricao.pt || "";
+    if (field === "conteudo")  payload.conteudo  = state.dossieLangContent.pt || "";
 
-    if (!ptTitulo && !ptConteudo) {
-      if (feedback) feedback.textContent = "Preencha pelo menos o título e o conteúdo em português antes de traduzir.";
+    var ptVal = payload[field] || payload.titulo || payload.descricao || payload.conteudo || "";
+    if (!ptVal.trim()) {
+      if (feedback) feedback.textContent = "Preencha o campo em português antes de traduzir.";
       return;
     }
 
-    if (translateBtn) { translateBtn.disabled = true; translateBtn.textContent = "Traduzindo…"; }
+    if (btn) { btn.disabled = true; btn.textContent = "Traduzindo…"; }
     if (feedback) feedback.textContent = "";
 
     try {
       var res = await fetch(TRANSLATE_WORKER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ titulo: ptTitulo, descricao: ptDescricao, conteudo: ptConteudo })
+        body: JSON.stringify(payload)
       });
       var t = await res.json().catch(function() { return {}; });
-      if (!res.ok) {
-        var detail = t.detail || t.error || ("Worker retornou " + res.status);
-        throw new Error(detail);
-      }
+      if (!res.ok) throw new Error(t.detail || t.error || ("Worker retornou " + res.status));
       if (t.error) throw new Error(t.error);
 
-      // Aplicar traduções ao estado
-      if (t.titulo_en)   state.dossieLangTitulo["en"]   = t.titulo_en;
-      if (t.titulo_es)   state.dossieLangTitulo["es"]   = t.titulo_es;
-      if (t.descricao_en) state.dossieLangDescricao["en"] = t.descricao_en;
-      if (t.descricao_es) state.dossieLangDescricao["es"] = t.descricao_es;
-      if (t.conteudo_en) state.dossieLangContent["en"]  = t.conteudo_en;
-      if (t.conteudo_es) state.dossieLangContent["es"]  = t.conteudo_es;
-
-      // Se estiver em PT, manter PT visível — senão atualizar campos visíveis
-      if (currentLang !== "pt") {
-        var lang = currentLang;
-        if (tituloEl)   tituloEl.value = state.dossieLangTitulo[lang] || "";
-        if (quillDossie) quillDossie.clipboard.dangerouslyPasteHTML(state.dossieLangContent[lang] || "");
-        if (descricaoEl) descricaoEl.value = state.dossieLangDescricao[lang] || "";
+      if (field === "titulo") {
+        if (t.titulo_en) state.dossieLangTitulo["en"] = t.titulo_en;
+        if (t.titulo_es) state.dossieLangTitulo["es"] = t.titulo_es;
+      }
+      if (field === "descricao") {
+        if (t.descricao_en) state.dossieLangDescricao["en"] = t.descricao_en;
+        if (t.descricao_es) state.dossieLangDescricao["es"] = t.descricao_es;
+      }
+      if (field === "conteudo") {
+        if (t.conteudo_en) state.dossieLangContent["en"] = t.conteudo_en;
+        if (t.conteudo_es) state.dossieLangContent["es"] = t.conteudo_es;
       }
 
-      if (feedback) feedback.textContent = "✓ Tradução concluída — EN e ES atualizados. Verifique as abas antes de salvar.";
+      // Atualizar campos visíveis se não estiver em PT
+      if (currentLang !== "pt") {
+        var lang = currentLang;
+        if (tituloEl)    tituloEl.value = state.dossieLangTitulo[lang] || "";
+        if (descricaoEl) descricaoEl.value = state.dossieLangDescricao[lang] || "";
+        if (quillDossie) quillDossie.clipboard.dangerouslyPasteHTML(state.dossieLangContent[lang] || "");
+      }
+
+      var labels = { titulo: "Título", descricao: "Descrição", conteudo: "Conteúdo" };
+      if (feedback) feedback.textContent = "✓ " + labels[field] + " traduzido em EN e ES. Verifique as abas antes de salvar.";
     } catch (err) {
       if (feedback) feedback.textContent = "Erro ao traduzir: " + err.message;
     } finally {
-      if (translateBtn) { translateBtn.disabled = false; translateBtn.textContent = "Traduzir EN / ES"; }
+      var labels2 = { titulo: "✦ Traduzir título", descricao: "✦ Traduzir descrição", conteudo: "✦ Traduzir conteúdo" };
+      if (btn) { btn.disabled = false; btn.textContent = labels2[field]; }
     }
   }
 
@@ -1683,11 +1692,15 @@
     var uploadBtn = document.getElementById("dossie-media-upload-button");
     var langTabs = document.getElementById("dossie-lang-tabs");
 
-    var translateBtn = document.getElementById("dossie-translate-button");
     if (newBtn) newBtn.addEventListener("click", function() { openDossieForm(null); });
     if (cancelBtn) cancelBtn.addEventListener("click", closeDossieForm);
     if (saveBtn) saveBtn.addEventListener("click", saveDossieRecord);
-    if (translateBtn) translateBtn.addEventListener("click", translateDossieFields);
+    var tBtn = document.getElementById("dossie-translate-titulo");
+    var dBtn = document.getElementById("dossie-translate-descricao");
+    var cBtn = document.getElementById("dossie-translate-conteudo");
+    if (tBtn) tBtn.addEventListener("click", function() { translateDossieField("titulo"); });
+    if (dBtn) dBtn.addEventListener("click", function() { translateDossieField("descricao"); });
+    if (cBtn) cBtn.addEventListener("click", function() { translateDossieField("conteudo"); });
     if (langTabs) {
       langTabs.addEventListener("click", function(e) {
         var btn = e.target.closest(".dossie-lang-tab");
