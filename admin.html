@@ -601,7 +601,6 @@
                       <button class="dossie-lang-tab" type="button" data-lang="en">🇺🇸 EN</button>
                       <button class="dossie-lang-tab" type="button" data-lang="es">🇪🇸 ES</button>
                     </div>
-                    <button class="admin-secondary-button" type="button" id="dossie-translate-button" title="Traduz título, descrição e conteúdo do PT para EN e ES usando IA">✦ Traduzir EN / ES</button>
                   </div>
 
                   <div class="admin-field">
@@ -610,15 +609,24 @@
                     <span class="admin-copy" style="font-size:11px;color:var(--admin-muted);">Preenchido uma vez na criação. Alterar aqui quebra links existentes.</span>
                   </div>
                   <div class="admin-field">
-                    <span class="admin-label">Título</span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                      <span class="admin-label" style="margin:0;">Título</span>
+                      <button class="admin-secondary-button" type="button" id="dossie-translate-titulo" title="Traduz só o título para EN e ES" style="font-size:11px;padding:2px 8px;">✦ Traduzir título</button>
+                    </div>
                     <input class="admin-input" type="text" id="dossie-field-titulo" placeholder="Título do dossiê">
                   </div>
                   <div class="admin-field">
-                    <span class="admin-label">Descrição curta (card)</span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                      <span class="admin-label" style="margin:0;">Descrição curta (card)</span>
+                      <button class="admin-secondary-button" type="button" id="dossie-translate-descricao" title="Traduz só a descrição para EN e ES" style="font-size:11px;padding:2px 8px;">✦ Traduzir descrição</button>
+                    </div>
                     <textarea class="admin-input" id="dossie-field-descricao" rows="2" placeholder="Texto breve exibido no card do dossiê" style="resize:vertical;"></textarea>
                   </div>
                   <div class="admin-field">
-                    <span class="admin-label">Conteúdo</span>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                      <span class="admin-label" style="margin:0;">Conteúdo</span>
+                      <button class="admin-secondary-button" type="button" id="dossie-translate-conteudo" title="Traduz só o conteúdo para EN e ES" style="font-size:11px;padding:2px 8px;">✦ Traduzir conteúdo</button>
+                    </div>
                     <div id="dossie-quill-editor" style="min-height:220px;"></div>
                   </div>
                   <p class="admin-copy" style="font-size:12px;color:var(--admin-muted);margin:0;">O carrossel de mídia é compartilhado entre os idiomas.</p>
