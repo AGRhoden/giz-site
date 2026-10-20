@@ -1617,8 +1617,11 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ titulo: ptTitulo, descricao: ptDescricao, conteudo: ptConteudo })
       });
-      if (!res.ok) throw new Error("Worker retornou " + res.status);
-      var t = await res.json();
+      var t = await res.json().catch(function() { return {}; });
+      if (!res.ok) {
+        var detail = t.detail || t.error || ("Worker retornou " + res.status);
+        throw new Error(detail);
+      }
       if (t.error) throw new Error(t.error);
 
       // Aplicar traduções ao estado
