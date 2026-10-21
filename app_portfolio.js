@@ -61,6 +61,7 @@ const state = {
 };
 
 let DOSSIES = [];
+let CURRICULOS = [];
 let ALBUM_PHOTOS = [];
 let ALBUM_SECRET_CARD = null; // foto marcada como capa secreta
 let _swipeTouchStartX = 0;
@@ -250,7 +251,7 @@ async function initialize() {
   await loadSiteSettings();
   renderMenu();
   updateMenu();
-  await Promise.all([loadProjects(), loadTagLabels(), preloadStaticPanels(), loadDossies(), loadAlbumPhotos(), loadPageTexts()]);
+  await Promise.all([loadProjects(), loadTagLabels(), preloadStaticPanels(), loadDossies(), loadCurriculos(), loadAlbumPhotos(), loadPageTexts()]);
   if (state.loadFailed) return;
   applyFilters();
   renderGrid();
@@ -282,8 +283,15 @@ async function initialize() {
       openPage("dossie");
     }
   } else if (location.pathname.startsWith("/curriculo/")) {
-    history.replaceState({}, "", "/");
-    openPage("quem");
+    const _cParts = location.pathname.replace(/^\/curriculo\//, "").replace(/\/$/, "").split("/");
+    const _cSlug  = _cParts[0];
+    const _cLang  = _cParts[1] || "pt";
+    const _curric = CURRICULOS.find((c) => c.slug === _cSlug);
+    if (_curric) {
+      renderCurriculoPanel(_curric, _cLang);
+    } else {
+      openPage("quem");
+    }
   }
 }
 
@@ -617,6 +625,60 @@ async function loadDossies() {
   } catch (error) {
     console.error("Erro ao carregar dossiês:", error);
   }
+}
+
+async function loadCurriculos() {
+  if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) return;
+  try {
+    const response = await fetch(
+      new URL("/rest/v1/curriculos?select=slug,nome,titulo_profissional,titulo_profissional_en,titulo_profissional_es,descricao,descricao_en,descricao_es,conteudo,conteudo_en,conteudo_es,foto_url&order=nome.asc", BACKEND_CONFIG.url).toString(),
+      { headers: { apikey: BACKEND_CONFIG.anonKey, Authorization: `Bearer ${BACKEND_CONFIG.anonKey}` } }
+    );
+    if (!response.ok) return;
+    const rows = await response.json();
+    if (Array.isArray(rows)) CURRICULOS = rows;
+  } catch (e) {
+    console.error("Erro ao carregar currículos:", e);
+  }
+}
+
+function renderCurriculoPanel(curriculo, lang) {
+  const lx     = (lang && lang !== "pt") ? `_${lang}` : "";
+  const nome   = curriculo.nome || "";
+  const titulo = curriculo[`titulo_profissional${lx}`] || curriculo.titulo_profissional || "";
+  const desc   = curriculo[`descricao${lx}`] || curriculo.descricao || "";
+  const cont   = curriculo[`conteudo${lx}`]  || curriculo.conteudo  || "";
+  const foto   = curriculo.foto_url || "";
+  const slug   = curriculo.slug;
+  const ptUrl  = `/curriculo/${slug}/`;
+  const enUrl  = `/curriculo/${slug}/en/`;
+  const esUrl  = `/curriculo/${slug}/es/`;
+
+  const fotoHtml = foto
+    ? `<div style="margin-bottom:20px;text-align:center;"><img src="${escapeHtml(foto)}" alt="${escapeHtml(nome)}" style="width:120px;height:120px;object-fit:cover;border-radius:50%;"></div>`
+    : "";
+
+  const langBar = `<div style="margin-top:24px;display:flex;gap:6px;justify-content:center;">
+      <a href="${ptUrl}" class="${lang === "pt" ? "panel-button" : "panel-button panel-button-secondary"}" style="font-size:11px;padding:4px 10px;">PT</a>
+      <a href="${enUrl}" class="${lang === "en" ? "panel-button" : "panel-button panel-button-secondary"}" style="font-size:11px;padding:4px 10px;">EN</a>
+      <a href="${esUrl}" class="${lang === "es" ? "panel-button" : "panel-button panel-button-secondary"}" style="font-size:11px;padding:4px 10px;">ES</a>
+    </div>`;
+
+  const html = `<div class="panel-inner panel-inner-static panel-inner-static-shell" style="--page-accent:#7c5ea7;">
+    ${fotoHtml}
+    <h1 class="static-page-title">${escapeHtml(nome)}</h1>
+    <p class="static-page-subtitle">${escapeHtml(titulo)}</p>
+    ${desc ? `<p class="small-note static-page-body">${escapeHtml(desc)}</p>` : ""}
+    ${cont ? `<div class="small-note static-page-body" style="text-align:left;margin-top:12px;">${cont}</div>` : ""}
+    ${langBar}
+  </div>`;
+
+  setPanelMode("static");
+  elements.panel.innerHTML = html;
+  document.body.classList.remove("page-inicio");
+
+  // Mark no active menu item (curriculo is not a top-level page)
+  document.querySelectorAll("[data-page-id]").forEach((b) => b.classList.remove("ativo"));
 }
 
 async function loadAlbumPhotos() {
