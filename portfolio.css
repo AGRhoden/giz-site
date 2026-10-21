@@ -837,6 +837,16 @@ button {
   margin-top: 16px;
 }
 
+.static-page-link {
+  color: var(--color-accent, #7c5ea7);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.static-page-link:hover {
+  opacity: 0.75;
+}
+
 .static-page-actions {
   margin-top: 28px;
 }
