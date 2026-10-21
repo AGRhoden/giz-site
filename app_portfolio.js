@@ -1909,6 +1909,27 @@ function renderStaticPanel(page) {
   }
 
   normalizeSimpleStaticPanel(page.id);
+  if (page.id === "quem") syncCurriculoLinks();
+}
+
+function syncCurriculoLinks() {
+  const shell = elements.panel.querySelector(".panel-inner-static-shell");
+  if (!shell) return;
+  // Remove any existing hardcoded curriculo buttons (and their parent paragraph)
+  shell.querySelectorAll('[data-action="open-curriculo"]').forEach((btn) => {
+    const parent = btn.closest("p");
+    if (parent) parent.remove();
+    else btn.remove();
+  });
+  if (!CURRICULOS.length) return;
+  const p = document.createElement("p");
+  p.className = "small-note static-page-body";
+  p.style.marginTop = "1.4em";
+  const links = CURRICULOS.map((c) =>
+    `<button type="button" data-action="open-curriculo" data-curriculo-slug="${escapeAttribute(c.slug)}" class="static-page-link">${escapeHtml(c.nome)}</button>`
+  ).join(" &nbsp;·&nbsp; ");
+  p.innerHTML = `Conheça quem faz a GIZ:<br>${links}`;
+  shell.appendChild(p);
 }
 
 async function loadPanelMarkup(fileName) {
