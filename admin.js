@@ -466,7 +466,7 @@
     container.querySelectorAll("[data-dossie-edit]").forEach(function(btn) {
       btn.addEventListener("click", function() {
         var id = btn.getAttribute("data-dossie-edit");
-        var dossie = (state.dossies || []).find(function(d) { return d.id === id; });
+        var dossie = (state.dossies || []).find(function(d) { return String(d.id) === String(id); });
         if (dossie) openDossieForm(dossie);
       });
     });
@@ -4792,8 +4792,8 @@
     if (listContainer) listContainer.addEventListener("click", function(e) {
       var btn = e.target.closest("[data-curriculo-id]");
       if (!btn) return;
-      var id = parseInt(btn.dataset.curriculoId, 10);
-      var curriculo = (state.curriculoRows || []).find(function(c) { return c.id === id; });
+      var id = btn.dataset.curriculoId;
+      var curriculo = (state.curriculoRows || []).find(function(c) { return String(c.id) === String(id); });
       if (curriculo) openCurriculoForm(curriculo);
     });
 
