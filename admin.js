@@ -4972,12 +4972,9 @@
     };
 
     if (feedback) feedback.textContent = "Salvando…";
-    var isNew = !state.editingCurriculo;
-    var url    = isNew ? "/rest/v1/curriculos" : "/rest/v1/curriculos?id=eq." + state.editingCurriculo.id;
-    var method = isNew ? "POST" : "PATCH";
-    fetch(backend.url + url, {
-      method: method,
-      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "Content-Type": "application/json", "Prefer": "return=representation" },
+    fetch(backend.url + "/rest/v1/curriculos?on_conflict=slug", {
+      method: "POST",
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "Content-Type": "application/json", "Prefer": "return=representation,resolution=merge-duplicates" },
       body: JSON.stringify(payload)
     })
       .then(function(r) {
