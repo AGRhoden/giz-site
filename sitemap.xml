@@ -108,4 +108,61 @@
     <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/dossie/o-numero-exato/es/"/>
   </url>
 
+  <!-- Currículos -->
+  <url>
+    <loc>https://www.giz.art.br/curriculo/antonio/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antonio/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antonio/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antonio/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antonio/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/curriculo/antonio/en/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antonio/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antonio/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antonio/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antonio/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/curriculo/antonio/es/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antonio/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antonio/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antonio/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antonio/"/>
+  </url>
+
+  <url>
+    <loc>https://www.giz.art.br/curriculo/ines/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/ines/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/ines/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/ines/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/ines/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/curriculo/ines/en/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/ines/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/ines/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/ines/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/ines/"/>
+  </url>
+  <url>
+    <loc>https://www.giz.art.br/curriculo/ines/es/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/ines/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/ines/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/ines/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/ines/"/>
+  </url>
+
 </urlset>
