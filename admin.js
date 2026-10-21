@@ -450,10 +450,10 @@
       return;
     }
     var items = dossies.map(function(d) {
-      var project = (state.projects || []).find(function(p) { return p.id === d.projeto_id; });
-      var projectLabel = project
-        ? escapeHtml(project.title || project.slug)
-        : '<em style="color:var(--admin-muted);">Sem projeto vinculado</em>';
+      var linked = (state.projects || []).filter(function(p) { return String(p.dossie_id) === String(d.id); });
+      var projectLabel = linked.length
+        ? linked.map(function(p) { return escapeHtml(p.title || p.slug); }).join(', ')
+        : '<em style="color:var(--admin-muted);">Sem título vinculado</em>';
       return '<div class="admin-site-filter-card">' +
         '<div class="admin-site-filter-head">' +
           '<div><h4>' + escapeHtml(d.titulo) + '</h4>' +
@@ -644,7 +644,7 @@
   }
 
   function loadProjects() {
-    fetch(backend.url + "/rest/v1/projects?select=id,slug,title,subtitle,description,client,project_type,status,published_at,sort_year,is_featured,servico,destaque_label&order=title.asc", {
+    fetch(backend.url + "/rest/v1/projects?select=id,slug,title,subtitle,description,client,project_type,status,published_at,sort_year,is_featured,servico,destaque_label,dossie_id&order=title.asc", {
       headers: {
         apikey: backend.anonKey,
         Authorization: "Bearer " + state.token
@@ -1689,6 +1689,69 @@
     if (sel) sel.addEventListener("change", function() { loadPageText(this.value); });
   }
 
+  // ── Títulos vinculados ao dossiê (multi-projeto) ─────────────────────────
+
+  function renderDossieProjetoChips() {
+    var container = document.getElementById("dossie-projetos-chips");
+    if (!container) return;
+    var dossieId = state.editingDossie ? String(state.editingDossie.id) : null;
+    if (!dossieId) { container.innerHTML = ""; return; }
+    var linked = (state.projects || []).filter(function(p) { return String(p.dossie_id) === dossieId; });
+    if (!linked.length) { container.innerHTML = '<span style="font-size:12px;color:var(--admin-muted);">Nenhum título vinculado.</span>'; return; }
+    container.innerHTML = linked.map(function(p) {
+      return '<button class="admin-chip is-active" type="button" style="display:inline-flex;align-items:center;gap:4px;" data-unlink-projeto="' + escapeHtml(String(p.id)) + '">' +
+        escapeHtml(p.title || p.slug) +
+        '<span class="admin-chip-x" aria-label="Desvincular" title="Desvincular">×</span>' +
+        '</button>';
+    }).join('');
+    container.querySelectorAll('[data-unlink-projeto]').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        unlinkProjetoFromDossie(btn.dataset.unlinkProjeto);
+      });
+    });
+  }
+
+  function linkProjetoToDossie(projectId) {
+    var feedback = document.getElementById("dossie-form-feedback");
+    var dossieId = state.editingDossie ? state.editingDossie.id : null;
+    if (!dossieId) return;
+    if (feedback) feedback.textContent = "Vinculando…";
+    fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(projectId), {
+      method: "PATCH",
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ dossie_id: dossieId })
+    })
+    .then(function(r) {
+      if (!r.ok) return r.json().then(function(d) { throw new Error(d.message || "HTTP " + r.status); });
+      var proj = (state.projects || []).find(function(p) { return String(p.id) === String(projectId); });
+      if (proj) proj.dossie_id = dossieId;
+      renderDossieProjetoChips();
+      var searchEl = document.getElementById("dossie-projeto-search");
+      if (searchEl) { searchEl.value = ""; setHidden(document.getElementById("dossie-projeto-suggestions"), true); }
+      if (feedback) feedback.textContent = "✓ Título vinculado.";
+    })
+    .catch(function(err) { if (feedback) feedback.textContent = "Erro: " + err.message; });
+  }
+
+  function unlinkProjetoFromDossie(projectId) {
+    var feedback = document.getElementById("dossie-form-feedback");
+    if (feedback) feedback.textContent = "Desvinculando…";
+    fetch(backend.url + "/rest/v1/projects?id=eq." + encodeURIComponent(projectId), {
+      method: "PATCH",
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({ dossie_id: null })
+    })
+    .then(function(r) {
+      if (!r.ok) return r.json().then(function(d) { throw new Error(d.message || "HTTP " + r.status); });
+      var proj = (state.projects || []).find(function(p) { return String(p.id) === String(projectId); });
+      if (proj) proj.dossie_id = null;
+      renderDossieProjetoChips();
+      if (feedback) feedback.textContent = "✓ Título desvinculado.";
+    })
+    .catch(function(err) { if (feedback) feedback.textContent = "Erro: " + err.message; });
+  }
+
   function setupDossieWorkspace() {
     var newBtn = document.getElementById("dossie-new-button");
     var cancelBtn = document.getElementById("dossie-form-cancel");
@@ -1719,6 +1782,35 @@
         if (state.editingDossie) deleteDossieRecord(state.editingDossie.id);
       });
     }
+    // Busca de títulos para vincular
+    var searchEl = document.getElementById("dossie-projeto-search");
+    var suggestionsEl = document.getElementById("dossie-projeto-suggestions");
+    if (searchEl && suggestionsEl) {
+      searchEl.addEventListener("input", function() {
+        var q = searchEl.value.trim().toLowerCase();
+        if (!q) { setHidden(suggestionsEl, true); return; }
+        var dossieId = state.editingDossie ? String(state.editingDossie.id) : null;
+        var already = new Set((state.projects || []).filter(function(p) { return dossieId && String(p.dossie_id) === dossieId; }).map(function(p) { return String(p.id); }));
+        var matches = (state.projects || []).filter(function(p) {
+          return !already.has(String(p.id)) && (p.title || p.slug || "").toLowerCase().indexOf(q) !== -1;
+        }).slice(0, 10);
+        if (!matches.length) { setHidden(suggestionsEl, true); return; }
+        suggestionsEl.innerHTML = matches.map(function(p) {
+          var otherDossie = p.dossie_id && (!dossieId || String(p.dossie_id) !== dossieId);
+          var otherLabel = otherDossie ? '<div class="sug-meta">Já vinculado a outro dossiê</div>' : '';
+          return '<div class="dossie-projeto-suggestion' + (otherDossie ? ' is-other-dossie' : '') + '" data-link-projeto="' + escapeHtml(String(p.id)) + '">' +
+            escapeHtml(p.title || p.slug) + otherLabel + '</div>';
+        }).join('');
+        setHidden(suggestionsEl, false);
+        suggestionsEl.querySelectorAll('[data-link-projeto]').forEach(function(item) {
+          item.addEventListener('click', function() { linkProjetoToDossie(item.dataset.linkProjeto); });
+        });
+      });
+      document.addEventListener("click", function(e) {
+        if (!searchEl.contains(e.target) && !suggestionsEl.contains(e.target)) setHidden(suggestionsEl, true);
+      });
+    }
+
     if (uploadBtn) {
       uploadBtn.addEventListener("click", function() {
         if (!state.editingDossie) return;
@@ -1743,7 +1835,6 @@
 
     var heading = document.getElementById("dossie-form-heading");
     var tituloEl = document.getElementById("dossie-field-titulo");
-    var projetoEl = document.getElementById("dossie-field-projeto");
     var deleteBtn = document.getElementById("dossie-form-delete");
     var mediaSection = document.getElementById("dossie-media-section");
     var feedback = document.getElementById("dossie-form-feedback");
@@ -1751,16 +1842,13 @@
     if (heading) heading.textContent = dossie ? "Editar dossiê" : "Novo dossiê";
     if (feedback) feedback.textContent = "";
 
-    if (projetoEl) {
-      projetoEl.innerHTML = '<option value="">Nenhum</option>';
-      (state.projects || []).forEach(function(p) {
-        var opt = document.createElement("option");
-        opt.value = p.id;
-        opt.textContent = p.title || p.slug;
-        projetoEl.appendChild(opt);
-      });
-      projetoEl.value = dossie && dossie.projeto_id ? dossie.projeto_id : "";
-    }
+    renderDossieProjetoChips();
+    var newHint = document.getElementById("dossie-projetos-new-hint");
+    var searchWrap = document.getElementById("dossie-projetos-search-wrap");
+    if (newHint) newHint.style.display = dossie ? "none" : "";
+    if (searchWrap) searchWrap.style.display = dossie ? "" : "none";
+    var searchEl = document.getElementById("dossie-projeto-search");
+    if (searchEl) { searchEl.value = ""; setHidden(document.getElementById("dossie-projeto-suggestions"), true); }
 
     // Inicializar Quill lazy (container já visível agora)
     initQuillDossie();
@@ -1876,7 +1964,6 @@
       titulo_es:    state.dossieLangTitulo.es || null,
       conteudo_es:  state.dossieLangContent.es || null,
       descricao_es: state.dossieLangDescricao.es || null,
-      projeto_id:   projetoEl && projetoEl.value ? projetoEl.value : null,
       thumb_path:   state.editingDossie ? (state.editingDossie.thumb_path || null) : null
     };
 
@@ -1911,11 +1998,17 @@
         setHidden(deleteBtn, false);
         setHidden(mediaSection, false);
         renderDossieMediaList(saved.media || []);
+        // Reveal title-linking UI after first save
+        var newHint2 = document.getElementById("dossie-projetos-new-hint");
+        var searchWrap2 = document.getElementById("dossie-projetos-search-wrap");
+        if (newHint2) newHint2.style.display = "none";
+        if (searchWrap2) searchWrap2.style.display = "";
       } else {
         var idx = state.dossies.findIndex(function(d) { return d.id === saved.id; });
         if (idx >= 0) state.dossies[idx] = saved;
       }
       state.editingDossie = saved;
+      renderDossieProjetoChips();
       if (feedback) feedback.textContent = "Salvo.";
     })
     .catch(function(err) {
