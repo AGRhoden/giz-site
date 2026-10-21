@@ -35,6 +35,7 @@ const elements = {
   panel: document.getElementById("panel"),
   menuNav: document.getElementById("menu-nav"),
   dossieView: document.getElementById("dossie-view"),
+  curriculoView: document.getElementById("curriculo-view"),
   layout: document.querySelector(".layout")
 };
 
@@ -55,6 +56,8 @@ const state = {
   currentDossie: null,
   dossieLang: "pt",
   dossieListPage: 0,
+  currentCurriculo: null,
+  curriculoLang: "pt",
   albumDiscovered: false,
   albumMode: false,
   currentAlbumPhoto: null
@@ -88,6 +91,15 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } else if (!location.pathname.startsWith("/dossie/") && state.currentDossie !== null) {
       closeDossieView();
+    }
+    if (location.pathname.startsWith("/curriculo/")) {
+      const _cPop = location.pathname.replace(/^\/curriculo\//, "").replace(/\/$/, "").split("/");
+      const _cPopSlug = _cPop[0];
+      const _cPopLang = _cPop[1] || "pt";
+      const _cPopCurric = CURRICULOS.find((c) => c.slug === _cPopSlug);
+      if (_cPopCurric) { state.curriculoLang = _cPopLang; renderCurriculoDetail(_cPopCurric, _cPopLang); }
+    } else if (!location.pathname.startsWith("/curriculo/") && state.currentCurriculo !== null) {
+      closeCurriculoView();
     }
   });
 });
@@ -288,7 +300,9 @@ async function initialize() {
     const _cLang  = _cParts[1] || "pt";
     const _curric = CURRICULOS.find((c) => c.slug === _cSlug);
     if (_curric) {
-      renderCurriculoPanel(_curric, _cLang);
+      state.currentCurriculo = _curric;
+      state.curriculoLang = _cLang;
+      renderCurriculoDetail(_curric, _cLang);
     } else {
       openPage("quem");
     }
@@ -388,6 +402,13 @@ function handlePanelClick(event) {
 
   if (action === "dossie-back") {
     closeDossieView();
+    return;
+  }
+
+  if (action === "open-curriculo") {
+    const slug = actionElement.dataset.curriculoSlug;
+    const curriculo = CURRICULOS.find((c) => c.slug === slug);
+    if (curriculo) renderCurriculoDetail(curriculo, "pt");
     return;
   }
 
@@ -642,43 +663,93 @@ async function loadCurriculos() {
   }
 }
 
-function renderCurriculoPanel(curriculo, lang) {
-  const lx     = (lang && lang !== "pt") ? `_${lang}` : "";
+function renderCurriculoDetail(curriculo, lang) {
+  lang = lang || "pt";
+  state.currentCurriculo = curriculo;
+  state.curriculoLang = lang;
+  history.pushState({ curriculo: curriculo.slug }, "", "/curriculo/" + curriculo.slug + "/" + (lang !== "pt" ? lang + "/" : ""));
+
+  const lx     = lang !== "pt" ? "_" + lang : "";
   const nome   = curriculo.nome || "";
-  const titulo = curriculo[`titulo_profissional${lx}`] || curriculo.titulo_profissional || "";
-  const desc   = curriculo[`descricao${lx}`] || curriculo.descricao || "";
-  const cont   = curriculo[`conteudo${lx}`]  || curriculo.conteudo  || "";
+  const titulo = curriculo["titulo_profissional" + lx] || curriculo.titulo_profissional || "";
+  const desc   = curriculo["descricao" + lx] || curriculo.descricao || "";
+  const cont   = curriculo["conteudo" + lx]  || curriculo.conteudo  || "";
   const foto   = curriculo.foto_url || "";
-  const slug   = curriculo.slug;
-  const ptUrl  = `/curriculo/${slug}/`;
-  const enUrl  = `/curriculo/${slug}/en/`;
-  const esUrl  = `/curriculo/${slug}/es/`;
 
   const fotoHtml = foto
-    ? `<div style="margin-bottom:20px;text-align:center;"><img src="${escapeHtml(foto)}" alt="${escapeHtml(nome)}" style="width:120px;height:120px;object-fit:cover;border-radius:50%;"></div>`
+    ? `<div class="cv-foto"><img src="${escapeHtml(foto)}" alt="${escapeHtml(nome)}"></div>`
     : "";
 
-  const langBar = `<div style="margin-top:24px;display:flex;gap:6px;justify-content:center;">
-      <a href="${ptUrl}" class="${lang === "pt" ? "panel-button" : "panel-button panel-button-secondary"}" style="font-size:11px;padding:4px 10px;">PT</a>
-      <a href="${enUrl}" class="${lang === "en" ? "panel-button" : "panel-button panel-button-secondary"}" style="font-size:11px;padding:4px 10px;">EN</a>
-      <a href="${esUrl}" class="${lang === "es" ? "panel-button" : "panel-button panel-button-secondary"}" style="font-size:11px;padding:4px 10px;">ES</a>
-    </div>`;
+  const currentIndex = CURRICULOS.findIndex((c) => c.slug === curriculo.slug);
+  const prevCurriculo = currentIndex > 0 ? CURRICULOS[currentIndex - 1] : null;
+  const nextCurriculo = currentIndex < CURRICULOS.length - 1 ? CURRICULOS[currentIndex + 1] : null;
 
-  const html = `<div class="panel-inner panel-inner-static panel-inner-static-shell" style="--page-accent:#7c5ea7;">
-    ${fotoHtml}
-    <h1 class="static-page-title">${escapeHtml(nome)}</h1>
-    <p class="static-page-subtitle">${escapeHtml(titulo)}</p>
-    ${desc ? `<p class="small-note static-page-body">${escapeHtml(desc)}</p>` : ""}
-    ${cont ? `<div class="small-note static-page-body" style="text-align:left;margin-top:12px;">${cont}</div>` : ""}
-    ${langBar}
-  </div>`;
+  const prevBtn = prevCurriculo
+    ? `<button type="button" class="cv-sibling cv-sibling--prev" data-action="curriculo-prev">← ${escapeHtml(prevCurriculo.nome)}</button>`
+    : `<span class="cv-sibling cv-sibling--prev"></span>`;
+  const nextBtn = nextCurriculo
+    ? `<button type="button" class="cv-sibling cv-sibling--next" data-action="curriculo-next">${escapeHtml(nextCurriculo.nome)} →</button>`
+    : `<span class="cv-sibling cv-sibling--next"></span>`;
 
-  setPanelMode("static");
-  elements.panel.innerHTML = html;
-  document.body.classList.remove("page-inicio");
+  elements.curriculoView.innerHTML = `
+    <div class="cv-inner">
+      <header class="cv-header">
+        <div class="cv-menu-nav">${elements.menuNav.innerHTML}</div>
+      </header>
+      <div class="cv-body">
+        <div class="cv-nav-row">
+          ${prevBtn}
+          ${nextBtn}
+        </div>
+        <div class="cv-title-row">
+          <h1 class="cv-title">${escapeHtml(nome)}</h1>
+          <div class="cv-lang-switcher">
+            <button type="button" class="cv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt">P</button>
+            <button type="button" class="cv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en">EN</button>
+            <button type="button" class="cv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es">ES</button>
+          </div>
+        </div>
+        ${titulo ? `<p class="cv-subtitulo">${escapeHtml(titulo)}</p>` : ""}
+        ${fotoHtml}
+        ${desc ? `<p class="cv-desc">${escapeHtml(desc)}</p>` : ""}
+        ${cont ? `<div class="cv-conteudo">${cont}</div>` : ""}
+      </div>
+    </div>
+  `;
 
-  // Mark no active menu item (curriculo is not a top-level page)
-  document.querySelectorAll("[data-page-id]").forEach((b) => b.classList.remove("ativo"));
+  elements.curriculoView.querySelectorAll(".cv-menu-nav .menu-item").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      closeCurriculoView();
+      const pageId = btn.dataset.pageId;
+      if (pageId) openPage(pageId);
+    });
+  });
+
+  elements.curriculoView.querySelectorAll(".cv-lang-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const newLang = btn.dataset.lang;
+      if (!newLang || newLang === state.curriculoLang) return;
+      renderCurriculoDetail(curriculo, newLang);
+    });
+  });
+
+  elements.curriculoView.querySelector("[data-action='curriculo-prev']")?.addEventListener("click", () => {
+    if (prevCurriculo) { renderCurriculoDetail(prevCurriculo, state.curriculoLang); elements.curriculoView.scrollTop = 0; }
+  });
+  elements.curriculoView.querySelector("[data-action='curriculo-next']")?.addEventListener("click", () => {
+    if (nextCurriculo) { renderCurriculoDetail(nextCurriculo, state.curriculoLang); elements.curriculoView.scrollTop = 0; }
+  });
+
+  elements.curriculoView.hidden = false;
+  elements.layout.hidden = true;
+  document.body.classList.add("curriculo-view-open");
+}
+
+function closeCurriculoView() {
+  elements.curriculoView.hidden = true;
+  elements.layout.hidden = false;
+  document.body.classList.remove("curriculo-view-open");
+  state.currentCurriculo = null;
 }
 
 async function loadAlbumPhotos() {
