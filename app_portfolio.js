@@ -750,6 +750,7 @@ function closeCurriculoView() {
   elements.layout.hidden = false;
   document.body.classList.remove("curriculo-view-open");
   state.currentCurriculo = null;
+  if (location.pathname.startsWith("/curriculo/")) history.pushState({}, "", "/");
 }
 
 async function loadAlbumPhotos() {
