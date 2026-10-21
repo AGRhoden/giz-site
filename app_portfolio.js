@@ -281,6 +281,9 @@ async function initialize() {
     } else {
       openPage("dossie");
     }
+  } else if (location.pathname.startsWith("/curriculo/")) {
+    history.replaceState({}, "", "/");
+    openPage("quem");
   }
 }
 
