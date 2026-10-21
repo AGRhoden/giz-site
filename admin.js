@@ -4834,9 +4834,14 @@
     fetch(backend.url + "/rest/v1/curriculos?select=*&order=nome.asc", {
       headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        return r.json().then(function(data) {
+          if (!r.ok) throw new Error((data && data.message) || ("HTTP " + r.status));
+          return data;
+        });
+      })
       .then(function(rows) {
-        if (!rows || !rows.length) {
+        if (!Array.isArray(rows) || !rows.length) {
           container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Nenhum currículo cadastrado.</p>';
           return;
         }
@@ -4849,8 +4854,8 @@
             '</div>';
         }).join('');
       })
-      .catch(function() {
-        container.innerHTML = '<p style="color:var(--admin-danger);font-size:13px;">Erro ao carregar currículos.</p>';
+      .catch(function(err) {
+        container.innerHTML = '<p style="color:var(--admin-danger);font-size:13px;">Erro ao carregar currículos: ' + esc(String((err && err.message) || err)) + '</p>';
       });
   }
 
