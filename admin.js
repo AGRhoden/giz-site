@@ -4788,6 +4788,15 @@
     var uploadBtn  = document.getElementById("curriculo-foto-upload-button");
     var langTabs   = document.getElementById("curriculo-lang-tabs");
 
+    var listContainer = document.getElementById("curriculo-list-container");
+    if (listContainer) listContainer.addEventListener("click", function(e) {
+      var btn = e.target.closest("[data-curriculo-id]");
+      if (!btn) return;
+      var id = parseInt(btn.dataset.curriculoId, 10);
+      var curriculo = (state.curriculoRows || []).find(function(c) { return c.id === id; });
+      if (curriculo) openCurriculoForm(curriculo);
+    });
+
     if (newBtn)    newBtn.addEventListener("click", function() { openCurriculoForm(null); });
     if (cancelBtn) cancelBtn.addEventListener("click", closeCurriculoForm);
     if (saveBtn)   saveBtn.addEventListener("click", saveCurriculoRecord);
@@ -4822,13 +4831,16 @@
     var container = document.getElementById("curriculo-list-container");
     if (!container) return;
     container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Carregando…</p>';
-    supaFetch("/rest/v1/curriculos?select=*&order=nome.asc")
+    fetch(backend.url + "/rest/v1/curriculos?select=*&order=nome.asc", {
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
+    })
       .then(function(r) { return r.json(); })
       .then(function(rows) {
         if (!rows || !rows.length) {
           container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Nenhum currículo cadastrado.</p>';
           return;
         }
+        state.curriculoRows = rows;
         container.innerHTML = rows.map(function(c) {
           return '<div class="admin-list-item" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--admin-line);">' +
             '<div><strong>' + esc(c.nome) + '</strong> <span style="color:var(--admin-muted);font-size:12px;">/' + esc(c.slug) + '</span>' +
@@ -4836,13 +4848,6 @@
             '<button class="admin-secondary-button" type="button" data-curriculo-id="' + c.id + '">Editar</button>' +
             '</div>';
         }).join('');
-        container.addEventListener("click", function(e) {
-          var btn = e.target.closest("[data-curriculo-id]");
-          if (!btn) return;
-          var id = parseInt(btn.dataset.curriculoId, 10);
-          var curriculo = rows.find(function(c) { return c.id === id; });
-          if (curriculo) openCurriculoForm(curriculo);
-        });
       })
       .catch(function() {
         container.innerHTML = '<p style="color:var(--admin-danger);font-size:13px;">Erro ao carregar currículos.</p>';
@@ -4970,9 +4975,9 @@
     var isNew = !state.editingCurriculo;
     var url    = isNew ? "/rest/v1/curriculos" : "/rest/v1/curriculos?id=eq." + state.editingCurriculo.id;
     var method = isNew ? "POST" : "PATCH";
-    supaFetch(url, {
+    fetch(backend.url + url, {
       method: method,
-      headers: { "Content-Type": "application/json", "Prefer": "return=representation" },
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "Content-Type": "application/json", "Prefer": "return=representation" },
       body: JSON.stringify(payload)
     })
       .then(function(r) { return r.json(); })
@@ -4991,7 +4996,10 @@
   function deleteCurriculoRecord(id) {
     if (!confirm("Excluir este currículo permanentemente?")) return;
     var feedback = document.getElementById("curriculo-form-feedback");
-    supaFetch("/rest/v1/curriculos?id=eq." + id, { method: "DELETE" })
+    fetch(backend.url + "/rest/v1/curriculos?id=eq." + id, {
+      method: "DELETE",
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
+    })
       .then(function() { closeCurriculoForm(); })
       .catch(function() { if (feedback) feedback.textContent = "Erro ao excluir."; });
   }
@@ -5013,11 +5021,19 @@
     if (feedback) feedback.textContent = "Fazendo upload…";
     var ext  = file.name.split(".").pop().toLowerCase();
     var path = "curriculo/" + curriculoId + "/foto." + ext;
-    supaStorageUpload("project-media", path, file)
+    fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(path), {
+      method: "POST",
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "x-upsert": "true", "Content-Type": file.type || "application/octet-stream" },
+      body: file
+    })
+      .then(function(r) {
+        if (!r.ok) return r.json().then(function(p) { throw new Error(p.message || "upload falhou"); });
+        return backend.url + "/storage/v1/object/public/project-media/" + encodeStoragePath(path);
+      })
       .then(function(url) {
-        return supaFetch("/rest/v1/curriculos?id=eq." + curriculoId, {
+        return fetch(backend.url + "/rest/v1/curriculos?id=eq." + curriculoId, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "Content-Type": "application/json" },
           body: JSON.stringify({ foto_url: url })
         }).then(function() {
           if (state.editingCurriculo) state.editingCurriculo.foto_url = url;
