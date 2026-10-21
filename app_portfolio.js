@@ -1782,7 +1782,7 @@ async function loadPanelMarkup(fileName) {
     return PANEL_CACHE.get(fileName);
   }
 
-  const response = await fetch(`textos/${fileName}?v=20260331`);
+  const response = await fetch(`/textos/${fileName}?v=20260331`);
   if (!response.ok) {
     throw new Error(`Falha ao carregar textos/${fileName} (${response.status})`);
   }
