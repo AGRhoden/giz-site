@@ -311,6 +311,7 @@
 
   setupPageTextWorkspace();
   setupDossieWorkspace();
+  setupCurriculoWorkspace();
 
   boot();
 
@@ -429,6 +430,10 @@
     }
     if (state.workspace === "dossie") {
       renderDossieWorkspace();
+    }
+
+    if (state.workspace === "curriculo") {
+      renderCurriculoWorkspace();
     }
 
     if (state.workspace === "album") {
@@ -4770,6 +4775,313 @@
   }
 
   // ── Álbum secreto ────────────────────────────────────────────────────────
+
+  // ── Currículo CRUD ────────────────────────────────────────────────────────────
+
+  var quillCurriculo = null;
+
+  function setupCurriculoWorkspace() {
+    var newBtn     = document.getElementById("curriculo-new-button");
+    var cancelBtn  = document.getElementById("curriculo-form-cancel");
+    var saveBtn    = document.getElementById("curriculo-form-save");
+    var deleteBtn  = document.getElementById("curriculo-form-delete");
+    var uploadBtn  = document.getElementById("curriculo-foto-upload-button");
+    var langTabs   = document.getElementById("curriculo-lang-tabs");
+
+    if (newBtn)    newBtn.addEventListener("click", function() { openCurriculoForm(null); });
+    if (cancelBtn) cancelBtn.addEventListener("click", closeCurriculoForm);
+    if (saveBtn)   saveBtn.addEventListener("click", saveCurriculoRecord);
+    if (deleteBtn) deleteBtn.addEventListener("click", function() {
+      if (state.editingCurriculo) deleteCurriculoRecord(state.editingCurriculo.id);
+    });
+    if (uploadBtn) uploadBtn.addEventListener("click", function() {
+      if (!state.editingCurriculo) return;
+      var input = document.getElementById("curriculo-foto-input");
+      if (!input || !input.files.length) { setCurriculoFotoFeedback("Selecione uma foto."); return; }
+      uploadCurriculoFoto(state.editingCurriculo.id, input.files[0]);
+    });
+
+    var tBtn = document.getElementById("curriculo-translate-titulo");
+    var dBtn = document.getElementById("curriculo-translate-descricao");
+    var cBtn = document.getElementById("curriculo-translate-conteudo");
+    if (tBtn) tBtn.addEventListener("click", function() { translateCurriculoField("titulo"); });
+    if (dBtn) dBtn.addEventListener("click", function() { translateCurriculoField("descricao"); });
+    if (cBtn) cBtn.addEventListener("click", function() { translateCurriculoField("conteudo"); });
+
+    if (langTabs) {
+      langTabs.addEventListener("click", function(e) {
+        var btn = e.target.closest(".dossie-lang-tab");
+        if (!btn) return;
+        var lang = btn.dataset.lang;
+        if (lang && lang !== state.curriculoLang) switchCurriculoLanguage(lang);
+      });
+    }
+  }
+
+  function renderCurriculoWorkspace() {
+    var container = document.getElementById("curriculo-list-container");
+    if (!container) return;
+    container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Carregando…</p>';
+    supaFetch("/rest/v1/curriculos?select=*&order=nome.asc")
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        if (!rows || !rows.length) {
+          container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Nenhum currículo cadastrado.</p>';
+          return;
+        }
+        container.innerHTML = rows.map(function(c) {
+          return '<div class="admin-list-item" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--admin-line);">' +
+            '<div><strong>' + esc(c.nome) + '</strong> <span style="color:var(--admin-muted);font-size:12px;">/' + esc(c.slug) + '</span>' +
+            '<br><span style="font-size:12px;color:var(--admin-muted);">' + esc(c.titulo_profissional || '') + '</span></div>' +
+            '<button class="admin-secondary-button" type="button" data-curriculo-id="' + c.id + '">Editar</button>' +
+            '</div>';
+        }).join('');
+        container.addEventListener("click", function(e) {
+          var btn = e.target.closest("[data-curriculo-id]");
+          if (!btn) return;
+          var id = parseInt(btn.dataset.curriculoId, 10);
+          var curriculo = rows.find(function(c) { return c.id === id; });
+          if (curriculo) openCurriculoForm(curriculo);
+        });
+      })
+      .catch(function() {
+        container.innerHTML = '<p style="color:var(--admin-danger);font-size:13px;">Erro ao carregar currículos.</p>';
+      });
+  }
+
+  function openCurriculoForm(curriculo) {
+    state.editingCurriculo = curriculo || null;
+    state.curriculoLang = "pt";
+    state.curriculoLangTitulo    = { pt: "", en: "", es: "" };
+    state.curriculoLangDescricao = { pt: "", en: "", es: "" };
+    state.curriculoLangContent   = { pt: "", en: "", es: "" };
+
+    var listView  = document.getElementById("curriculo-list-view");
+    var formView  = document.getElementById("curriculo-form-view");
+    setHidden(listView, true);
+    setHidden(formView, false);
+
+    var heading     = document.getElementById("curriculo-form-heading");
+    var slugEl      = document.getElementById("curriculo-field-slug");
+    var nomeEl      = document.getElementById("curriculo-field-nome");
+    var tituloEl    = document.getElementById("curriculo-field-titulo");
+    var descricaoEl = document.getElementById("curriculo-field-descricao");
+    var deleteBtn   = document.getElementById("curriculo-form-delete");
+    var fotoSection = document.getElementById("curriculo-foto-section");
+    var feedback    = document.getElementById("curriculo-form-feedback");
+
+    if (heading)  heading.textContent = curriculo ? "Editar currículo" : "Novo currículo";
+    if (feedback) feedback.textContent = "";
+
+    if (!quillCurriculo) {
+      var container = document.getElementById("curriculo-quill-editor");
+      if (container) {
+        quillCurriculo = new Quill(container, {
+          theme: "snow",
+          modules: { toolbar: [[{ header: [2, 3, false] }], ["bold", "italic"], ["link"], [{ list: "ordered" }, { list: "bullet" }], ["clean"]] }
+        });
+      }
+    }
+
+    if (curriculo) {
+      state.curriculoLangTitulo    = { pt: curriculo.titulo_profissional    || "", en: curriculo.titulo_profissional_en || "", es: curriculo.titulo_profissional_es || "" };
+      state.curriculoLangDescricao = { pt: curriculo.descricao    || "", en: curriculo.descricao_en || "", es: curriculo.descricao_es || "" };
+      state.curriculoLangContent   = { pt: curriculo.conteudo     || "", en: curriculo.conteudo_en  || "", es: curriculo.conteudo_es  || "" };
+      if (slugEl)      slugEl.value      = curriculo.slug || "";
+      if (nomeEl)      nomeEl.value      = curriculo.nome || "";
+      if (tituloEl)    tituloEl.value    = state.curriculoLangTitulo.pt;
+      if (descricaoEl) descricaoEl.value = state.curriculoLangDescricao.pt;
+      if (quillCurriculo) quillCurriculo.clipboard.dangerouslyPasteHTML(state.curriculoLangContent.pt);
+      if (deleteBtn)   setHidden(deleteBtn, false);
+      if (fotoSection) setHidden(fotoSection, false);
+      renderCurriculoFoto(curriculo.foto_url);
+    } else {
+      if (slugEl)      slugEl.value  = "";
+      if (nomeEl)      nomeEl.value  = "";
+      if (tituloEl)    tituloEl.value = "";
+      if (descricaoEl) descricaoEl.value = "";
+      if (quillCurriculo) quillCurriculo.setText("");
+      if (deleteBtn)   setHidden(deleteBtn, true);
+      if (fotoSection) setHidden(fotoSection, true);
+    }
+
+    document.querySelectorAll("#curriculo-lang-tabs .dossie-lang-tab").forEach(function(b) {
+      b.classList.toggle("is-active", b.dataset.lang === "pt");
+    });
+  }
+
+  function closeCurriculoForm() {
+    setHidden(document.getElementById("curriculo-list-view"), false);
+    setHidden(document.getElementById("curriculo-form-view"), true);
+    state.editingCurriculo = null;
+    renderCurriculoWorkspace();
+  }
+
+  function switchCurriculoLanguage(lang) {
+    var tituloEl    = document.getElementById("curriculo-field-titulo");
+    var descricaoEl = document.getElementById("curriculo-field-descricao");
+    var cur = state.curriculoLang || "pt";
+    if (tituloEl)    state.curriculoLangTitulo[cur]    = tituloEl.value;
+    if (descricaoEl) state.curriculoLangDescricao[cur] = descricaoEl.value;
+    if (quillCurriculo) state.curriculoLangContent[cur] = quillCurriculo.root.innerHTML;
+    state.curriculoLang = lang;
+    if (tituloEl)    tituloEl.value    = state.curriculoLangTitulo[lang]    || "";
+    if (descricaoEl) descricaoEl.value = state.curriculoLangDescricao[lang] || "";
+    if (quillCurriculo) quillCurriculo.clipboard.dangerouslyPasteHTML(state.curriculoLangContent[lang] || "");
+    document.querySelectorAll("#curriculo-lang-tabs .dossie-lang-tab").forEach(function(b) {
+      b.classList.toggle("is-active", b.dataset.lang === lang);
+    });
+  }
+
+  function saveCurriculoRecord() {
+    var feedback    = document.getElementById("curriculo-form-feedback");
+    var slugEl      = document.getElementById("curriculo-field-slug");
+    var nomeEl      = document.getElementById("curriculo-field-nome");
+    var tituloEl    = document.getElementById("curriculo-field-titulo");
+    var descricaoEl = document.getElementById("curriculo-field-descricao");
+    var cur = state.curriculoLang || "pt";
+
+    if (tituloEl)    state.curriculoLangTitulo[cur]    = tituloEl.value;
+    if (descricaoEl) state.curriculoLangDescricao[cur] = descricaoEl.value;
+    if (quillCurriculo) state.curriculoLangContent[cur] = quillCurriculo.root.innerHTML;
+
+    var slug = slugEl ? slugEl.value.trim() : "";
+    var nome = nomeEl ? nomeEl.value.trim() : "";
+    if (!nome) { if (feedback) feedback.textContent = "Preencha o nome."; return; }
+    if (!slug) {
+      slug = nome.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+      if (slugEl) slugEl.value = slug;
+    }
+
+    var payload = {
+      slug: slug, nome: nome,
+      titulo_profissional:    state.curriculoLangTitulo.pt    || null,
+      titulo_profissional_en: state.curriculoLangTitulo.en    || null,
+      titulo_profissional_es: state.curriculoLangTitulo.es    || null,
+      descricao:    state.curriculoLangDescricao.pt || null,
+      descricao_en: state.curriculoLangDescricao.en || null,
+      descricao_es: state.curriculoLangDescricao.es || null,
+      conteudo:    state.curriculoLangContent.pt || null,
+      conteudo_en: state.curriculoLangContent.en || null,
+      conteudo_es: state.curriculoLangContent.es || null,
+    };
+
+    if (feedback) feedback.textContent = "Salvando…";
+    var isNew = !state.editingCurriculo;
+    var url    = isNew ? "/rest/v1/curriculos" : "/rest/v1/curriculos?id=eq." + state.editingCurriculo.id;
+    var method = isNew ? "POST" : "PATCH";
+    supaFetch(url, {
+      method: method,
+      headers: { "Content-Type": "application/json", "Prefer": "return=representation" },
+      body: JSON.stringify(payload)
+    })
+      .then(function(r) { return r.json(); })
+      .then(function(rows) {
+        var saved = Array.isArray(rows) ? rows[0] : rows;
+        if (saved && saved.id) {
+          state.editingCurriculo = saved;
+          var fotoSection = document.getElementById("curriculo-foto-section");
+          if (fotoSection) setHidden(fotoSection, false);
+        }
+        if (feedback) feedback.textContent = "✓ Salvo.";
+      })
+      .catch(function() { if (feedback) feedback.textContent = "Erro ao salvar."; });
+  }
+
+  function deleteCurriculoRecord(id) {
+    if (!confirm("Excluir este currículo permanentemente?")) return;
+    var feedback = document.getElementById("curriculo-form-feedback");
+    supaFetch("/rest/v1/curriculos?id=eq." + id, { method: "DELETE" })
+      .then(function() { closeCurriculoForm(); })
+      .catch(function() { if (feedback) feedback.textContent = "Erro ao excluir."; });
+  }
+
+  function renderCurriculoFoto(url) {
+    var img  = document.getElementById("curriculo-foto-img");
+    var none = document.getElementById("curriculo-foto-none");
+    if (url) {
+      if (img)  { img.src = url; img.style.display = "block"; }
+      if (none) none.style.display = "none";
+    } else {
+      if (img)  img.style.display = "none";
+      if (none) none.style.display = "";
+    }
+  }
+
+  function uploadCurriculoFoto(curriculoId, file) {
+    var feedback = document.getElementById("curriculo-foto-feedback");
+    if (feedback) feedback.textContent = "Fazendo upload…";
+    var ext  = file.name.split(".").pop().toLowerCase();
+    var path = "curriculo/" + curriculoId + "/foto." + ext;
+    supaStorageUpload("project-media", path, file)
+      .then(function(url) {
+        return supaFetch("/rest/v1/curriculos?id=eq." + curriculoId, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ foto_url: url })
+        }).then(function() {
+          if (state.editingCurriculo) state.editingCurriculo.foto_url = url;
+          renderCurriculoFoto(url);
+          if (feedback) feedback.textContent = "✓ Foto atualizada.";
+        });
+      })
+      .catch(function(err) { if (feedback) feedback.textContent = "Erro no upload: " + err.message; });
+  }
+
+  function setCurriculoFotoFeedback(msg) {
+    var el = document.getElementById("curriculo-foto-feedback");
+    if (el) el.textContent = msg;
+  }
+
+  async function translateCurriculoField(field) {
+    var feedback = document.getElementById("curriculo-form-feedback");
+    var btnId = { titulo: "curriculo-translate-titulo", descricao: "curriculo-translate-descricao", conteudo: "curriculo-translate-conteudo" }[field];
+    var btn = document.getElementById(btnId);
+    var tituloEl    = document.getElementById("curriculo-field-titulo");
+    var descricaoEl = document.getElementById("curriculo-field-descricao");
+    var cur = state.curriculoLang || "pt";
+
+    if (tituloEl)    state.curriculoLangTitulo[cur]    = tituloEl.value;
+    if (descricaoEl) state.curriculoLangDescricao[cur] = descricaoEl.value;
+    if (quillCurriculo) state.curriculoLangContent[cur] = quillCurriculo.root.innerHTML;
+
+    var payload = {};
+    if (field === "titulo")    payload.titulo    = state.curriculoLangTitulo.pt    || "";
+    if (field === "descricao") payload.descricao = state.curriculoLangDescricao.pt || "";
+    if (field === "conteudo")  payload.conteudo  = state.curriculoLangContent.pt   || "";
+
+    var ptVal = payload.titulo || payload.descricao || payload.conteudo || "";
+    if (!ptVal.trim()) { if (feedback) feedback.textContent = "Preencha o campo em português antes de traduzir."; return; }
+
+    if (btn) { btn.disabled = true; btn.textContent = "Traduzindo…"; }
+    if (feedback) feedback.textContent = "";
+
+    try {
+      var res = await fetch(TRANSLATE_WORKER_URL, {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
+      });
+      var t = await res.json().catch(function() { return {}; });
+      if (!res.ok) throw new Error(t.detail || t.error || ("Worker retornou " + res.status));
+      if (t.error) throw new Error(t.error);
+
+      if (field === "titulo")    { if (t.titulo_en) state.curriculoLangTitulo["en"] = t.titulo_en; if (t.titulo_es) state.curriculoLangTitulo["es"] = t.titulo_es; }
+      if (field === "descricao") { if (t.descricao_en) state.curriculoLangDescricao["en"] = t.descricao_en; if (t.descricao_es) state.curriculoLangDescricao["es"] = t.descricao_es; }
+      if (field === "conteudo")  { if (t.conteudo_en) state.curriculoLangContent["en"] = t.conteudo_en; if (t.conteudo_es) state.curriculoLangContent["es"] = t.conteudo_es; }
+
+      if (cur !== "pt") {
+        if (tituloEl)    tituloEl.value    = state.curriculoLangTitulo[cur]    || "";
+        if (descricaoEl) descricaoEl.value = state.curriculoLangDescricao[cur] || "";
+        if (quillCurriculo) quillCurriculo.clipboard.dangerouslyPasteHTML(state.curriculoLangContent[cur] || "");
+      }
+      var labels = { titulo: "Título", descricao: "Descrição", conteudo: "Conteúdo" };
+      if (feedback) feedback.textContent = "✓ " + labels[field] + " traduzido em EN e ES.";
+    } catch (err) {
+      if (feedback) feedback.textContent = "Erro ao traduzir: " + err.message;
+    } finally {
+      var labels2 = { titulo: "✦ Traduzir título", descricao: "✦ Traduzir descrição", conteudo: "✦ Traduzir conteúdo" };
+      if (btn) { btn.disabled = false; btn.textContent = labels2[field]; }
+    }
+  }
 
   var albumInitialized = false;
 
