@@ -1607,12 +1607,13 @@
     if (quillDossie) state.dossieLangContent[currentLang] = quillDossie.root.innerHTML;
     if (descricaoEl) state.dossieLangDescricao[currentLang] = descricaoEl.value;
 
-    var payload = {};
-    if (field === "titulo")    payload.titulo    = state.dossieLangTitulo.pt || "";
-    if (field === "descricao") payload.descricao = state.dossieLangDescricao.pt || "";
-    if (field === "conteudo")  payload.conteudo  = state.dossieLangContent.pt || "";
+    var payload = {
+      titulo:    state.dossieLangTitulo.pt    || "",
+      descricao: state.dossieLangDescricao.pt || "",
+      conteudo:  state.dossieLangContent.pt   || ""
+    };
 
-    var ptVal = payload[field] || payload.titulo || payload.descricao || payload.conteudo || "";
+    var ptVal = payload[field] || "";
     if (!ptVal.trim()) {
       if (feedback) feedback.textContent = "Preencha o campo em português antes de traduzir.";
       return;
@@ -5088,12 +5089,13 @@
     if (descricaoEl) state.curriculoLangDescricao[cur] = descricaoEl.value;
     if (quillCurriculo) state.curriculoLangContent[cur] = quillCurriculo.root.innerHTML;
 
-    var payload = {};
-    if (field === "titulo")    payload.titulo    = state.curriculoLangTitulo.pt    || "";
-    if (field === "descricao") payload.descricao = state.curriculoLangDescricao.pt || "";
-    if (field === "conteudo")  payload.conteudo  = state.curriculoLangContent.pt   || "";
+    var payload = {
+      titulo:    state.curriculoLangTitulo.pt    || "",
+      descricao: state.curriculoLangDescricao.pt || "",
+      conteudo:  state.curriculoLangContent.pt   || ""
+    };
 
-    var ptVal = payload.titulo || payload.descricao || payload.conteudo || "";
+    var ptVal = payload[field] || "";
     if (!ptVal.trim()) { if (feedback) feedback.textContent = "Preencha o campo em português antes de traduzir."; return; }
 
     if (btn) { btn.disabled = true; btn.textContent = "Traduzindo…"; }
