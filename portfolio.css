@@ -2264,7 +2264,6 @@ button.project-tag-link:hover {
   justify-content: center;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 200ms ease;
   z-index: 1;
 }
 
@@ -2275,6 +2274,12 @@ button.project-tag-link:hover {
 
 body.page-inicio .panel-logo {
   opacity: 1;
+  animation: panel-logo-fadein 200ms ease both;
+}
+
+@keyframes panel-logo-fadein {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 @media (max-width: 760px) {
