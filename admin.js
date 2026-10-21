@@ -4980,7 +4980,12 @@
       headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "Content-Type": "application/json", "Prefer": "return=representation" },
       body: JSON.stringify(payload)
     })
-      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        return r.json().then(function(data) {
+          if (!r.ok) throw new Error((data && data.message) || ("HTTP " + r.status));
+          return data;
+        });
+      })
       .then(function(rows) {
         var saved = Array.isArray(rows) ? rows[0] : rows;
         if (saved && saved.id) {
@@ -4990,7 +4995,7 @@
         }
         if (feedback) feedback.textContent = "✓ Salvo.";
       })
-      .catch(function() { if (feedback) feedback.textContent = "Erro ao salvar."; });
+      .catch(function(err) { if (feedback) feedback.textContent = "Erro ao salvar: " + ((err && err.message) || err); });
   }
 
   function deleteCurriculoRecord(id) {
