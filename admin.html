@@ -7,6 +7,22 @@
   <link rel="stylesheet" href="https://use.typekit.net/ccx3zve.css">
   <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
   <link rel="stylesheet" href="admin.css?v=20260331c">
+  <style>
+    .dossie-projetos-search-wrap { position: relative; }
+    .dossie-projeto-suggestions {
+      position: absolute; z-index: 200; top: calc(100% + 2px); left: 0; right: 0;
+      background: #fff; border: 1px solid var(--admin-line); border-radius: 6px;
+      box-shadow: 0 4px 16px rgba(0,0,0,.10); max-height: 220px; overflow-y: auto;
+    }
+    .dossie-projeto-suggestion {
+      padding: 8px 12px; cursor: pointer; font-size: 13px;
+      border-bottom: 1px solid var(--admin-line);
+    }
+    .dossie-projeto-suggestion:last-child { border-bottom: none; }
+    .dossie-projeto-suggestion:hover { background: var(--admin-accent-soft); }
+    .dossie-projeto-suggestion.is-other-dossie { opacity: .6; }
+    .dossie-projeto-suggestion .sug-meta { font-size: 11px; color: var(--admin-muted); margin-top: 1px; }
+  </style>
 </head>
 <body class="admin-page">
   <main class="admin-shell">
@@ -588,12 +604,15 @@
                   <button class="admin-secondary-button" type="button" id="dossie-form-cancel">← Voltar</button>
                 </div>
                 <div class="admin-inline-form">
-                  <label class="admin-field">
-                    <span class="admin-label">Projeto vinculado</span>
-                    <select class="admin-input" id="dossie-field-projeto">
-                      <option value="">Nenhum</option>
-                    </select>
-                  </label>
+                  <div class="admin-field" id="dossie-projetos-section">
+                    <span class="admin-label">Títulos vinculados</span>
+                    <div class="admin-chip-group" id="dossie-projetos-chips" style="min-height:28px;margin-bottom:6px;"></div>
+                    <div id="dossie-projetos-new-hint" style="font-size:12px;color:var(--admin-muted);display:none;">Salve o dossiê antes de vincular títulos.</div>
+                    <div class="dossie-projetos-search-wrap" id="dossie-projetos-search-wrap">
+                      <input type="text" class="admin-input" id="dossie-projeto-search" placeholder="Buscar título pelas iniciais…" autocomplete="off" style="font-size:13px;">
+                      <div class="dossie-projeto-suggestions" id="dossie-projeto-suggestions" hidden></div>
+                    </div>
+                  </div>
 
                   <!-- Abas de idioma + botão de tradução -->
                   <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -789,6 +808,6 @@
 
   <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
   <script src="backend.config.js?v=20260331c"></script>
-  <script src="admin.js?v=20261021i"></script>
+  <script src="admin.js?v=20261021j"></script>
 </body>
 </html>
