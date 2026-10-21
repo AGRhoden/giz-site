@@ -4835,8 +4835,8 @@
     }
     container.innerHTML = rows.map(function(c) {
       return '<div class="admin-list-item" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--admin-line);">' +
-        '<div><strong>' + esc(c.nome) + '</strong> <span style="color:var(--admin-muted);font-size:12px;">/' + esc(c.slug) + '</span>' +
-        '<br><span style="font-size:12px;color:var(--admin-muted);">' + esc(c.titulo_profissional || '') + '</span></div>' +
+        '<div><strong>' + escapeHtml(c.nome) + '</strong> <span style="color:var(--admin-muted);font-size:12px;">/' + escapeHtml(c.slug) + '</span>' +
+        '<br><span style="font-size:12px;color:var(--admin-muted);">' + escapeHtml(c.titulo_profissional || '') + '</span></div>' +
         '<button class="admin-secondary-button" type="button" data-curriculo-id="' + c.id + '">Editar</button>' +
         '</div>';
     }).join('');
@@ -4864,7 +4864,7 @@
         renderCurriculoList(container);
       })
       .catch(function(err) {
-        container.innerHTML = '<p style="color:var(--admin-danger);font-size:13px;">Erro ao carregar currículos: ' + esc(String((err && err.message) || err)) + '</p>';
+        container.innerHTML = '<p style="color:var(--admin-danger);font-size:13px;">Erro ao carregar currículos: ' + escapeHtml(String((err && err.message) || err)) + '</p>';
       });
   }
 
