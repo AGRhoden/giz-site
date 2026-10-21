@@ -50,6 +50,7 @@
         <button class="admin-workspace-tab is-active" type="button" data-workspace-tab="projects">Projetos</button>
         <button class="admin-workspace-tab" type="button" data-workspace-tab="content">Conteúdo do site</button>
         <button class="admin-workspace-tab" type="button" data-workspace-tab="dossie">Dossiê</button>
+        <button class="admin-workspace-tab" type="button" data-workspace-tab="curriculo">Currículos</button>
         <button class="admin-workspace-tab" type="button" data-workspace-tab="album">Álbum</button>
       </nav>
 
@@ -656,6 +657,105 @@
                       <span id="dossie-thumb-none" style="font-size:12px;color:var(--admin-muted);">Nenhuma thumb definida</span>
                     </div>
                   </div>
+                </div>
+              </div>
+            </div>
+
+          </section>
+        </section>
+      </section>
+
+      <!-- ── Currículos ───────────────────────────────────────────────────────── -->
+      <section class="admin-workspace" data-workspace-section="curriculo" hidden>
+        <section class="admin-layout admin-layout-single">
+          <section class="admin-content-main">
+
+            <!-- Currículo: lista -->
+            <div id="curriculo-list-view">
+              <details class="admin-card admin-collapsible" open>
+                <summary class="admin-collapsible-summary">
+                  <div>
+                    <h2>Currículos</h2>
+                    <p class="admin-copy">Perfis profissionais publicados em PT, EN e ES.</p>
+                  </div>
+                </summary>
+                <div class="admin-inline-actions" style="margin-bottom:16px;">
+                  <button class="admin-button" type="button" id="curriculo-new-button">+ Novo currículo</button>
+                </div>
+                <div id="curriculo-list-container"></div>
+              </details>
+            </div>
+
+            <!-- Currículo: formulário de edição/criação -->
+            <div id="curriculo-form-view" hidden>
+              <div class="admin-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                  <h2 id="curriculo-form-heading">Novo currículo</h2>
+                  <button class="admin-secondary-button" type="button" id="curriculo-form-cancel">← Voltar</button>
+                </div>
+                <div class="admin-inline-form">
+
+                  <!-- Abas de idioma -->
+                  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                    <div class="dossie-lang-tabs" id="curriculo-lang-tabs">
+                      <button class="dossie-lang-tab is-active" type="button" data-lang="pt">🇧🇷 PT</button>
+                      <button class="dossie-lang-tab" type="button" data-lang="en">🇺🇸 EN</button>
+                      <button class="dossie-lang-tab" type="button" data-lang="es">🇪🇸 ES</button>
+                    </div>
+                  </div>
+
+                  <div class="admin-field">
+                    <span class="admin-label">Slug (URL permanente)</span>
+                    <input class="admin-input" type="text" id="curriculo-field-slug" placeholder="ex: antonio">
+                    <span class="admin-copy" style="font-size:11px;color:var(--admin-muted);">Preenchido uma vez na criação. Alterar aqui quebra links existentes.</span>
+                  </div>
+                  <div class="admin-field">
+                    <span class="admin-label">Nome completo</span>
+                    <input class="admin-input" type="text" id="curriculo-field-nome" placeholder="Nome da pessoa">
+                  </div>
+                  <div class="admin-field">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                      <span class="admin-label" style="margin:0;">Título profissional</span>
+                      <button class="admin-secondary-button" type="button" id="curriculo-translate-titulo" title="Traduz só o título para EN e ES" style="font-size:11px;padding:2px 8px;">✦ Traduzir título</button>
+                    </div>
+                    <input class="admin-input" type="text" id="curriculo-field-titulo" placeholder="Ex: Designer editorial">
+                  </div>
+                  <div class="admin-field">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                      <span class="admin-label" style="margin:0;">Descrição curta</span>
+                      <button class="admin-secondary-button" type="button" id="curriculo-translate-descricao" title="Traduz só a descrição para EN e ES" style="font-size:11px;padding:2px 8px;">✦ Traduzir descrição</button>
+                    </div>
+                    <textarea class="admin-input" id="curriculo-field-descricao" rows="2" placeholder="Resumo exibido nos resultados de busca" style="resize:vertical;"></textarea>
+                  </div>
+                  <div class="admin-field">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+                      <span class="admin-label" style="margin:0;">Conteúdo do currículo</span>
+                      <button class="admin-secondary-button" type="button" id="curriculo-translate-conteudo" title="Traduz só o conteúdo para EN e ES" style="font-size:11px;padding:2px 8px;">✦ Traduzir conteúdo</button>
+                    </div>
+                    <div id="curriculo-quill-editor" style="min-height:220px;"></div>
+                  </div>
+                </div>
+                <div class="admin-inline-actions" style="margin-top:20px;">
+                  <button class="admin-button" type="button" id="curriculo-form-save">Salvar</button>
+                  <button class="admin-button admin-button-danger" type="button" id="curriculo-form-delete" hidden>Excluir currículo</button>
+                </div>
+                <p class="admin-feedback" id="curriculo-form-feedback" aria-live="polite"></p>
+
+                <!-- Foto de perfil (só aparece após salvar) -->
+                <div id="curriculo-foto-section" hidden style="margin-top:28px;border-top:1px solid var(--admin-line);padding-top:24px;">
+                  <h3 style="margin:0 0 14px;font-size:15px;font-weight:600;">Foto de perfil</h3>
+                  <div class="admin-media-upload">
+                    <label class="admin-field">
+                      <span class="admin-label">Enviar foto</span>
+                      <input type="file" id="curriculo-foto-input" accept="image/*" class="admin-input">
+                    </label>
+                    <button class="admin-button" type="button" id="curriculo-foto-upload-button">Fazer upload</button>
+                  </div>
+                  <div id="curriculo-foto-preview" style="margin-top:12px;">
+                    <img id="curriculo-foto-img" src="" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:4px;background:var(--admin-line);display:none;">
+                    <span id="curriculo-foto-none" style="font-size:12px;color:var(--admin-muted);">Nenhuma foto definida</span>
+                  </div>
+                  <p class="admin-feedback" id="curriculo-foto-feedback" aria-live="polite"></p>
                 </div>
               </div>
             </div>
