@@ -4897,7 +4897,12 @@
       if (container) {
         quillCurriculo = new Quill(container, {
           theme: "snow",
-          modules: { toolbar: [[{ header: [2, 3, false] }], ["bold", "italic"], ["link"], [{ list: "ordered" }, { list: "bullet" }], ["clean"]] }
+          modules: {
+            toolbar: {
+              container: QUILL_TOOLBAR,
+              handlers: { image: function() { makeDossieImageHandler(quillCurriculo, state.editingCurriculo ? state.editingCurriculo.id : "tmp")(); } }
+            }
+          }
         });
       }
     }
