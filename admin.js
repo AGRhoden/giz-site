@@ -4827,9 +4827,28 @@
     }
   }
 
+  function renderCurriculoList(container) {
+    var rows = state.curriculoRows || [];
+    if (!rows.length) {
+      container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Nenhum currículo cadastrado.</p>';
+      return;
+    }
+    container.innerHTML = rows.map(function(c) {
+      return '<div class="admin-list-item" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--admin-line);">' +
+        '<div><strong>' + esc(c.nome) + '</strong> <span style="color:var(--admin-muted);font-size:12px;">/' + esc(c.slug) + '</span>' +
+        '<br><span style="font-size:12px;color:var(--admin-muted);">' + esc(c.titulo_profissional || '') + '</span></div>' +
+        '<button class="admin-secondary-button" type="button" data-curriculo-id="' + c.id + '">Editar</button>' +
+        '</div>';
+    }).join('');
+  }
+
   function renderCurriculoWorkspace() {
     var container = document.getElementById("curriculo-list-container");
     if (!container) return;
+    if (state.curriculoRows && state.curriculoRows.length) {
+      renderCurriculoList(container);
+      return;
+    }
     container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Carregando…</p>';
     fetch(backend.url + "/rest/v1/curriculos?select=*&order=nome.asc", {
       headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
@@ -4841,18 +4860,8 @@
         });
       })
       .then(function(rows) {
-        if (!Array.isArray(rows) || !rows.length) {
-          container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Nenhum currículo cadastrado.</p>';
-          return;
-        }
-        state.curriculoRows = rows;
-        container.innerHTML = rows.map(function(c) {
-          return '<div class="admin-list-item" style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--admin-line);">' +
-            '<div><strong>' + esc(c.nome) + '</strong> <span style="color:var(--admin-muted);font-size:12px;">/' + esc(c.slug) + '</span>' +
-            '<br><span style="font-size:12px;color:var(--admin-muted);">' + esc(c.titulo_profissional || '') + '</span></div>' +
-            '<button class="admin-secondary-button" type="button" data-curriculo-id="' + c.id + '">Editar</button>' +
-            '</div>';
-        }).join('');
+        state.curriculoRows = Array.isArray(rows) ? rows : [];
+        renderCurriculoList(container);
       })
       .catch(function(err) {
         container.innerHTML = '<p style="color:var(--admin-danger);font-size:13px;">Erro ao carregar currículos: ' + esc(String((err && err.message) || err)) + '</p>';
@@ -4924,7 +4933,8 @@
     setHidden(document.getElementById("curriculo-list-view"), false);
     setHidden(document.getElementById("curriculo-form-view"), true);
     state.editingCurriculo = null;
-    renderCurriculoWorkspace();
+    var container = document.getElementById("curriculo-list-container");
+    if (container) renderCurriculoList(container);
   }
 
   function switchCurriculoLanguage(lang) {
@@ -4992,6 +5002,11 @@
         var saved = Array.isArray(rows) ? rows[0] : rows;
         if (saved && saved.id) {
           state.editingCurriculo = saved;
+          // Mantém state.curriculoRows em sincronia (sem re-fetch)
+          if (!state.curriculoRows) state.curriculoRows = [];
+          var idx = state.curriculoRows.findIndex(function(c) { return String(c.id) === String(saved.id); });
+          if (idx >= 0) state.curriculoRows[idx] = saved;
+          else state.curriculoRows.push(saved);
           var fotoSection = document.getElementById("curriculo-foto-section");
           if (fotoSection) setHidden(fotoSection, false);
         }
