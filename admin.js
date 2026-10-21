@@ -4851,7 +4851,7 @@
     }
     container.innerHTML = '<p style="color:var(--admin-muted);font-size:13px;">Carregando…</p>';
     fetch(backend.url + "/rest/v1/curriculos?select=*&order=nome.asc", {
-      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token }
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + backend.anonKey }
     })
       .then(function(r) {
         return r.json().then(function(data) {
