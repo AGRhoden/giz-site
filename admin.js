@@ -1629,7 +1629,7 @@
       });
       var raw = await res.text();
       var t;
-      try { t = JSON.parse(raw); } catch(e) { throw new Error("Resposta inválida do servidor de tradução."); }
+      try { t = JSON.parse(raw); } catch(e) { console.error("translate raw:", raw.slice(0, 500)); throw new Error("Resposta inválida (" + res.status + "): " + raw.slice(0, 120)); }
       if (!res.ok) throw new Error(t.detail || t.error || ("Worker retornou " + res.status));
       if (t.error) throw new Error(t.error);
 
@@ -5200,7 +5200,7 @@
       });
       var raw = await res.text();
       var t;
-      try { t = JSON.parse(raw); } catch(e) { throw new Error("Resposta inválida do servidor de tradução."); }
+      try { t = JSON.parse(raw); } catch(e) { console.error("translate raw:", raw.slice(0, 500)); throw new Error("Resposta inválida (" + res.status + "): " + raw.slice(0, 120)); }
       if (!res.ok) throw new Error(t.detail || t.error || ("Worker retornou " + res.status));
       if (t.error) throw new Error(t.error);
 
