@@ -1592,14 +1592,50 @@
 
   var TRANSLATE_WORKER_URL = "https://giz-translate.antonio-g-rhoden.workers.dev";
 
-  // Prepara HTML do Quill para tradução: converte " em atributos HTML para &quot;
-  // para que o JSON da resposta do Worker não quebre com aspas duplas não-escapadas.
-  // Todo o resto do HTML (formatação inline, estrutura, imagens) é preservado intacto.
-  function htmlSafeForTranslation(html) {
-    if (!html) return "";
-    return html.replace(/<[^>]+>/g, function(tag) {
-      return tag.replace(/="([^"]*)"/g, "=&quot;$1&quot;");
+  // Extrai nós de texto do HTML como lista numerada "[1] texto\n[2] texto..."
+  // Ignora imagens, br, elementos vazios. Preserva toda a estrutura HTML intocada.
+  function htmlExtractText(html) {
+    if (!html) return { html: html, numbered: "" };
+    var div = document.createElement("div");
+    div.innerHTML = html;
+    var nodes = [];
+    function walk(node) {
+      if (node.nodeType === 3) {
+        if (node.textContent.trim()) nodes.push(node);
+      } else if (node.nodeType === 1 && !/^(IMG|BR|SCRIPT|STYLE)$/.test(node.tagName)) {
+        for (var i = 0; i < node.childNodes.length; i++) walk(node.childNodes[i]);
+      }
+    }
+    walk(div);
+    var numbered = nodes.map(function(n, i) { return "[" + (i + 1) + "] " + n.textContent; }).join("\n");
+    return { html: html, numbered: numbered };
+  }
+
+  // Aplica lista numerada traduzida de volta ao HTML original, substituindo só os textos
+  function htmlApplyTranslation(originalHtml, translatedNumbered) {
+    if (!translatedNumbered) return originalHtml;
+    var div = document.createElement("div");
+    div.innerHTML = originalHtml;
+    var nodes = [];
+    function walk(node) {
+      if (node.nodeType === 3) {
+        if (node.textContent.trim()) nodes.push(node);
+      } else if (node.nodeType === 1 && !/^(IMG|BR|SCRIPT|STYLE)$/.test(node.tagName)) {
+        for (var i = 0; i < node.childNodes.length; i++) walk(node.childNodes[i]);
+      }
+    }
+    walk(div);
+    var map = {};
+    var re = /\[(\d+)\]\s*([\s\S]*?)(?=\n\[|\s*$)/g;
+    var m;
+    while ((m = re.exec(translatedNumbered)) !== null) {
+      map[parseInt(m[1], 10)] = m[2].trim();
+    }
+    nodes.forEach(function(node, i) {
+      var t = map[i + 1];
+      if (t !== undefined && t !== "") node.textContent = t;
     });
+    return div.innerHTML;
   }
 
   // Traduz apenas os campos enviados (titulo, descricao e/ou conteudo).
@@ -1620,7 +1656,11 @@
     // Worker requires "titulo" to always be present
     var payload = { titulo: state.dossieLangTitulo.pt || "" };
     if (field === "descricao") payload.descricao = state.dossieLangDescricao.pt || "";
-    if (field === "conteudo") payload.conteudo = htmlSafeForTranslation(state.dossieLangContent.pt || "");
+    var conteudoPtHtml = "";
+    if (field === "conteudo") {
+      conteudoPtHtml = state.dossieLangContent.pt || "";
+      payload.conteudo = htmlExtractText(conteudoPtHtml).numbered;
+    }
 
     var ptVal = (field === "titulo" ? payload.titulo : payload[field]) || "";
     if (!ptVal.trim()) {
@@ -1652,8 +1692,8 @@
         if (t.descricao_es) state.dossieLangDescricao["es"] = t.descricao_es;
       }
       if (field === "conteudo") {
-        if (t.conteudo_en) state.dossieLangContent["en"] = t.conteudo_en;
-        if (t.conteudo_es) state.dossieLangContent["es"] = t.conteudo_es;
+        if (t.conteudo_en) state.dossieLangContent["en"] = htmlApplyTranslation(conteudoPtHtml, t.conteudo_en);
+        if (t.conteudo_es) state.dossieLangContent["es"] = htmlApplyTranslation(conteudoPtHtml, t.conteudo_es);
       }
 
       // Atualizar campos visíveis se não estiver em PT
@@ -5196,7 +5236,11 @@
     // Worker requires "titulo" to always be present
     var payload = { titulo: state.curriculoLangTitulo.pt || "" };
     if (field === "descricao") payload.descricao = state.curriculoLangDescricao.pt || "";
-    if (field === "conteudo") payload.conteudo = htmlSafeForTranslation(state.curriculoLangContent.pt || "");
+    var conteudoPtHtml = "";
+    if (field === "conteudo") {
+      conteudoPtHtml = state.curriculoLangContent.pt || "";
+      payload.conteudo = htmlExtractText(conteudoPtHtml).numbered;
+    }
 
     var ptVal = (field === "titulo" ? payload.titulo : payload[field]) || "";
     if (!ptVal.trim()) { if (feedback) feedback.textContent = "Preencha o campo em português antes de traduzir."; return; }
@@ -5216,7 +5260,7 @@
 
       if (field === "titulo")    { if (t.titulo_en) state.curriculoLangTitulo["en"] = t.titulo_en; if (t.titulo_es) state.curriculoLangTitulo["es"] = t.titulo_es; }
       if (field === "descricao") { if (t.descricao_en) state.curriculoLangDescricao["en"] = t.descricao_en; if (t.descricao_es) state.curriculoLangDescricao["es"] = t.descricao_es; }
-      if (field === "conteudo")  { if (t.conteudo_en) state.curriculoLangContent["en"] = t.conteudo_en; if (t.conteudo_es) state.curriculoLangContent["es"] = t.conteudo_es; }
+      if (field === "conteudo")  { if (t.conteudo_en) state.curriculoLangContent["en"] = htmlApplyTranslation(conteudoPtHtml, t.conteudo_en); if (t.conteudo_es) state.curriculoLangContent["es"] = htmlApplyTranslation(conteudoPtHtml, t.conteudo_es); }
 
       if (cur !== "pt") {
         if (tituloEl)    tituloEl.value    = state.curriculoLangTitulo[cur]    || "";
