@@ -1592,42 +1592,14 @@
 
   var TRANSLATE_WORKER_URL = "https://giz-translate.antonio-g-rhoden.workers.dev";
 
-  // Prepara HTML do Quill para tradução:
-  // - substitui imagens e elementos não-textuais por placeholders [[IMG_0]], [[IMG_1]]...
-  // - converte parágrafos em \n\n
-  // - retorna { text, slots } onde slots são os fragmentos HTML originais
-  function htmlExtractForTranslation(html) {
-    if (!html) return { text: "", slots: [] };
-    var slots = [];
-    // Preserva <img ...> e <figure>...</figure> completos
-    var s = html.replace(/<figure[\s\S]*?<\/figure>|<img[^>]*>/gi, function(m) {
-      var idx = slots.length;
-      slots.push(m);
-      return "[[SLOT_" + idx + "]]";
+  // Prepara HTML do Quill para tradução: converte " em atributos HTML para &quot;
+  // para que o JSON da resposta do Worker não quebre com aspas duplas não-escapadas.
+  // Todo o resto do HTML (formatação inline, estrutura, imagens) é preservado intacto.
+  function htmlSafeForTranslation(html) {
+    if (!html) return "";
+    return html.replace(/<[^>]+>/g, function(tag) {
+      return tag.replace(/="([^"]*)"/g, "=&quot;$1&quot;");
     });
-    var text = s
-      .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<[^>]+>/g, "")
-      .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-      .replace(/&nbsp;/g, " ").replace(/&#39;/g, "'").replace(/&quot;/g, '"')
-      .trim();
-    return { text: text, slots: slots };
-  }
-
-  // Reconstrói HTML a partir do texto traduzido e dos slots originais
-  function htmlRestoreFromTranslation(text, slots) {
-    if (!text) return "";
-    var restored = text.replace(/\[\[SLOT_(\d+)\]\]/g, function(_, i) {
-      return slots[parseInt(i, 10)] || "";
-    });
-    return restored.split(/\n\n+/).map(function(p) {
-      p = p.trim();
-      if (!p) return "";
-      // Se já começa com tag HTML (slot de imagem sozinho), não envolve em <p>
-      if (/^<(img|figure)/i.test(p)) return p;
-      return "<p>" + p.replace(/\n/g, "<br>") + "</p>";
-    }).filter(Boolean).join("");
   }
 
   // Traduz apenas os campos enviados (titulo, descricao e/ou conteudo).
@@ -1648,12 +1620,7 @@
     // Worker requires "titulo" to always be present
     var payload = { titulo: state.dossieLangTitulo.pt || "" };
     if (field === "descricao") payload.descricao = state.dossieLangDescricao.pt || "";
-    var conteudoSlots = [];
-    if (field === "conteudo") {
-      var extracted = htmlExtractForTranslation(state.dossieLangContent.pt || "");
-      conteudoSlots = extracted.slots;
-      payload.conteudo = extracted.text;
-    }
+    if (field === "conteudo") payload.conteudo = htmlSafeForTranslation(state.dossieLangContent.pt || "");
 
     var ptVal = (field === "titulo" ? payload.titulo : payload[field]) || "";
     if (!ptVal.trim()) {
@@ -1685,8 +1652,8 @@
         if (t.descricao_es) state.dossieLangDescricao["es"] = t.descricao_es;
       }
       if (field === "conteudo") {
-        if (t.conteudo_en) state.dossieLangContent["en"] = htmlRestoreFromTranslation(t.conteudo_en, conteudoSlots);
-        if (t.conteudo_es) state.dossieLangContent["es"] = htmlRestoreFromTranslation(t.conteudo_es, conteudoSlots);
+        if (t.conteudo_en) state.dossieLangContent["en"] = t.conteudo_en;
+        if (t.conteudo_es) state.dossieLangContent["es"] = t.conteudo_es;
       }
 
       // Atualizar campos visíveis se não estiver em PT
@@ -5229,12 +5196,7 @@
     // Worker requires "titulo" to always be present
     var payload = { titulo: state.curriculoLangTitulo.pt || "" };
     if (field === "descricao") payload.descricao = state.curriculoLangDescricao.pt || "";
-    var conteudoSlots = [];
-    if (field === "conteudo") {
-      var extracted = htmlExtractForTranslation(state.curriculoLangContent.pt || "");
-      conteudoSlots = extracted.slots;
-      payload.conteudo = extracted.text;
-    }
+    if (field === "conteudo") payload.conteudo = htmlSafeForTranslation(state.curriculoLangContent.pt || "");
 
     var ptVal = (field === "titulo" ? payload.titulo : payload[field]) || "";
     if (!ptVal.trim()) { if (feedback) feedback.textContent = "Preencha o campo em português antes de traduzir."; return; }
@@ -5254,7 +5216,7 @@
 
       if (field === "titulo")    { if (t.titulo_en) state.curriculoLangTitulo["en"] = t.titulo_en; if (t.titulo_es) state.curriculoLangTitulo["es"] = t.titulo_es; }
       if (field === "descricao") { if (t.descricao_en) state.curriculoLangDescricao["en"] = t.descricao_en; if (t.descricao_es) state.curriculoLangDescricao["es"] = t.descricao_es; }
-      if (field === "conteudo")  { if (t.conteudo_en) state.curriculoLangContent["en"] = htmlRestoreFromTranslation(t.conteudo_en, conteudoSlots); if (t.conteudo_es) state.curriculoLangContent["es"] = htmlRestoreFromTranslation(t.conteudo_es, conteudoSlots); }
+      if (field === "conteudo")  { if (t.conteudo_en) state.curriculoLangContent["en"] = t.conteudo_en; if (t.conteudo_es) state.curriculoLangContent["es"] = t.conteudo_es; }
 
       if (cur !== "pt") {
         if (tituloEl)    tituloEl.value    = state.curriculoLangTitulo[cur]    || "";
