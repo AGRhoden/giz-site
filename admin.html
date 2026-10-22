@@ -22,6 +22,27 @@
     .dossie-projeto-suggestion:hover { background: var(--admin-accent-soft); }
     .dossie-projeto-suggestion.is-other-dossie { opacity: .6; }
     .dossie-projeto-suggestion .sug-meta { font-size: 11px; color: var(--admin-muted); margin-top: 1px; }
+
+    /* ── Quill: fontes e tamanhos customizados no editor ─────────────────────
+       Mesmas regras do portfolio.css, aplicadas dentro do .ql-editor
+       para que o editor renderize fielmente o que aparece no front. */
+    .ql-editor .ql-font-laca         { font-family: "laca", sans-serif; }
+    .ql-editor .ql-font-laca-light   { font-family: "laca", sans-serif; font-weight: 300; }
+    .ql-editor .ql-font-laca-variable{ font-family: "laca-variable", sans-serif; }
+    .ql-editor .ql-size-small { font-size: 0.8em; }
+    .ql-editor .ql-size-large { font-size: 1.3em; }
+    .ql-editor .ql-size-huge  { font-size: 1.8em; }
+
+    /* Toolbar: mostra o nome da fonte com a tipografia real no dropdown */
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="laca"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="laca"]::before
+      { content: "Laca"; font-family: "laca", sans-serif; }
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="laca-light"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="laca-light"]::before
+      { content: "Laca Light"; font-family: "laca", sans-serif; font-weight: 300; }
+    .ql-snow .ql-picker.ql-font .ql-picker-label[data-value="laca-variable"]::before,
+    .ql-snow .ql-picker.ql-font .ql-picker-item[data-value="laca-variable"]::before
+      { content: "Laca Variable"; font-family: "laca-variable", sans-serif; }
   </style>
 </head>
 <body class="admin-page">
