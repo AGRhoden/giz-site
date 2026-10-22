@@ -1627,7 +1627,9 @@
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
-      var t = await res.json().catch(function() { return {}; });
+      var raw = await res.text();
+      var t;
+      try { t = JSON.parse(raw); } catch(e) { throw new Error("Resposta inválida do servidor de tradução."); }
       if (!res.ok) throw new Error(t.detail || t.error || ("Worker retornou " + res.status));
       if (t.error) throw new Error(t.error);
 
@@ -5196,7 +5198,9 @@
       var res = await fetch(TRANSLATE_WORKER_URL, {
         method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
       });
-      var t = await res.json().catch(function() { return {}; });
+      var raw = await res.text();
+      var t;
+      try { t = JSON.parse(raw); } catch(e) { throw new Error("Resposta inválida do servidor de tradução."); }
       if (!res.ok) throw new Error(t.detail || t.error || ("Worker retornou " + res.status));
       if (t.error) throw new Error(t.error);
 
