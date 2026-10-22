@@ -1592,6 +1592,23 @@
 
   var TRANSLATE_WORKER_URL = "https://giz-translate.antonio-g-rhoden.workers.dev";
 
+  // Converte HTML do Quill em texto plano com parágrafos separados por \n\n
+  function htmlToPlainText(html) {
+    if (!html) return "";
+    return html
+      .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&#39;/g, "'").replace(/&quot;/g, '"')
+      .trim();
+  }
+
+  // Reconverte texto plano (parágrafos separados por \n\n) em HTML de <p>
+  function plainTextToHtml(text) {
+    if (!text) return "";
+    return text.split(/\n\n+/).map(function(p) { return "<p>" + p.replace(/\n/g, "<br>") + "</p>"; }).join("");
+  }
+
   // Traduz apenas os campos enviados (titulo, descricao e/ou conteudo).
   // Chama o Worker somente com o necessário — evita cobranças desnecessárias.
   async function translateDossieField(field) {
@@ -1610,7 +1627,7 @@
     // Worker requires "titulo" to always be present
     var payload = { titulo: state.dossieLangTitulo.pt || "" };
     if (field === "descricao") payload.descricao = state.dossieLangDescricao.pt || "";
-    if (field === "conteudo")  payload.conteudo  = state.dossieLangContent.pt   || "";
+    if (field === "conteudo")  payload.conteudo  = htmlToPlainText(state.dossieLangContent.pt || "");
 
     var ptVal = (field === "titulo" ? payload.titulo : payload[field]) || "";
     if (!ptVal.trim()) {
@@ -1629,7 +1646,7 @@
       });
       var raw = await res.text();
       var t;
-      try { t = JSON.parse(raw); } catch(e) { console.error("translate raw:", raw.slice(0, 500)); throw new Error("Resposta inválida (" + res.status + "): " + raw.slice(0, 120)); }
+      try { t = JSON.parse(raw); } catch(e) { throw new Error("Erro na resposta do servidor de tradução."); }
       if (!res.ok) throw new Error(t.detail || t.error || ("Worker retornou " + res.status));
       if (t.error) throw new Error(t.error);
 
@@ -1642,8 +1659,8 @@
         if (t.descricao_es) state.dossieLangDescricao["es"] = t.descricao_es;
       }
       if (field === "conteudo") {
-        if (t.conteudo_en) state.dossieLangContent["en"] = t.conteudo_en;
-        if (t.conteudo_es) state.dossieLangContent["es"] = t.conteudo_es;
+        if (t.conteudo_en) state.dossieLangContent["en"] = plainTextToHtml(t.conteudo_en);
+        if (t.conteudo_es) state.dossieLangContent["es"] = plainTextToHtml(t.conteudo_es);
       }
 
       // Atualizar campos visíveis se não estiver em PT
@@ -5186,7 +5203,7 @@
     // Worker requires "titulo" to always be present
     var payload = { titulo: state.curriculoLangTitulo.pt || "" };
     if (field === "descricao") payload.descricao = state.curriculoLangDescricao.pt || "";
-    if (field === "conteudo")  payload.conteudo  = state.curriculoLangContent.pt   || "";
+    if (field === "conteudo")  payload.conteudo  = htmlToPlainText(state.curriculoLangContent.pt || "");
 
     var ptVal = (field === "titulo" ? payload.titulo : payload[field]) || "";
     if (!ptVal.trim()) { if (feedback) feedback.textContent = "Preencha o campo em português antes de traduzir."; return; }
@@ -5200,13 +5217,13 @@
       });
       var raw = await res.text();
       var t;
-      try { t = JSON.parse(raw); } catch(e) { console.error("translate raw:", raw.slice(0, 500)); throw new Error("Resposta inválida (" + res.status + "): " + raw.slice(0, 120)); }
+      try { t = JSON.parse(raw); } catch(e) { throw new Error("Erro na resposta do servidor de tradução."); }
       if (!res.ok) throw new Error(t.detail || t.error || ("Worker retornou " + res.status));
       if (t.error) throw new Error(t.error);
 
       if (field === "titulo")    { if (t.titulo_en) state.curriculoLangTitulo["en"] = t.titulo_en; if (t.titulo_es) state.curriculoLangTitulo["es"] = t.titulo_es; }
       if (field === "descricao") { if (t.descricao_en) state.curriculoLangDescricao["en"] = t.descricao_en; if (t.descricao_es) state.curriculoLangDescricao["es"] = t.descricao_es; }
-      if (field === "conteudo")  { if (t.conteudo_en) state.curriculoLangContent["en"] = t.conteudo_en; if (t.conteudo_es) state.curriculoLangContent["es"] = t.conteudo_es; }
+      if (field === "conteudo")  { if (t.conteudo_en) state.curriculoLangContent["en"] = plainTextToHtml(t.conteudo_en); if (t.conteudo_es) state.curriculoLangContent["es"] = plainTextToHtml(t.conteudo_es); }
 
       if (cur !== "pt") {
         if (tituloEl)    tituloEl.value    = state.curriculoLangTitulo[cur]    || "";
