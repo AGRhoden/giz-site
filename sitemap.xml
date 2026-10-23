@@ -138,31 +138,32 @@
   </url>
 
   <url>
-    <loc>https://www.giz.art.br/curriculo/ines/</loc>
+    <loc>https://www.giz.art.br/curriculo/inescoimbra/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/ines/"/>
-    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/ines/en/"/>
-    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/ines/es/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/ines/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/inescoimbra/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/inescoimbra/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
   </url>
   <url>
-    <loc>https://www.giz.art.br/curriculo/ines/en/</loc>
+    <loc>https://www.giz.art.br/curriculo/inescoimbra/en/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/ines/"/>
-    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/ines/en/"/>
-    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/ines/es/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/ines/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/inescoimbra/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/inescoimbra/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
   </url>
   <url>
-    <loc>https://www.giz.art.br/curriculo/ines/es/</loc>
+    <loc>https://www.giz.art.br/curriculo/inescoimbra/es/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/ines/"/>
-    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/ines/en/"/>
-    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/ines/es/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/ines/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/inescoimbra/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/inescoimbra/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
   </url>
 
 </urlset>
+
