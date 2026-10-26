@@ -110,31 +110,31 @@
 
   <!-- Currículos -->
   <url>
-    <loc>https://www.giz.art.br/curriculo/antonio/</loc>
+    <loc>https://www.giz.art.br/curriculo/antoniorhoden/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antonio/"/>
-    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antonio/en/"/>
-    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antonio/es/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antonio/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antoniorhoden/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antoniorhoden/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
   </url>
   <url>
-    <loc>https://www.giz.art.br/curriculo/antonio/en/</loc>
+    <loc>https://www.giz.art.br/curriculo/antoniorhoden/en/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antonio/"/>
-    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antonio/en/"/>
-    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antonio/es/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antonio/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antoniorhoden/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antoniorhoden/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
   </url>
   <url>
-    <loc>https://www.giz.art.br/curriculo/antonio/es/</loc>
+    <loc>https://www.giz.art.br/curriculo/antoniorhoden/es/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antonio/"/>
-    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antonio/en/"/>
-    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antonio/es/"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antonio/"/>
+    <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
+    <xhtml:link rel="alternate" hreflang="en"    href="https://www.giz.art.br/curriculo/antoniorhoden/en/"/>
+    <xhtml:link rel="alternate" hreflang="es"    href="https://www.giz.art.br/curriculo/antoniorhoden/es/"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
   </url>
 
   <url>
@@ -166,4 +166,5 @@
   </url>
 
 </urlset>
+
 
