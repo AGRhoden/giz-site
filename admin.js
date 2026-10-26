@@ -100,6 +100,20 @@
   QuillFont.whitelist = ["laca", "laca-light", "laca-variable"];
   Quill.register(QuillFont, true);
 
+  // Links: abrir na mesma aba (sem target="_blank")
+  var QuillLink = Quill.import("formats/link");
+  QuillLink.sanitize = function(url) { return url; };
+  var QuillLinkBase = Quill.import("formats/link");
+  QuillLinkBase.prototype.domNode && (QuillLinkBase.prototype.domNode.removeAttribute && QuillLinkBase.prototype.domNode.removeAttribute("target"));
+  Quill.register(class extends QuillLinkBase {
+    static create(value) {
+      var node = super.create(value);
+      node.removeAttribute("target");
+      node.removeAttribute("rel");
+      return node;
+    }
+  }, true);
+
   var QUILL_TOOLBAR = [
     [{ "font": ["laca", "laca-light", "laca-variable", false] }],
     ["bold", "italic", "underline", "strike"],
@@ -5478,3 +5492,4 @@
   }
 
 })();
+
