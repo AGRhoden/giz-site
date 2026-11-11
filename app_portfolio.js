@@ -150,10 +150,25 @@ async function loadPageTexts() {
   }
 }
 
+const SITE_CONFIG_CACHE_KEY = "giz_site_config_v1";
+const SITE_CONFIG_TTL = 5 * 60 * 1000; // 5 minutos
+
 async function loadSiteSettings() {
   if (!BACKEND_CONFIG.enabled || !BACKEND_CONFIG.url || !BACKEND_CONFIG.anonKey) {
     return;
   }
+
+  try {
+    // Tenta usar cache do sessionStorage para evitar round-trip ao Supabase
+    const cached = sessionStorage.getItem(SITE_CONFIG_CACHE_KEY);
+    if (cached) {
+      const { ts, data } = JSON.parse(cached);
+      if (Date.now() - ts < SITE_CONFIG_TTL) {
+        applySiteSettings(data);
+        return;
+      }
+    }
+  } catch (_) {}
 
   try {
     const response = await fetch(new URL("/rest/v1/site_config?select=navigation,filters,labels,page_content&key=eq.main&limit=1", BACKEND_CONFIG.url).toString(), {
@@ -168,6 +183,9 @@ async function loadSiteSettings() {
     }
 
     const payload = await response.json();
+    try {
+      sessionStorage.setItem(SITE_CONFIG_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: payload?.[0] }));
+    } catch (_) {}
     applySiteSettings(payload?.[0]);
   } catch (error) {
     console.warn("Nao foi possivel carregar configuracoes do site:", error);
