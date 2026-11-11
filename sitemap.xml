@@ -4,12 +4,14 @@
 
   <url>
     <loc>https://www.giz.art.br/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://www.giz.art.br/dossie/identidade-permanente/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/identidade-permanente/"/>
@@ -18,6 +20,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/dossie/identidade-permanente/en/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/identidade-permanente/"/>
@@ -26,6 +29,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/dossie/identidade-permanente/es/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/identidade-permanente/"/>
@@ -35,6 +39,7 @@
 
   <url>
     <loc>https://www.giz.art.br/dossie/oculto-a-vista-de-todos/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/"/>
@@ -43,6 +48,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/dossie/oculto-a-vista-de-todos/en/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/"/>
@@ -51,6 +57,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/dossie/oculto-a-vista-de-todos/es/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/oculto-a-vista-de-todos/"/>
@@ -60,6 +67,7 @@
 
   <url>
     <loc>https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/"/>
@@ -68,6 +76,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/en/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/"/>
@@ -76,6 +85,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/es/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/vinte-anos-fazendo-livros-funcionarem/"/>
@@ -85,6 +95,7 @@
 
   <url>
     <loc>https://www.giz.art.br/dossie/o-numero-exato/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/o-numero-exato/"/>
@@ -93,6 +104,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/dossie/o-numero-exato/en/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/o-numero-exato/"/>
@@ -101,6 +113,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/dossie/o-numero-exato/es/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/dossie/o-numero-exato/"/>
@@ -111,6 +124,7 @@
   <!-- Currículos -->
   <url>
     <loc>https://www.giz.art.br/curriculo/antoniorhoden/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
@@ -120,6 +134,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/curriculo/antoniorhoden/en/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
@@ -129,6 +144,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/curriculo/antoniorhoden/es/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/antoniorhoden/"/>
@@ -139,6 +155,7 @@
 
   <url>
     <loc>https://www.giz.art.br/curriculo/inescoimbra/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
@@ -148,6 +165,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/curriculo/inescoimbra/en/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
@@ -157,6 +175,7 @@
   </url>
   <url>
     <loc>https://www.giz.art.br/curriculo/inescoimbra/es/</loc>
+    <lastmod>2026-11-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
     <xhtml:link rel="alternate" hreflang="pt-BR" href="https://www.giz.art.br/curriculo/inescoimbra/"/>
@@ -166,5 +185,3 @@
   </url>
 
 </urlset>
-
-
