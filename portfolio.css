@@ -723,6 +723,8 @@ button {
 .menu-item {
   cursor: pointer;
   user-select: none;
+  color: inherit;
+  text-decoration: none;
 }
 
 .menu-item.ativo {
