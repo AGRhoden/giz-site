@@ -870,6 +870,15 @@ function slugifyDossie(text) {
     .toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+// Imagens do corpo de um dossiê ficam abaixo da primeira tela: só carregam quando o leitor
+// chega perto delas (a primeira continua imediata). O HTML vem do banco, sem esses atributos.
+function lazyContentImages(html) {
+  let index = 0;
+  return String(html || "").replace(/<img\b(?![^>]*\bloading=)/gi, (tag) =>
+    index++ === 0 ? tag : tag + ' loading="lazy" decoding="async"'
+  );
+}
+
 function renderDossieDetail(dossie) {
   history.pushState({ dossie: dossie.id }, "", "/dossie/" + dossieSlug(dossie) + "/");
   const slides = (Array.isArray(dossie.media) ? dossie.media : [])
@@ -931,7 +940,7 @@ function renderDossieDetail(dossie) {
           </div>
         </div>
         ${carouselHtml}
-        ${conteudo ? `<div class="dv-conteudo">${conteudo}</div>` : ""}
+        ${conteudo ? `<div class="dv-conteudo">${lazyContentImages(conteudo)}</div>` : ""}
         <div class="dossie-bottom-nav">
           ${prevDossie
             ? `<button type="button" class="dossie-bottom-sibling dossie-bottom-sibling--prev" data-action="dossie-bottom-prev">← ${escapeHtml(getDossieLocalized(prevDossie, "titulo"))}</button>`
@@ -968,14 +977,14 @@ function renderDossieDetail(dossie) {
       const titleEl = elements.dossieView.querySelector(".dv-title");
       const conteudoEl = elements.dossieView.querySelector(".dv-conteudo");
       if (titleEl) titleEl.textContent = newTitulo;
-      if (conteudoEl) conteudoEl.innerHTML = newConteudo || "";
+      if (conteudoEl) conteudoEl.innerHTML = lazyContentImages(newConteudo);
       else if (newConteudo) {
         // Criar elemento se não existia (dossie sem conteúdo pt mas com conteúdo em outra língua)
         const body = elements.dossieView.querySelector(".dv-body");
         if (body) {
           const div = document.createElement("div");
           div.className = "dv-conteudo";
-          div.innerHTML = newConteudo;
+          div.innerHTML = lazyContentImages(newConteudo);
           body.appendChild(div);
         }
       }
