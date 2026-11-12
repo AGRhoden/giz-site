@@ -1,6 +1,9 @@
 (function () {
   var backend = window.GIZ_BACKEND_CONFIG || {};
   var AUTH_STORAGE_KEY = "giz_admin_access_token";
+  // Imagens enviadas ao Storage saem com cache de 1 dia (sem isto o Supabase grava "no-cache"
+  // e o navegador revalida cada imagem a cada visita).
+  var MEDIA_CACHE_CONTROL = "max-age=86400";
 
   var authScreen = document.getElementById("auth-screen");
   var adminApp = document.getElementById("admin-app");
@@ -153,7 +156,7 @@
           quill.insertEmbed(range.index, "image", e.target.result); // placeholder
           fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(path), {
             method: "POST",
-            headers: { "Authorization": "Bearer " + state.token, "Content-Type": file.type, "x-upsert": "true" },
+            headers: { "Authorization": "Bearer " + state.token, "Content-Type": file.type, "x-upsert": "true", "cache-control": MEDIA_CACHE_CONTROL },
             body: file
           }).then(function(r) {
             if (!r.ok) throw new Error("upload falhou");
@@ -2132,6 +2135,7 @@
           apikey: backend.anonKey,
           Authorization: "Bearer " + state.token,
           "x-upsert": "true",
+          "cache-control": MEDIA_CACHE_CONTROL,
           "Content-Type": file.type || "application/octet-stream"
         },
         body: file
@@ -4108,6 +4112,7 @@
         apikey: backend.anonKey,
         Authorization: "Bearer " + state.token,
         "x-upsert": "false",
+        "cache-control": MEDIA_CACHE_CONTROL,
         "Content-Type": file.type || "application/octet-stream"
       },
       body: file
@@ -4205,6 +4210,7 @@
         apikey: backend.anonKey,
         Authorization: "Bearer " + state.token,
         "x-upsert": "true",
+        "cache-control": MEDIA_CACHE_CONTROL,
         "Content-Type": file.type || "application/octet-stream"
       },
       body: file
@@ -5213,7 +5219,7 @@
     var path = "curriculo/" + curriculoId + "/foto." + ext;
     fetch(backend.url + "/storage/v1/object/project-media/" + encodeStoragePath(path), {
       method: "POST",
-      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "x-upsert": "true", "Content-Type": file.type || "application/octet-stream" },
+      headers: { apikey: backend.anonKey, Authorization: "Bearer " + state.token, "x-upsert": "true", "cache-control": MEDIA_CACHE_CONTROL, "Content-Type": file.type || "application/octet-stream" },
       body: file
     })
       .then(function(r) {
@@ -5346,6 +5352,7 @@
           apikey: backend.anonKey,
           Authorization: "Bearer " + state.token,
           "x-upsert": "true",
+          "cache-control": MEDIA_CACHE_CONTROL,
           "Content-Type": file.type || "application/octet-stream"
         },
         body: file
