@@ -136,7 +136,7 @@
     quillDesc = new Quill("#field-description-quill", { modules: { toolbar: QUILL_TOOLBAR }, theme: "snow" });
     return quillDesc;
   }
-  function makeDossieImageHandler(quill, dossieId) {
+  function makeDossieImageHandler(quill, dossieId, feedbackId) {
     return function() {
       var input = document.createElement("input");
       input.setAttribute("type", "file");
@@ -168,7 +168,10 @@
             });
             quill.setContents({ ops: ops });
           }).catch(function(err) {
-            setSaveState("Erro ao fazer upload da imagem: " + err.message);
+            var feedback = document.getElementById(feedbackId);
+            if (!feedback) return;
+            feedback.textContent = "Erro ao fazer upload da imagem: " + err.message;
+            feedback.scrollIntoView({ block: "nearest" });
           });
         };
         reader.readAsDataURL(file);
@@ -183,7 +186,7 @@
       modules: {
         toolbar: {
           container: QUILL_TOOLBAR,
-          handlers: { image: function() { makeDossieImageHandler(quillDossie, dossieId)(); } }
+          handlers: { image: function() { makeDossieImageHandler(quillDossie, dossieId, "dossie-form-feedback")(); } }
         }
       },
       theme: "snow"
@@ -3092,9 +3095,10 @@
     var id = label.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
     var filters = state.siteConfig.filters || [];
     if (filters.some(function(f) { return f.id === id; })) {
-      setSaveState("Já existe uma trilha com esse nome.");
+      setSiteConfigFeedback("Já existe uma trilha com esse nome.", true);
       return;
     }
+    setSiteConfigFeedback("");
     filters.push({ id: id, label: label, summary: "", description: "" });
     state.siteConfig.filters = filters;
     filterAddForm.hidden = true;
@@ -5059,7 +5063,7 @@
           modules: {
             toolbar: {
               container: QUILL_TOOLBAR,
-              handlers: { image: function() { makeDossieImageHandler(quillCurriculo, state.editingCurriculo ? state.editingCurriculo.id : "tmp")(); } }
+              handlers: { image: function() { makeDossieImageHandler(quillCurriculo, state.editingCurriculo ? state.editingCurriculo.id : "tmp", "curriculo-form-feedback")(); } }
             }
           }
         });
