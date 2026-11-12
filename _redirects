@@ -19,8 +19,5 @@
 /dossie/twenty-years-making-books-work/es /dossie/vinte-anos-fazendo-livros-funcionarem/es/ 301
 /dossie/twenty-years-making-books-work/es/ /dossie/vinte-anos-fazendo-livros-funcionarem/es/ 301
 
-# Dossiês e currículos criados no admin só ganham página estática depois de gerada;
-# até lá o app abre o item pelo endereço. Todo o resto do site tem arquivo próprio,
-# e o que não existe cai no 404.html (status 404).
-/dossie/* /index.html 200
-/curriculo/* /index.html 200
+# Endereço inexistente → 404.html (status 404). Exceção: /dossie/* e /curriculo/*,
+# tratados por functions/ (itens novos do admin ainda sem página estática).
