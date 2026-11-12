@@ -11,7 +11,7 @@ ARQUIVOS=(
   index.html admin.html admin.js admin.css
   app_portfolio.js portfolio.css portfolio.config.js backend.config.js
   favicon.ico favicon-192.png apple-touch-icon.png
-  _headers _redirects robots.txt sitemap.xml
+  _headers _redirects robots.txt sitemap.xml 404.html
 )
 PASTAS=(assets dossie curriculo portfolio quem contato auth)
 
@@ -35,7 +35,7 @@ cp textos/*.html dist/textos/
 find dist -name '.DS_Store' -delete
 
 # Conferência: o que precisa estar e o que não pode estar
-for f in index.html admin.html app_portfolio.js portfolio.css _headers _redirects sitemap.xml \
+for f in index.html 404.html admin.html app_portfolio.js portfolio.css _headers _redirects sitemap.xml \
          textos/inicio.html assets/giz-logo.png assets/og-image.png auth/confirm/index.html; do
   [ -f "dist/$f" ] || { echo "ERRO: dist/$f não foi gerado" >&2; exit 1; }
 done
