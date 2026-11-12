@@ -324,6 +324,12 @@ async function initialize() {
     } else {
       openPage("quem");
     }
+  } else if (location.pathname.startsWith("/quem")) {
+    openPage("quem");
+  } else if (location.pathname.startsWith("/contato")) {
+    openPage("contato");
+  } else if (location.pathname.startsWith("/portfolio")) {
+    openPage(CONFIG.portfolioPageId || "portfolio");
   }
 }
 
@@ -372,7 +378,7 @@ function bindEvents() {
 function handleMenuClick(event) {
   const button = event.target.closest("[data-page-id]");
   if (!button) return;
-
+  event.preventDefault();
   openPage(button.dataset.pageId);
 }
 
@@ -736,7 +742,8 @@ function renderCurriculoDetail(curriculo, lang) {
   `;
 
   elements.curriculoView.querySelectorAll(".cv-menu-nav .menu-item").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
       closeCurriculoView();
       const pageId = btn.dataset.pageId;
       if (pageId) openPage(pageId);
@@ -935,7 +942,8 @@ function renderDossieDetail(dossie) {
 
   // Copy active menu state into dossie-view header
   elements.dossieView.querySelectorAll(".dv-menu-nav .menu-item").forEach((btn) => {
-    btn.addEventListener("click", () => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
       closeDossieView();
       const pageId = btn.dataset.pageId;
       if (pageId) openPage(pageId);
@@ -1224,33 +1232,38 @@ function updateMenu() {
   });
 }
 
+function getPageHref(pageId) {
+  if (pageId === "inicio" || pageId === CONFIG.portfolioPageId) return "/";
+  return "/" + pageId + "/";
+}
+
 function renderMenu() {
   elements.menuNav.innerHTML = "";
 
   PAGES.forEach((page) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "menu-item";
-    button.dataset.pageId = page.id;
+    const link = document.createElement("a");
+    link.href = getPageHref(page.id);
+    link.className = "menu-item";
+    link.dataset.pageId = page.id;
 
     if (page.id === "inicio") {
-      button.classList.add("menu-item-logo");
+      link.classList.add("menu-item-logo");
 
       const text = document.createElement("span");
       text.className = "menu-item-text";
       text.textContent = page.label;
-      button.appendChild(text);
+      link.appendChild(text);
 
       const img = document.createElement("img");
       img.className = "menu-item-logo-img";
       img.src = "/assets/giz-logo.png";
       img.alt = page.label;
-      button.appendChild(img);
+      link.appendChild(img);
     } else {
-      button.textContent = page.label;
+      link.textContent = page.label;
     }
 
-    elements.menuNav.appendChild(button);
+    elements.menuNav.appendChild(link);
   });
 }
 
