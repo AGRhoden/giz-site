@@ -1,12 +1,21 @@
 # Slugs legados em inglês → redirect 301 para equivalentes em português
+# (a raiz do slug antigo vai para a versão em inglês; /es e /en mantêm o idioma)
 /dossie/the-exact-number /dossie/o-numero-exato/en/ 301
 /dossie/the-exact-number/ /dossie/o-numero-exato/en/ 301
+/dossie/the-exact-number/en /dossie/o-numero-exato/en/ 301
+/dossie/the-exact-number/en/ /dossie/o-numero-exato/en/ 301
+/dossie/the-exact-number/es /dossie/o-numero-exato/es/ 301
+/dossie/the-exact-number/es/ /dossie/o-numero-exato/es/ 301
 /dossie/hidden-in-plain-sight /dossie/oculto-a-vista-de-todos/en/ 301
 /dossie/hidden-in-plain-sight/ /dossie/oculto-a-vista-de-todos/en/ 301
-/dossie/twenty-years-making-books-work /dossie/vinte-anos-fazendo-livros-funcionarem/en/ 301
-/dossie/twenty-years-making-books-work/ /dossie/vinte-anos-fazendo-livros-funcionarem/en/ 301
+/dossie/hidden-in-plain-sight/en /dossie/oculto-a-vista-de-todos/en/ 301
+/dossie/hidden-in-plain-sight/en/ /dossie/oculto-a-vista-de-todos/en/ 301
 /dossie/hidden-in-plain-sight/es /dossie/oculto-a-vista-de-todos/es/ 301
 /dossie/hidden-in-plain-sight/es/ /dossie/oculto-a-vista-de-todos/es/ 301
+/dossie/twenty-years-making-books-work /dossie/vinte-anos-fazendo-livros-funcionarem/en/ 301
+/dossie/twenty-years-making-books-work/ /dossie/vinte-anos-fazendo-livros-funcionarem/en/ 301
+/dossie/twenty-years-making-books-work/en /dossie/vinte-anos-fazendo-livros-funcionarem/en/ 301
+/dossie/twenty-years-making-books-work/en/ /dossie/vinte-anos-fazendo-livros-funcionarem/en/ 301
 /dossie/twenty-years-making-books-work/es /dossie/vinte-anos-fazendo-livros-funcionarem/es/ 301
 /dossie/twenty-years-making-books-work/es/ /dossie/vinte-anos-fazendo-livros-funcionarem/es/ 301
 /* /index.html 200
