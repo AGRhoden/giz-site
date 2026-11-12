@@ -168,7 +168,7 @@
             });
             quill.setContents({ ops: ops });
           }).catch(function(err) {
-            alert("Erro ao fazer upload da imagem: " + err.message);
+            setSaveState("Erro ao fazer upload da imagem: " + err.message);
           });
         };
         reader.readAsDataURL(file);
@@ -2328,7 +2328,7 @@
         state.selectedProjectId = null;
         applyFilters();
         renderEditor();
-        window.alert("Projeto excluído.");
+        setSaveState("Projeto excluído.");
       })
       .catch(function () {
         setSaveState("Erro ao excluir projeto");
@@ -3092,7 +3092,7 @@
     var id = label.toLowerCase().replace(/[^a-z0-9]/g, "-").replace(/-+/g, "-").replace(/^-|-$/g, "");
     var filters = state.siteConfig.filters || [];
     if (filters.some(function(f) { return f.id === id; })) {
-      window.alert("Já existe uma trilha com esse nome.");
+      setSaveState("Já existe uma trilha com esse nome.");
       return;
     }
     filters.push({ id: id, label: label, summary: "", description: "" });
