@@ -88,6 +88,8 @@ document.addEventListener("DOMContentLoaded", () => {
         state.dossieLang = langPart;
         state.currentDossie = dossie;
         renderDossieDetail(dossie);
+      } else if (state.currentDossie !== null) {
+        closeDossieView();
       }
     } else if (!location.pathname.startsWith("/dossie/") && state.currentDossie !== null) {
       closeDossieView();
@@ -100,6 +102,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (_cPopCurric) { state.curriculoLang = _cPopLang; renderCurriculoDetail(_cPopCurric, _cPopLang); }
     } else if (!location.pathname.startsWith("/curriculo/") && state.currentCurriculo !== null) {
       closeCurriculoView();
+    }
+    const sectionId = pageIdFromPath(location.pathname);
+    if (sectionId) {
+      if (sectionId !== state.currentPage) openPage(sectionId);
+      applyPageMeta(sectionId);
     }
   });
 });
@@ -379,7 +386,7 @@ function handleMenuClick(event) {
   const button = event.target.closest("[data-page-id]");
   if (!button) return;
   event.preventDefault();
-  openPage(button.dataset.pageId);
+  navigateToPage(button.dataset.pageId);
 }
 
 function handleGridClick(event) {
@@ -442,7 +449,7 @@ function handlePanelClick(event) {
   }
 
   if (action === "open-page") {
-    openPage(actionElement.dataset.pageId);
+    navigateToPage(actionElement.dataset.pageId);
     return;
   }
 
@@ -746,7 +753,7 @@ function renderCurriculoDetail(curriculo, lang) {
       e.preventDefault();
       closeCurriculoView();
       const pageId = btn.dataset.pageId;
-      if (pageId) openPage(pageId);
+      if (pageId) navigateToPage(pageId);
     });
   });
 
@@ -775,7 +782,7 @@ function closeCurriculoView() {
   elements.layout.hidden = false;
   document.body.classList.remove("curriculo-view-open");
   state.currentCurriculo = null;
-  if (location.pathname.startsWith("/curriculo/")) history.pushState({}, "", "/");
+  if (location.pathname.startsWith("/curriculo/")) syncSectionLocation(state.currentPage);
 }
 
 async function loadAlbumPhotos() {
@@ -946,7 +953,7 @@ function renderDossieDetail(dossie) {
       e.preventDefault();
       closeDossieView();
       const pageId = btn.dataset.pageId;
-      if (pageId) openPage(pageId);
+      if (pageId) navigateToPage(pageId);
     });
   });
 
@@ -1016,7 +1023,7 @@ function closeDossieView() {
   document.body.classList.remove("dossie-view-open");
   state.currentDossie = null;
   clearInterval(window._dossieCarouselTimer);
-  if (location.pathname.startsWith("/dossie/")) history.pushState({}, "", "/");
+  if (location.pathname.startsWith("/dossie/")) syncSectionLocation(state.currentPage);
 }
 
 function initDossieCarousel() {
@@ -1232,9 +1239,63 @@ function updateMenu() {
   });
 }
 
+const SITE_ORIGIN = "https://www.giz.art.br";
+
+// Mesmos textos das páginas estáticas /portfolio/, /quem/, /contato/ e /dossie/.
+const PAGE_META = {
+  inicio: {
+    title: "GIZ — Oficina Editorial | Livros, Revistas, Pré-impressão",
+    description: "Portfólio da Giz, oficina editorial especializada em livros, revistas e projetos especiais."
+  },
+  portfolio: {
+    title: "Portfólio — GIZ Oficina Editorial",
+    description: "Explore o acervo da GIZ: livros, revistas, quadrinhos e projetos especiais produzidos em mais de vinte anos de trabalho editorial."
+  },
+  quem: {
+    title: "Quem somos — GIZ Oficina Editorial",
+    description: "A GIZ é uma oficina editorial com mais de vinte anos dedicados ao design de livros e revistas para editoras, autores e instituições."
+  },
+  contato: {
+    title: "Contato — GIZ Oficina Editorial",
+    description: "Fale com a GIZ Oficina Editorial sobre o seu próximo projeto: livros, revistas e projetos especiais."
+  },
+  dossie: {
+    title: "Dossiê — GIZ Oficina Editorial",
+    description: "Dossiês da GIZ: os processos, desafios e histórias por trás dos projetos editoriais — o que o leitor não vê."
+  }
+};
+
 function getPageHref(pageId) {
-  if (pageId === "inicio" || pageId === CONFIG.portfolioPageId) return "/";
-  return "/" + pageId + "/";
+  return pageId === "inicio" ? "/" : "/" + pageId + "/";
+}
+
+function pageIdFromPath(pathname) {
+  const path = pathname.endsWith("/") ? pathname : pathname + "/";
+  const page = PAGES.find((item) => getPageHref(item.id) === path);
+  return page ? page.id : null;
+}
+
+function applyPageMeta(pageId) {
+  const meta = PAGE_META[pageId];
+  if (!meta) return;
+  document.title = meta.title;
+  const description = document.querySelector('meta[name="description"]');
+  if (description) description.setAttribute("content", meta.description);
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) canonical.setAttribute("href", SITE_ORIGIN + getPageHref(pageId));
+}
+
+function syncSectionLocation(pageId) {
+  const href = getPageHref(pageId);
+  if (location.pathname !== href) history.pushState({ page: pageId }, "", href);
+  applyPageMeta(pageId);
+}
+
+// Navegação iniciada pelo visitante; a carga inicial não mexe em URL nem em metadados.
+function navigateToPage(pageId) {
+  if (!PAGE_BY_ID.has(pageId)) return;
+  openPage(pageId);
+  syncSectionLocation(pageId);
 }
 
 function renderMenu() {
@@ -2438,6 +2499,7 @@ function openCriterionPage(criterionId) {
   if (!FILTER_BY_ID.has(criterionId)) return;
 
   state.currentPage = CONFIG.portfolioPageId;
+  syncSectionLocation(CONFIG.portfolioPageId);
   state.currentCriterionId = criterionId;
   state.currentProject = null;
   state.currentImageIndex = 0;
@@ -2506,6 +2568,7 @@ function clearFilters() {
 
 function clearPairFocus() {
   state.currentPage = CONFIG.portfolioPageId;
+  syncSectionLocation(CONFIG.portfolioPageId);
   state.portfolioMode = "intro";
   state.currentProject = null;
   state.currentImageIndex = 0;
@@ -2551,6 +2614,7 @@ function filterByTag(criterionId, value) {
   if (!FILTER_BY_ID.has(criterionId)) return;
 
   state.currentPage = CONFIG.portfolioPageId;
+  syncSectionLocation(CONFIG.portfolioPageId);
   state.currentCriterionId = criterionId;
   state.currentProject = null;
   state.currentImageIndex = 0;
