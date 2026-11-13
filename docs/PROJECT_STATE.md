@@ -80,3 +80,6 @@
 - O deploy de produção é só o GitHub Actions (`.github/workflows/deploy.yml`): `tools/build_dist.sh` monta `dist/` com os arquivos do site e `wrangler pages deploy dist` publica.
 - O deploy automático pela integração Git da Cloudflare Pages foi desligado em 2026-11-13 (ele publicava o repositório inteiro, expondo `docs/`, `tools/` etc.).
 - Nova pasta de páginas na raiz? Acrescente-a em `PASTAS` no `tools/build_dist.sh`, ou ela não vai ao ar.
+
+### Páginas estáticas dos dossiês (dossie/<slug>/…)
+`tools/build_dist.sh` roda `tools/dossie_build.py` antes de montar `dist/`: cada deploy (push no main, deploy hook diário das 06:00 UTC ou Retry deployment) atualiza título, descrições, JSON-LD e `#seo-content` com o texto atual do banco. A página já versionada serve de molde (ajustes manuais nela são preservados); o endereço vem da coluna `slug`. As páginas atualizadas vão para o site, mas não são commitadas de volta ao repositório. Se o Supabase falhar, o build segue com as páginas versionadas. `python3 tools/dossie_build.py --check` mostra o que está defasado, sem gravar. Páginas de `curriculo/*` ainda não têm gerador.
