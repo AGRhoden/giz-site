@@ -74,3 +74,9 @@
 - Admin e backend estáveis para operações reais de conteúdo.
 - Frontend público na versão canônica confirmada.
 - Próxima fase: redesign editorial deliberado com linguagem visual própria, seguido de preparação para lançamento.
+
+## Deploy
+
+- O deploy de produção é só o GitHub Actions (`.github/workflows/deploy.yml`): `tools/build_dist.sh` monta `dist/` com os arquivos do site e `wrangler pages deploy dist` publica.
+- O deploy automático pela integração Git da Cloudflare Pages foi desligado em 2026-11-13 (ele publicava o repositório inteiro, expondo `docs/`, `tools/` etc.).
+- Nova pasta de páginas na raiz? Acrescente-a em `PASTAS` no `tools/build_dist.sh`, ou ela não vai ao ar.
