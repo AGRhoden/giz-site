@@ -70,7 +70,42 @@ let ALBUM_SECRET_CARD = null; // foto marcada como capa secreta
 let _swipeTouchStartX = 0;
 let _swipeTouchStartY = 0;
 
+// Links externos (outro site) abrem em nova guia; links internos mantêm o comportamento padrão.
+// Vale para qualquer <a href> da página, inclusive os que vêm de textos editados no Admin
+// (descrição de projeto, dossiês, currículos). mailto:, tel: e âncoras (#) não são tratados.
+function isExternalLink(a) {
+  const href = a.getAttribute("href");
+  if (!href || href.startsWith("#")) return false;
+  let url;
+  try { url = new URL(a.href, location.href); } catch (_) { return false; }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+  const semWww = (h) => h.replace(/^www\./i, "").toLowerCase();
+  return semWww(url.hostname) !== semWww(location.hostname);
+}
+
+function markExternalLinks(root) {
+  if (!root || root.nodeType !== 1) return;
+  const links = root.matches("a[href]") ? [root] : [];
+  root.querySelectorAll("a[href]").forEach((a) => links.push(a));
+  links.forEach((a) => {
+    if (!isExternalLink(a)) return;
+    a.setAttribute("target", "_blank");
+    const rel = new Set((a.getAttribute("rel") || "").split(/\s+/).filter(Boolean));
+    rel.add("noopener");
+    rel.add("noreferrer");
+    a.setAttribute("rel", Array.from(rel).join(" "));
+  });
+}
+
+function initExternalLinks() {
+  markExternalLinks(document.body);
+  new MutationObserver((mutations) => {
+    for (const m of mutations) m.addedNodes.forEach(markExternalLinks);
+  }).observe(document.body, { childList: true, subtree: true });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  initExternalLinks();
   bindEvents();
   initialize();
   // Open dossie section when linked from static standalone page
@@ -735,9 +770,9 @@ function renderCurriculoDetail(curriculo, lang) {
         <div class="cv-title-row">
           <h1 class="cv-title">${escapeHtml(nome)}</h1>
           <div class="cv-lang-switcher">
-            <button type="button" class="cv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt">P</button>
-            <button type="button" class="cv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en">EN</button>
-            <button type="button" class="cv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es">ES</button>
+            <button type="button" class="cv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt" aria-label="Português">PT</button>
+            <button type="button" class="cv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en" aria-label="English">EN</button>
+            <button type="button" class="cv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es" aria-label="Español">ES</button>
           </div>
         </div>
         ${titulo ? `<p class="cv-subtitulo">${escapeHtml(titulo)}</p>` : ""}
@@ -934,7 +969,7 @@ function renderDossieDetail(dossie) {
         <div class="dv-title-row">
           <h1 class="dv-title">${escapeHtml(titulo)}</h1>
           <div class="dv-lang-switcher">
-            <button type="button" class="dv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt" aria-label="Português">P</button>
+            <button type="button" class="dv-lang-btn${lang === "pt" ? " is-active" : ""}" data-lang="pt" aria-label="Português">PT</button>
             <button type="button" class="dv-lang-btn${lang === "en" ? " is-active" : ""}" data-lang="en" aria-label="English">EN</button>
             <button type="button" class="dv-lang-btn${lang === "es" ? " is-active" : ""}" data-lang="es" aria-label="Español">ES</button>
           </div>
