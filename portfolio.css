@@ -852,6 +852,10 @@ button {
   text-underline-offset: 3px;
 }
 
+a.static-page-link {
+  display: inline-block;
+}
+
 .static-page-link:hover {
   opacity: 0.75;
 }
@@ -1636,6 +1640,10 @@ span.dv-sibling { pointer-events: none; }
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+a.dossie-card {
+  text-decoration: none;
 }
 
 .dossie-card-thumb {

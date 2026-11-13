@@ -451,11 +451,22 @@ function handleGridClick(event) {
   openProject(index);
 }
 
+// Clique "simples" com o botão esquerdo. Com Ctrl/Cmd/Shift/Alt ou botão do meio, o link <a> age como link
+// normal do navegador (abre em nova guia/janela).
+function isPlainLeftClick(event) {
+  return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
+}
+
 function handlePanelClick(event) {
   const actionElement = event.target.closest("[data-action]");
   if (!actionElement) return;
 
   const { action } = actionElement.dataset;
+
+  if ((action === "open-dossie" || action === "open-curriculo") && actionElement.tagName === "A") {
+    if (!isPlainLeftClick(event)) return;
+    event.preventDefault();
+  }
 
   if (action === "open-dossie") {
     const dossie = DOSSIES.find((d) => d.id === actionElement.dataset.dossieId);
@@ -861,14 +872,15 @@ function buildDossieListHtml(dossies) {
     const desc = d.descricao
       ? `<p class="dossie-card-desc">${escapeHtml(d.descricao)}</p>`
       : "";
-    return `<button type="button" class="dossie-card" data-action="open-dossie" data-dossie-id="${escapeAttribute(d.id)}">
+    // <a href> de verdade: buscadores seguem o link; o clique simples continua abrindo o dossiê sem recarregar.
+    return `<a class="dossie-card" href="/dossie/${escapeAttribute(dossieSlug(d))}/" data-action="open-dossie" data-dossie-id="${escapeAttribute(d.id)}">
       ${thumb}
       <div class="dossie-card-body">
         <h3 class="dossie-card-title">${escapeHtml(d.titulo)}</h3>
         ${desc}
         <span class="dossie-card-read-more">Leia mais</span>
       </div>
-    </button>`;
+    </a>`;
   }).join("\n");
 
   const prevDisabled = page === 0 ? " disabled" : "";
@@ -2062,7 +2074,7 @@ function syncCurriculoLinks() {
   p.className = "small-note static-page-body";
   p.style.marginTop = "1.4em";
   const links = CURRICULOS.map((c) =>
-    `<button type="button" data-action="open-curriculo" data-curriculo-slug="${escapeAttribute(c.slug)}" class="static-page-link">${escapeHtml(c.nome)}</button>`
+    `<a href="/curriculo/${escapeAttribute(c.slug)}/" data-action="open-curriculo" data-curriculo-slug="${escapeAttribute(c.slug)}" class="static-page-link">${escapeHtml(c.nome)}</a>`
   ).join(" &nbsp;·&nbsp; ");
   p.innerHTML = `Conheça quem faz a GIZ:<br>${links}`;
   shell.appendChild(p);
