@@ -23,13 +23,13 @@ for f in "${ARQUIVOS[@]}"; do
   cp "$f" dist/
 done
 
-# Dossiês: atualiza as páginas estáticas (dossie/<slug>/{,en/,es/}index.html) com o texto atual do banco,
-# para que o que se edita no admin apareça também para buscadores e visitantes sem JavaScript.
-# Se o Supabase ou o script falharem, o build NÃO para: valem as páginas já versionadas no repositório.
+# Páginas com texto vindo do banco (dossiês e currículos) + sitemap: atualiza o HTML estático com o texto atual,
+# para que o que se edita no admin (e o que for criado no futuro) apareça também para buscadores e visitantes
+# sem JavaScript. Se o Supabase ou o script falharem, o build NÃO para: valem as páginas já versionadas.
 if command -v python3 >/dev/null 2>&1; then
-  python3 tools/dossie_build.py || echo "AVISO: tools/dossie_build.py falhou; usando as páginas de dossiê já versionadas." >&2
+  python3 tools/paginas_build.py || echo "AVISO: tools/paginas_build.py falhou; usando as páginas já versionadas." >&2
 else
-  echo "AVISO: python3 ausente; usando as páginas de dossiê já versionadas." >&2
+  echo "AVISO: python3 ausente; usando as páginas já versionadas." >&2
 fi
 
 for d in "${PASTAS[@]}"; do
